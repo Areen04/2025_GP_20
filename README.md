@@ -29,6 +29,8 @@ This combination makes consultations faster and more effective, as doctors can i
 
 
 # Launching Instructions
--Clone the repository.
--Open in Android Studio or VS Code.
+-Clone the repository.  
+
+-Open in Android Studio or VS Code.  
+
 -Run flutter pub get.
