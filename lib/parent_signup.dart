@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'doctor_signup.dart';
 import 'parent_dashboard.dart';
-
 
 class ParentSignup extends StatefulWidget {
   const ParentSignup({super.key});
@@ -12,8 +12,62 @@ class ParentSignup extends StatefulWidget {
 }
 
 class _ParentSignupState extends State<ParentSignup> {
+  final _auth = FirebaseAuth.instance;
+  final _firestore = FirebaseFirestore.instance;
+
+  final _nameController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
+
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
+  bool _isLoading = false;
+
+  Future<void> _createAccount() async {
+    final name = _nameController.text.trim();
+    final email = _emailController.text.trim();
+    final pwd = _passwordController.text;
+    final confirmPwd = _confirmPasswordController.text;
+
+    if (name.isEmpty || email.isEmpty || pwd.isEmpty || confirmPwd.isEmpty) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Please fill all fields')));
+      return;
+    }
+
+    if (pwd != confirmPwd) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Passwords do not match')));
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      UserCredential userCred = await _auth.createUserWithEmailAndPassword(
+        email: email,
+        password: pwd,
+      );
+
+      // حفظ الاسم في Firestore
+      await _firestore.collection('users').doc(userCred.user!.uid).set({
+        'fullName': name,
+        'email': email,
+        'role': 'parent',
+      });
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const ParentDashboard()),
+      );
+    } on FirebaseAuthException catch (e) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(e.message ?? 'Error occurred')));
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,30 +80,18 @@ class _ParentSignupState extends State<ParentSignup> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Text(
-                  "Create Account",
-                  style: TextStyle(
-                    fontSize: 26,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
-                ),
+                const Text("Create Account",
+                    style:
+                    TextStyle(fontSize: 26, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 25),
-
-                // الأزرار العلوية
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Expanded(
                       child: ElevatedButton(
                         onPressed: () {},
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF9D5C7D),
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                        ),
+                            backgroundColor: const Color(0xFF9D5C7D),
+                            foregroundColor: Colors.white),
                         child: const Text("Parent"),
                       ),
                     ),
@@ -64,141 +106,77 @@ class _ParentSignupState extends State<ParentSignup> {
                           );
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFE8E6E7),
-                          foregroundColor: Colors.black87,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                        ),
+                            backgroundColor: const Color(0xFFE8E6E7),
+                            foregroundColor: Colors.black87),
                         child: const Text("Healthcare Provider"),
                       ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 30),
-
-                // الحقول
-                _buildLabeledField("Full Name", "Enter your full name", false),
-                _buildLabeledField("Email Address", "Enter your email", false),
-                _buildLabeledField("Password", "Create a password", true),
-                _buildLabeledField(
-                    "Confirm Password", "Confirm your password", true),
-
-                const SizedBox(height: 25),
-
-                // زر إنشاء الحساب
-                SizedBox(
-                  width: double.infinity,
-                  height: 56,
-                  child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(builder: (context) => const ParentDashboard()),
-                        );
-                      },
-
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF9D5C7D),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                    ),
-                    child: const Text(
-                      "Create Account",
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
+                TextField(
+                  controller: _nameController,
+                  decoration: const InputDecoration(
+                    labelText: 'Full Name',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: _emailController,
+                  decoration: const InputDecoration(
+                    labelText: 'Email',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: _passwordController,
+                  obscureText: _obscurePassword,
+                  decoration: InputDecoration(
+                    labelText: 'Password',
+                    border: const OutlineInputBorder(),
+                    suffixIcon: IconButton(
+                      icon: Icon(_obscurePassword
+                          ? Icons.visibility_off
+                          : Icons.visibility),
+                      onPressed: () =>
+                          setState(() => _obscurePassword = !_obscurePassword),
                     ),
                   ),
                 ),
-
-                const SizedBox(height: 20),
-
-                // النص السفلي
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text("Already have an account? "),
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.pop(context); // ترجعك للصفحة السابقة (Login)
-                      },
-                      child: const Text(
-                        "Login",
-                        style: TextStyle(
-                          color: Color(0xFF9D5C7D),
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: _confirmPasswordController,
+                  obscureText: _obscureConfirmPassword,
+                  decoration: InputDecoration(
+                    labelText: 'Confirm Password',
+                    border: const OutlineInputBorder(),
+                    suffixIcon: IconButton(
+                      icon: Icon(_obscureConfirmPassword
+                          ? Icons.visibility_off
+                          : Icons.visibility),
+                      onPressed: () => setState(() => _obscureConfirmPassword =
+                      !_obscureConfirmPassword),
                     ),
-                  ],
-                )
-
+                  ),
+                ),
+                const SizedBox(height: 25),
+                _isLoading
+                    ? const CircularProgressIndicator()
+                    : ElevatedButton(
+                  onPressed: _createAccount,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF9D5C7D),
+                    minimumSize: const Size(double.infinity, 50),
+                  ),
+                  child: const Text("Create Account",
+                      style: TextStyle(color: Colors.white)),
+                ),
               ],
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildLabeledField(String label, String hint, bool isPassword) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-              color: Colors.black87,
-            ),
-          ),
-          const SizedBox(height: 8),
-          TextField(
-            obscureText: isPassword
-                ? (label.contains("Confirm")
-                ? _obscureConfirmPassword
-                : _obscurePassword)
-                : false,
-            decoration: InputDecoration(
-              hintText: hint,
-              hintStyle: const TextStyle(color: Colors.black38),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-              suffixIcon: isPassword
-                  ? IconButton(
-                icon: Icon(
-                  label.contains("Confirm")
-                      ? (_obscureConfirmPassword
-                      ? Icons.visibility_off
-                      : Icons.visibility)
-                      : (_obscurePassword
-                      ? Icons.visibility_off
-                      : Icons.visibility),
-                  color: Colors.grey,
-                ),
-                onPressed: () {
-                  setState(() {
-                    if (label.contains("Confirm")) {
-                      _obscureConfirmPassword =
-                      !_obscureConfirmPassword;
-                    } else {
-                      _obscurePassword = !_obscurePassword;
-                    }
-                  });
-                },
-              )
-                  : null,
-            ),
-          ),
-        ],
       ),
     );
   }

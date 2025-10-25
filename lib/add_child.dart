@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'parent_dashboard.dart';
 
 class AddChild extends StatefulWidget {
@@ -13,13 +16,13 @@ class AddChild extends StatefulWidget {
 class _AddChildState extends State<AddChild> {
   File? _image;
   final picker = ImagePicker();
+  final _nameController = TextEditingController();
 
   String? _selectedDay;
   String? _selectedMonth;
   String? _selectedYear;
   String? _selectedGender;
-
-  final _nameController = TextEditingController();
+  bool _isLoading = false;
 
   Future<void> _pickImage() async {
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
@@ -27,6 +30,75 @@ class _AddChildState extends State<AddChild> {
       setState(() {
         _image = File(pickedFile.path);
       });
+    }
+  }
+
+  Future<void> _addChild() async {
+    final name = _nameController.text.trim();
+    if (name.isEmpty ||
+        _selectedDay == null ||
+        _selectedMonth == null ||
+        _selectedYear == null ||
+        _selectedGender == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please fill all required fields.")),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      // حساب عمر الطفل
+      final birthDate = DateTime(
+        int.parse(_selectedYear!),
+        int.parse(_selectedMonth!),
+        int.parse(_selectedDay!),
+      );
+      final now = DateTime.now();
+      int age = now.year - birthDate.year;
+      if (now.month < birthDate.month ||
+          (now.month == birthDate.month && now.day < birthDate.day)) {
+        age--;
+      }
+
+      // الصورة اختيارية
+      String? imageUrl;
+      if (_image != null) {
+        final ref = FirebaseStorage.instance
+            .ref()
+            .child('children_images/${name}_${DateTime.now().millisecondsSinceEpoch}.jpg');
+        await ref.putFile(_image!);
+        imageUrl = await ref.getDownloadURL();
+      }
+
+      // حفظ البيانات في فايرستور
+      final user = FirebaseAuth.instance.currentUser;
+      await FirebaseFirestore.instance.collection('children').add({
+        'name': name,
+        'gender': _selectedGender,
+        'birthDate':
+        "$_selectedYear-${_selectedMonth!.padLeft(2, '0')}-${_selectedDay!.padLeft(2, '0')}",
+        'age': age,
+        'imageUrl': imageUrl, // الصورة ممكن تكون null
+        'parentId': user?.uid ?? 'unknown',
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Child added successfully!")),
+      );
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const ParentDashboard()),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error: $e")),
+      );
+    } finally {
+      setState(() => _isLoading = false);
     }
   }
 
@@ -58,17 +130,32 @@ class _AddChildState extends State<AddChild> {
           children: [
             const SizedBox(height: 10),
 
-            // صورة الطفل
+            // ✅ صورة الطفل (اختيارية)
             GestureDetector(
               onTap: _pickImage,
-              child: CircleAvatar(
-                radius: 60,
-                backgroundColor: const Color(0xFFF4E9EF),
-                backgroundImage: _image != null ? FileImage(_image!) : null,
-                child: _image == null
-                    ? const Icon(Icons.camera_alt_outlined,
-                    size: 40, color: Color(0xFF9D5C7D))
-                    : null,
+              child: Center(
+                child: Stack(
+                  alignment: Alignment.bottomRight,
+                  children: [
+                    CircleAvatar(
+                      radius: 55,
+                      backgroundColor: const Color(0xFFF4E9EF),
+                      backgroundImage: _image != null ? FileImage(_image!) : null,
+                      child: _image == null
+                          ? const Icon(Icons.camera_alt_outlined,
+                          size: 40, color: Color(0xFF9D5C7D))
+                          : null,
+                    ),
+                    Container(
+                      decoration: const BoxDecoration(
+                        color: Color(0xFF9D5C7D),
+                        shape: BoxShape.circle,
+                      ),
+                      padding: const EdgeInsets.all(4),
+                      child: const Icon(Icons.add, color: Colors.white, size: 18),
+                    ),
+                  ],
+                ),
               ),
             ),
             const SizedBox(height: 8),
@@ -88,7 +175,6 @@ class _AddChildState extends State<AddChild> {
                 ),
               ),
             ),
-
             const SizedBox(height: 20),
 
             // تاريخ الميلاد
@@ -111,13 +197,13 @@ class _AddChildState extends State<AddChild> {
                 const SizedBox(width: 8),
                 Expanded(
                   child: _buildDropdown("Year", _selectedYear,
-                      List.generate(10, (i) => "${2023 - i}"), (val) {
+                      List.generate(10, (i) => "${DateTime.now().year - i}"),
+                          (val) {
                         setState(() => _selectedYear = val);
                       }),
                 ),
               ],
             ),
-
             const SizedBox(height: 20),
 
             // الجنس
@@ -131,7 +217,6 @@ class _AddChildState extends State<AddChild> {
               ],
               onChanged: (value) => setState(() => _selectedGender = value),
             ),
-
             const SizedBox(height: 30),
 
             // الزر
@@ -139,20 +224,16 @@ class _AddChildState extends State<AddChild> {
               width: double.infinity,
               height: 56,
               child: ElevatedButton(
-                onPressed: () {
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const ParentDashboard()),
-                  );
-                },
+                onPressed: _isLoading ? null : _addChild,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF9D5C7D),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(6),
                   ),
                 ),
-                child: const Text(
+                child: _isLoading
+                    ? const CircularProgressIndicator(color: Colors.white)
+                    : const Text(
                   "Add Child",
                   style: TextStyle(
                     fontSize: 18,
