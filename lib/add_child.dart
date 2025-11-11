@@ -41,8 +41,19 @@ class _AddChildState extends State<AddChild> {
         _selectedYear == null ||
         _selectedGender == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please fill all required fields.")),
+        SnackBar(
+          content: const Text(
+            "Please fill all required fields.",
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
+          ),
+          backgroundColor: const Color(0xFF9D5C7D),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          margin: const EdgeInsets.all(12),
+          duration: const Duration(seconds: 2),
+        ),
       );
+
       return;
     }
 
@@ -86,8 +97,19 @@ class _AddChildState extends State<AddChild> {
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Child added successfully!")),
+        SnackBar(
+          content: const Text(
+            "Child added successfully!",
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
+          ),
+          backgroundColor: const Color(0xFF9D5C7D),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          margin: const EdgeInsets.all(12),
+          duration: const Duration(seconds: 2),
+        ),
       );
+
 
       Navigator.pushReplacement(
         context,
@@ -130,7 +152,7 @@ class _AddChildState extends State<AddChild> {
           children: [
             const SizedBox(height: 10),
 
-            // ✅ صورة الطفل (اختيارية)
+            //  صورة الطفل (اختيارية)
             GestureDetector(
               onTap: _pickImage,
               child: Center(

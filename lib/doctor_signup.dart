@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'parent_signup.dart';
 import 'qr_scan_page.dart';
+import 'login.dart';
 
 class DoctorSignup extends StatefulWidget {
   const DoctorSignup({super.key});
@@ -15,74 +16,130 @@ class _DoctorSignupState extends State<DoctorSignup> {
   final _auth = FirebaseAuth.instance;
   final _firestore = FirebaseFirestore.instance;
 
-  final TextEditingController _fullName = TextEditingController();
-  final TextEditingController _email = TextEditingController();
-  final TextEditingController _password = TextEditingController();
-  final TextEditingController _confirmPassword = TextEditingController();
-  final TextEditingController _docType = TextEditingController();
-  final TextEditingController _docNumber = TextEditingController();
+  final _nameController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
+  final _docNumberController = TextEditingController();
 
+  String? _selectedDocType;
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
   bool _isLoading = false;
 
+  bool _isNameValid = false;
+  bool _isEmailValid = false;
+  bool _isPasswordValid = false;
+  bool _passwordHasUpper = false;
+  bool _passwordHasLower = false;
+  bool _passwordHasNumber = false;
+  bool _passwordHasLength = false;
+  bool _isDocValid = false;
+
+  bool get _passwordsMatch =>
+      _passwordController.text == _confirmPasswordController.text &&
+          _passwordController.text.isNotEmpty;
+
+  void _validateFields() {
+    setState(() {
+      _isNameValid = _nameController.text.trim().length >= 2;
+      _isEmailValid =
+          RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(_emailController.text);
+      final pwd = _passwordController.text;
+      _passwordHasUpper = pwd.contains(RegExp(r'[A-Z]'));
+      _passwordHasLower = pwd.contains(RegExp(r'[a-z]'));
+      _passwordHasNumber = pwd.contains(RegExp(r'[0-9]'));
+      _passwordHasLength = pwd.length >= 8;
+      _isPasswordValid = _passwordHasUpper &&
+          _passwordHasLower &&
+          _passwordHasNumber &&
+          _passwordHasLength;
+
+      // Validate Document Number
+      if (_selectedDocType == "National ID" || _selectedDocType == "Iqama") {
+        _isDocValid = RegExp(r'^[0-9]{10}$').hasMatch(_docNumberController.text);
+      } else if (_selectedDocType == "Passport") {
+        _isDocValid = RegExp(r'^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{5,}$')
+            .hasMatch(_docNumberController.text);
+      } else {
+        _isDocValid = false;
+      }
+    });
+  }
+
+  Future<void> _showErrorPopup(String message) async {
+    await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Error", style: TextStyle(color: Colors.black87)),
+        content: Text(message, style: const TextStyle(color: Colors.black54)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("OK", style: TextStyle(color: Color(0xFF9D5C7D))),
+          )
+        ],
+      ),
+    );
+  }
+
   Future<void> _registerDoctor() async {
-    final name = _fullName.text.trim();
-    final email = _email.text.trim();
-    final password = _password.text.trim();
-    final confirmPassword = _confirmPassword.text.trim();
+    _validateFields();
 
-    if (name.isEmpty ||
-        email.isEmpty ||
-        password.isEmpty ||
-        confirmPassword.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please fill all fields.")),
-      );
-      return;
+    if (!_isNameValid) {
+      return _showErrorPopup("Full name must be at least 2 characters.");
     }
-
-    if (password != confirmPassword) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Passwords do not match.")),
-      );
-      return;
+    if (!_isEmailValid) {
+      return _showErrorPopup("Please enter a valid email address.");
+    }
+    if (!_isPasswordValid) {
+      return _showErrorPopup("Password must meet all requirements.");
+    }
+    if (!_passwordsMatch) {
+      return _showErrorPopup("Passwords do not match.");
+    }
+    if (_selectedDocType == null) {
+      return _showErrorPopup("Please select a document type.");
+    }
+    if (!_isDocValid) {
+      return _showErrorPopup("Document number is invalid for selected type.");
     }
 
     setState(() => _isLoading = true);
 
     try {
-      // إنشاء الحساب
       UserCredential userCred = await _auth.createUserWithEmailAndPassword(
-        email: email,
-        password: password,
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
       );
 
-      // حفظ البيانات في Firestore
       await _firestore.collection('users').doc(userCred.user!.uid).set({
-        'fullName': name,
-        'email': email,
-        'docType': _docType.text.trim(),
-        'docNumber': _docNumber.text.trim(),
+        'fullName': _nameController.text.trim(),
+        'email': _emailController.text.trim(),
+        'docType': _selectedDocType,
+        'docNumber': _docNumberController.text.trim(),
         'role': 'doctor',
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Account created successfully!")),
-      );
-
-      // التوجيه إلى صفحة QRScanPage
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const QRScanPage()),
       );
     } on FirebaseAuthException catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.message ?? "Signup failed")),
-      );
+      await _showErrorPopup(e.message ?? "An error occurred.");
     } finally {
       setState(() => _isLoading = false);
     }
+  }
+
+  OutlineInputBorder _border(Color color) => OutlineInputBorder(
+    borderRadius: BorderRadius.circular(8),
+    borderSide: BorderSide(color: color, width: 1.5),
+  );
+
+  Color _getColor(bool valid, TextEditingController controller) {
+    if (controller.text.isEmpty) return Colors.grey;
+    return valid ? Colors.green : Colors.red;
   }
 
   @override
@@ -94,18 +151,13 @@ class _DoctorSignupState extends State<DoctorSignup> {
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(24),
             child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const Text(
                   "Create Account",
-                  style: TextStyle(
-                    fontSize: 26,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
+                  style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 25),
-
-                // اختيار الدور
                 Row(
                   children: [
                     Expanded(
@@ -118,9 +170,8 @@ class _DoctorSignupState extends State<DoctorSignup> {
                           );
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFE8E6E7),
-                          foregroundColor: Colors.black87,
-                        ),
+                            backgroundColor: const Color(0xFFE8E6E7),
+                            foregroundColor: Colors.black87),
                         child: const Text("Parent"),
                       ),
                     ),
@@ -129,9 +180,8 @@ class _DoctorSignupState extends State<DoctorSignup> {
                       child: ElevatedButton(
                         onPressed: () {},
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF9D5C7D),
-                          foregroundColor: Colors.white,
-                        ),
+                            backgroundColor: const Color(0xFF9D5C7D),
+                            foregroundColor: Colors.white),
                         child: const Text("Healthcare Provider"),
                       ),
                     ),
@@ -139,39 +189,169 @@ class _DoctorSignupState extends State<DoctorSignup> {
                 ),
                 const SizedBox(height: 30),
 
-                // الحقول
-                _buildTextField(_fullName, "Full Name", false),
-                _buildTextField(_email, "Email Address", false),
-                _buildTextField(_password, "Password", true),
-                _buildTextField(_confirmPassword, "Confirm Password", true),
-                _buildTextField(_docType, "Document Type", false),
-                _buildTextField(_docNumber, "Document Number", false),
+                // Full Name
+                TextField(
+                  controller: _nameController,
+                  onChanged: (_) => _validateFields(),
+                  decoration: InputDecoration(
+                    labelText: 'Full Name',
+                    border: _border(Colors.grey),
+                    enabledBorder:
+                    _border(_getColor(_isNameValid, _nameController)),
+                    focusedBorder:
+                    _border(_getColor(_isNameValid, _nameController)),
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // Email
+                TextField(
+                  controller: _emailController,
+                  onChanged: (_) => _validateFields(),
+                  decoration: InputDecoration(
+                    labelText: 'Email',
+                    border: _border(Colors.grey),
+                    enabledBorder:
+                    _border(_getColor(_isEmailValid, _emailController)),
+                    focusedBorder:
+                    _border(_getColor(_isEmailValid, _emailController)),
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // Password
+                TextField(
+                  controller: _passwordController,
+                  obscureText: _obscurePassword,
+                  onChanged: (_) => _validateFields(),
+                  decoration: InputDecoration(
+                    labelText: 'Password',
+                    border: _border(Colors.grey),
+                    enabledBorder:
+                    _border(_getColor(_isPasswordValid, _passwordController)),
+                    focusedBorder:
+                    _border(_getColor(_isPasswordValid, _passwordController)),
+                    suffixIcon: IconButton(
+                      icon: Icon(_obscurePassword
+                          ? Icons.visibility_off
+                          : Icons.visibility),
+                      onPressed: () =>
+                          setState(() => _obscurePassword = !_obscurePassword),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // Confirm Password
+                TextField(
+                  controller: _confirmPasswordController,
+                  obscureText: _obscureConfirmPassword,
+                  onChanged: (_) => _validateFields(),
+                  decoration: InputDecoration(
+                    labelText: 'Confirm Password',
+                    border: _border(Colors.grey),
+                    enabledBorder: _border(_getColor(
+                        _passwordsMatch, _confirmPasswordController)),
+                    focusedBorder: _border(_getColor(
+                        _passwordsMatch, _confirmPasswordController)),
+                    suffixIcon: IconButton(
+                      icon: Icon(_obscureConfirmPassword
+                          ? Icons.visibility_off
+                          : Icons.visibility),
+                      onPressed: () => setState(() =>
+                      _obscureConfirmPassword = !_obscureConfirmPassword),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+
+                // Password hints
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildHint("• At least 8 characters", _passwordHasLength),
+                      _buildHint("• One uppercase letter", _passwordHasUpper),
+                      _buildHint("• One lowercase letter", _passwordHasLower),
+                      _buildHint("• One number", _passwordHasNumber),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                // Document Type Dropdown
+                DropdownButtonFormField<String>(
+                  value: _selectedDocType,
+                  items: const [
+                    DropdownMenuItem(
+                        value: "National ID", child: Text("National ID")),
+                    DropdownMenuItem(value: "Iqama", child: Text("Iqama")),
+                    DropdownMenuItem(value: "Passport", child: Text("Passport")),
+                  ],
+                  decoration: InputDecoration(
+                    labelText: "Document Type",
+                    border: _border(Colors.grey),
+                  ),
+                  onChanged: (val) {
+                    setState(() {
+                      _selectedDocType = val;
+                      _validateFields();
+                    });
+                  },
+                ),
+                const SizedBox(height: 16),
+
+                // Document Number
+                TextField(
+                  controller: _docNumberController,
+                  onChanged: (_) => _validateFields(),
+                  decoration: InputDecoration(
+                    labelText: 'Document Number',
+                    border: _border(Colors.grey),
+                    enabledBorder:
+                    _border(_getColor(_isDocValid, _docNumberController)),
+                    focusedBorder:
+                    _border(_getColor(_isDocValid, _docNumberController)),
+                  ),
+                ),
 
                 const SizedBox(height: 25),
 
-                // زر التسجيل
-                SizedBox(
-                  width: double.infinity,
-                  height: 56,
-                  child: ElevatedButton(
-                    onPressed: _isLoading ? null : _registerDoctor,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF9D5C7D),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                    ),
-                    child: _isLoading
-                        ? const CircularProgressIndicator(color: Colors.white)
-                        : const Text(
-                      "Create Account",
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
-                    ),
+                _isLoading
+                    ? const CircularProgressIndicator()
+                    : ElevatedButton(
+                  onPressed: _registerDoctor,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF9D5C7D),
+                    minimumSize: const Size(double.infinity, 50),
                   ),
+                  child: const Text("Create Account",
+                      style: TextStyle(color: Colors.white)),
+                ),
+
+                const SizedBox(height: 30),
+
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text("Already have an account? "),
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const LoginScreen()),
+                        );
+                      },
+                      child: const Text(
+                        "Login",
+                        style: TextStyle(
+                            color: Color(0xFF9D5C7D),
+                            fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -181,42 +361,14 @@ class _DoctorSignupState extends State<DoctorSignup> {
     );
   }
 
-  Widget _buildTextField(
-      TextEditingController controller, String label, bool isPassword) {
+  Widget _buildHint(String text, bool valid) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: TextField(
-        controller: controller,
-        obscureText: isPassword
-            ? (label.contains("Confirm")
-            ? _obscureConfirmPassword
-            : _obscurePassword)
-            : false,
-        decoration: InputDecoration(
-          labelText: label,
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-          suffixIcon: isPassword
-              ? IconButton(
-            icon: Icon(
-              label.contains("Confirm")
-                  ? (_obscureConfirmPassword
-                  ? Icons.visibility_off
-                  : Icons.visibility)
-                  : (_obscurePassword
-                  ? Icons.visibility_off
-                  : Icons.visibility),
-            ),
-            onPressed: () {
-              setState(() {
-                if (label.contains("Confirm")) {
-                  _obscureConfirmPassword = !_obscureConfirmPassword;
-                } else {
-                  _obscurePassword = !_obscurePassword;
-                }
-              });
-            },
-          )
-              : null,
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Text(
+        text,
+        style: TextStyle(
+          color: valid ? Colors.green : Colors.grey,
+          fontSize: 13,
         ),
       ),
     );

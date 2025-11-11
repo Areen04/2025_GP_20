@@ -14,7 +14,7 @@ dependencies:
   cupertino_icons: ^1.0.8
   flutter_svg: ^2.0.10+1
   image_picker: ^1.1.2
-  mobile_scanner: ^7.1.2
+  mobile_scanner: 6.0.11
 
   # 🔥 Firebase (أحدث إصدار متناسق في جيل 3 / 5 / 12)
   firebase_core: ^3.5.0

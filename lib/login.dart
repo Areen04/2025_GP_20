@@ -67,15 +67,28 @@ class _LoginScreenState extends State<LoginScreen>
     super.dispose();
   }
 
+  Future<void> _showErrorPopup(String message) async {
+    await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Login Failed", style: TextStyle(color: Colors.black87)),
+        content: Text(message, style: const TextStyle(color: Colors.black54)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("OK", style: TextStyle(color: Color(0xFF9D5C7D))),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _login() async {
     final email = _email.text.trim();
     final password = _password.text.trim();
 
     if (email.isEmpty || password.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please fill all fields")),
-      );
-      return;
+      return _showErrorPopup("Please fill in all fields.");
     }
 
     setState(() => _isLoading = true);
@@ -89,6 +102,10 @@ class _LoginScreenState extends State<LoginScreen>
           .collection('users')
           .doc(cred.user!.uid)
           .get();
+
+      if (!doc.exists) {
+        return _showErrorPopup("User not found. Please check your email.");
+      }
 
       final role = doc['role'];
 
@@ -104,11 +121,23 @@ class _LoginScreenState extends State<LoginScreen>
         );
       }
     } on FirebaseAuthException catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.message ?? "Login failed")),
-      );
+      String message;
+      switch (e.code) {
+        case 'invalid-email':
+          message = "Invalid email format.";
+          break;
+        case 'user-not-found':
+          message = "No user found with this email.";
+          break;
+        case 'wrong-password':
+          message = "Incorrect password. Please try again.";
+          break;
+        default:
+          message = e.message ?? "An unexpected error occurred.";
+      }
+      await _showErrorPopup(message);
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -140,9 +169,7 @@ class _LoginScreenState extends State<LoginScreen>
               onPressed: () async {
                 final email = controller.text.trim();
                 if (email.isEmpty) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Please enter your email")),
-                  );
+                  await _showErrorPopup("Please enter your email first.");
                   return;
                 }
 
@@ -151,16 +178,13 @@ class _LoginScreenState extends State<LoginScreen>
                   if (!mounted) return;
                   Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                        content: Text("Reset link sent to $email successfully")),
+                    SnackBar(content: Text("Reset link sent to $email.")),
                   );
                 } on FirebaseAuthException catch (e) {
-                  String msg = "Error occurred. Please try again.";
-                  if (e.code == 'user-not-found') {
-                    msg = "No user found with that email.";
-                  }
-                  ScaffoldMessenger.of(context)
-                      .showSnackBar(SnackBar(content: Text(msg)));
+                  String msg = e.code == 'user-not-found'
+                      ? "No user found with that email."
+                      : "Something went wrong. Try again.";
+                  await _showErrorPopup(msg);
                 }
               },
               child: const Text("Send"),
@@ -182,7 +206,6 @@ class _LoginScreenState extends State<LoginScreen>
         builder: (context, child) {
           return Stack(
             children: [
-              // 🌊 الشكل العلوي
               Positioned(
                 top: -80 + _waveAnimation.value,
                 right: -60,
@@ -212,8 +235,6 @@ class _LoginScreenState extends State<LoginScreen>
                   ),
                 ),
               ),
-
-              // 🌊 الشكل السفلي
               Positioned(
                 bottom: -80 - _waveAnimation.value,
                 left: -60,
@@ -243,8 +264,6 @@ class _LoginScreenState extends State<LoginScreen>
                   ),
                 ),
               ),
-
-              // ✨ المحتوى الرئيسي
               Padding(
                 padding: const EdgeInsets.all(24),
                 child: Center(

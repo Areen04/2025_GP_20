@@ -49,7 +49,7 @@ class _QRScanPageState extends State<QRScanPage> {
         elevation: 0.5,
         automaticallyImplyLeading: false,
         leading: IconButton(
-          icon: const Icon(Icons.person_outline, color: Color(0xFF9D5C7D)),
+          icon: const Icon(Icons.settings_outlined, color: Color(0xFF9D5C7D)),
           onPressed: () async {
             await Navigator.push(
               context,

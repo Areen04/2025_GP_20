@@ -58,12 +58,34 @@ class _ParentDashboardState extends State<ParentDashboard> {
           .doc(childId)
           .delete();
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Child deleted successfully")),
+        SnackBar(
+          content: const Text(
+            "Child deleted successfully",
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
+          ),
+          backgroundColor: const Color(0xFF9D5C7D),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          margin: const EdgeInsets.all(12),
+          duration: const Duration(seconds: 2),
+        ),
       );
+
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error deleting child: $e")),
+        SnackBar(
+          content: Text(
+            "Error deleting child: $e",
+            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
+          ),
+          backgroundColor: const Color(0xFF9D5C7D),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          margin: const EdgeInsets.all(12),
+          duration: const Duration(seconds: 2),
+        ),
       );
+
     }
   }
 
@@ -78,7 +100,7 @@ class _ParentDashboardState extends State<ParentDashboard> {
         elevation: 0,
         automaticallyImplyLeading: false,
         leading: IconButton(
-          icon: const Icon(Icons.person_outline, color: Color(0xFF9D5C7D)),
+          icon: const Icon(Icons.settings_outlined, color: Color(0xFF9D5C7D)),
           onPressed: () async {
             await Navigator.push(
               context,

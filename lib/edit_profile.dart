@@ -35,9 +35,7 @@ class _EditProfileState extends State<EditProfile> {
         _nameController.text = user.displayName ?? '';
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error loading profile: $e')),
-      );
+      _showSnackBar("Error loading profile: $e", isError: true);
     }
 
     setState(() => _isLoading = false);
@@ -49,9 +47,7 @@ class _EditProfileState extends State<EditProfile> {
 
     final newName = _nameController.text.trim();
     if (newName.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Name cannot be empty")),
-      );
+      _showSnackBar("Name cannot be empty", isError: true);
       return;
     }
 
@@ -72,13 +68,9 @@ class _EditProfileState extends State<EditProfile> {
         'updatedAt': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Profile updated successfully ✅")),
-      );
+      _showSnackBar("Profile updated successfully");
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error updating profile: $e")),
-      );
+      _showSnackBar("Error updating profile: $e", isError: true);
     }
 
     setState(() => _isLoading = false);
@@ -86,14 +78,14 @@ class _EditProfileState extends State<EditProfile> {
 
   Future<void> _showResetPasswordDialog() async {
     final email = _auth.currentUser?.email ?? "";
-    final emailController = TextEditingController(text: email);
+    final controller = TextEditingController(text: email);
 
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text("Reset Password"),
         content: TextField(
-          controller: emailController,
+          controller: controller,
           decoration: const InputDecoration(
             labelText: "Enter your email",
             prefixIcon: Icon(Icons.email_outlined),
@@ -112,16 +104,14 @@ class _EditProfileState extends State<EditProfile> {
             ),
             onPressed: () async {
               try {
-                await _auth.sendPasswordResetEmail(email: emailController.text.trim());
+                await _auth.sendPasswordResetEmail(
+                    email: controller.text.trim());
                 if (!mounted) return;
                 Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text("Reset link sent to ${emailController.text}")),
-                );
+                _showSnackBar(
+                    "Reset link sent to ${controller.text.trim()}");
               } catch (e) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text("Error: $e")),
-                );
+                _showSnackBar("Error: $e", isError: true);
               }
             },
             child: const Text("Send"),
@@ -131,65 +121,99 @@ class _EditProfileState extends State<EditProfile> {
     );
   }
 
-  Future<void> _deleteAccount() async {
-    final user = _auth.currentUser;
-    if (user == null) return;
-
+  Future<void> _confirmAction({
+    required String title,
+    required String message,
+    required Future<void> Function() onConfirm,
+  }) async {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text("Delete Account"),
-        content: const Text("Are you sure you want to delete your account permanently?"),
+        title: Text(title,
+            style: const TextStyle(fontWeight: FontWeight.w600)),
+        content: Text(message),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text("Cancel"),
+            child: const Text("Cancel",
+                style: TextStyle(color: Colors.black87)),
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.white,
+              foregroundColor: const Color(0xFF9D5C7D),
+              side: const BorderSide(color: Color(0xFF9D5C7D)),
+            ),
             onPressed: () async {
               Navigator.pop(context);
-              try {
-                // نحذف بيانات المستخدم أول
-                await _firestore.collection('parents').doc(user.uid).delete();
-
-                // نحذف الحساب من Firebase Auth
-                await user.delete();
-
-                // نسوي تسجيل خروج احتياطي عشان ننظف الجلسة
-                await _auth.signOut();
-
-                // ننتظر شوي للتأكيد
-                await Future.delayed(const Duration(milliseconds: 500));
-
-                // نرجع المستخدم إلى صفحة اللوق إن
-                if (!mounted) return;
-                Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(builder: (_) => const LoginScreen()),
-                      (route) => false,
-                );
-              } catch (e) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text("Error deleting account: $e")),
-                );
-              }
+              await onConfirm();
             },
-            child: const Text("Delete"),
+            child: const Text("Yes"),
           ),
         ],
       ),
     );
   }
 
+  Future<void> _deleteAccount() async {
+    await _confirmAction(
+      title: "Delete Account",
+      message:
+      "Are you sure you want to delete your account permanently?",
+      onConfirm: () async {
+        final user = _auth.currentUser;
+        if (user == null) return;
+
+        try {
+          await _firestore.collection('parents').doc(user.uid).delete();
+          await user.delete();
+          await _auth.signOut();
+
+          if (!mounted) return;
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (_) => const LoginScreen()),
+                (route) => false,
+          );
+        } catch (e) {
+          _showSnackBar("Error deleting account: $e", isError: true);
+        }
+      },
+    );
+  }
 
   Future<void> _logout() async {
-    await _auth.signOut();
-    if (!mounted) return;
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(builder: (_) => const LoginScreen()),
-          (route) => false,
+    await _confirmAction(
+      title: "Log out",
+      message: "Are you sure you want to log out?",
+      onConfirm: () async {
+        await _auth.signOut();
+        if (!mounted) return;
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (_) => const LoginScreen()),
+              (route) => false,
+        );
+      },
+    );
+  }
+
+  void _showSnackBar(String message, {bool isError = false}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          message,
+          style: const TextStyle(
+              color: Colors.white, fontWeight: FontWeight.w500),
+        ),
+        backgroundColor:
+        isError ? Colors.redAccent : const Color(0xFF9D5C7D),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        duration: const Duration(seconds: 2),
+      ),
     );
   }
 
@@ -214,132 +238,119 @@ class _EditProfileState extends State<EditProfile> {
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
-          "Edit Profile",
+          "Settings",
           style: TextStyle(
             color: Colors.black87,
             fontWeight: FontWeight.w600,
           ),
         ),
         centerTitle: true,
+        actions: [
+          GestureDetector(
+            onTap: _logout,
+            child: const Padding(
+              padding: EdgeInsets.only(right: 16),
+              child: Text(
+                "Log out",
+                style: TextStyle(
+                  color: Colors.redAccent,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 16,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildLabel("Full Name"),
-                      TextField(
-                        controller: _nameController,
-                        decoration: _inputDecoration("Enter your full name"),
-                      ),
-                      const SizedBox(height: 30),
-
-                      const Text(
-                        "Account Security",
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.black87,
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.grey.shade300),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            GestureDetector(
-                              onTap: _showResetPasswordDialog,
-                              child: Row(
-                                children: const [
-                                  Icon(Icons.lock_outline, size: 20, color: Color(0xFF9D5C7D)),
-                                  SizedBox(width: 8),
-                                  Text(
-                                    "Reset Password",
-                                    style: TextStyle(
-                                      color: Color(0xFF9D5C7D),
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            GestureDetector(
-                              onTap: _deleteAccount,
-                              child: const Text(
-                                "Delete Account",
-                                style: TextStyle(
-                                  color: Colors.redAccent,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
+              _buildLabel("Full Name"),
+              TextField(
+                controller: _nameController,
+                onChanged: (_) => setState(() {}),
+                decoration: _inputDecoration("Enter your full name"),
+              ),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  onPressed: _nameController.text.trim().isEmpty
+                      ? null
+                      : _updateProfile,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: _nameController.text.trim().isEmpty
+                        ? Colors.grey.shade300
+                        : const Color(0xFF9D5C7D),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                  ),
+                  child: Text(
+                    "Save Changes",
+                    style: TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w600,
+                      color: _nameController.text.trim().isEmpty
+                          ? Colors.black38
+                          : Colors.white,
+                    ),
                   ),
                 ),
               ),
-
-              // 👇 الأزرار ثابتة بأسفل الصفحة
-              Column(
-                children: [
-                  SizedBox(
-                    width: double.infinity,
-                    height: 56,
-                    child: ElevatedButton(
-                      onPressed: _updateProfile,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF9D5C7D),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(6),
-                        ),
+              const SizedBox(height: 30),
+              const Text(
+                "Account Actions",
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black87,
+                ),
+              ),
+              const SizedBox(height: 10),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.grey.shade300),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    GestureDetector(
+                      onTap: _showResetPasswordDialog,
+                      child: Row(
+                        children: const [
+                          Icon(Icons.lock_outline,
+                              size: 20, color: Color(0xFF9D5C7D)),
+                          SizedBox(width: 8),
+                          Text(
+                            "Change Password",
+                            style: TextStyle(
+                              color: Color(0xFF9D5C7D),
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
                       ),
+                    ),
+                    const SizedBox(height: 12),
+                    GestureDetector(
+                      onTap: _deleteAccount,
                       child: const Text(
-                        "Save Changes",
+                        "Delete Account",
                         style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
+                          color: Colors.redAccent,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 10),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 44,
-                    child: ElevatedButton(
-                      onPressed: _logout,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.redAccent,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                      ),
-                      child: const Text(
-                        "Log out",
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ],
           ),

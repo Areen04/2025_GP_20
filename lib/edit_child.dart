@@ -128,11 +128,34 @@ class _EditChildState extends State<EditChild> {
             .update(updates);
 
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Changes saved successfully ✅")),
+          SnackBar(
+            content: const Text(
+              "Changes saved successfully",
+              style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
+            ),
+            backgroundColor: const Color(0xFF9D5C7D),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            duration: const Duration(seconds: 2),
+          ),
         );
+
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("No changes made.")),
+          SnackBar(
+            content: const Text(
+              "No changes made.",
+              style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
+            ),
+            backgroundColor: const Color(0xFF9D5C7D),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            duration: const Duration(seconds: 2),
+          ),
         );
       }
 
