@@ -11,6 +11,9 @@ dependencies:
   flutter:
     sdk: flutter
 
+  flutter_image_compress: ^2.1.0
+
+
   # 🎨 واجهات وأيقونات
   cupertino_icons: ^1.0.8
   flutter_svg: ^2.0.10+1

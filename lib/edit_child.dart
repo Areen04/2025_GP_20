@@ -5,6 +5,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'parent_dashboard.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
+
 
 class EditChild extends StatefulWidget {
   final String childId;
@@ -19,9 +21,10 @@ class _EditChildState extends State<EditChild> {
 
   File? _image;
   String? _existingImageUrl;
-  bool _isLoading = true;
+  String? _originalName;
 
-  final picker = ImagePicker();
+  bool _isLoading = true;
+  bool _hasChanges = false; // ← لتفعيل/تعطيل زر الحفظ
 
   @override
   void initState() {
@@ -45,6 +48,7 @@ class _EditChildState extends State<EditChild> {
         final data = doc.data()!;
         setState(() {
           _nameController.text = data['name'] ?? '';
+          _originalName = data['name'];
           _existingImageUrl = data['imageUrl'];
           _isLoading = false;
         });
@@ -56,6 +60,7 @@ class _EditChildState extends State<EditChild> {
     }
   }
 
+  // فتح خيارات الكاميرا/الستوديو
   void _showImagePickerOptions() {
     showModalBottomSheet(
       context: context,
@@ -90,13 +95,24 @@ class _EditChildState extends State<EditChild> {
 
   Future<void> _pickImage(ImageSource source) async {
     final picked = await ImagePicker().pickImage(source: source);
+
     if (picked != null) {
+      // Compress image before using it
+      final compressed = await FlutterImageCompress.compressAndGetFile(
+        picked.path,
+        picked.path + "_compressed.jpg",
+        quality: 60,
+      );
+
       setState(() {
-        _image = File(picked.path);
+        _image = File(compressed?.path ?? picked.path);
+        _hasChanges = true;
       });
     }
   }
 
+
+  // حفظ التعديلات
   Future<void> _saveChanges() async {
     try {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -109,17 +125,13 @@ class _EditChildState extends State<EditChild> {
       Map<String, dynamic> updates = {};
 
       final name = _nameController.text.trim();
-      if (name.isNotEmpty) updates['name'] = name;
 
-      if (_image != null) {
-        final ref = FirebaseStorage.instance
-            .ref()
-            .child('children_images/${DateTime.now().millisecondsSinceEpoch}.jpg');
-        await ref.putFile(_image!);
-        final newUrl = await ref.getDownloadURL();
-        updates['imageUrl'] = newUrl;
+      // لو الاسم تغيّر
+      if (name.isNotEmpty && name != _originalName) {
+        updates['name'] = name;
       }
 
+      // نحفظ التعديلات الأساسية أول (بدون الصورة)
       if (updates.isNotEmpty) {
         updates['updatedAt'] = FieldValue.serverTimestamp();
         await FirebaseFirestore.instance
@@ -130,25 +142,36 @@ class _EditChildState extends State<EditChild> {
             .update(updates);
       }
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text(
-            "Changes saved successfully",
-            style: TextStyle(color: Colors.white),
-          ),
-          backgroundColor: const Color(0xFF9D5C7D),
-        ),
-      );
 
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const ParentDashboard()),
       );
+
+
+      if (_image != null) {
+        final ref = FirebaseStorage.instance
+            .ref()
+            .child('children_images/${DateTime.now().millisecondsSinceEpoch}.jpg');
+
+        await ref.putFile(_image!);
+        final newUrl = await ref.getDownloadURL();
+
+        await FirebaseFirestore.instance
+            .collection('parents')
+            .doc(uid)
+            .collection('children')
+            .doc(widget.childId)
+            .update({'imageUrl': newUrl});
+      }
+
     } catch (e) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text("Error: $e")));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error: $e")),
+      );
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -189,6 +212,7 @@ class _EditChildState extends State<EditChild> {
           children: [
             const SizedBox(height: 10),
 
+            /// دائرة تعديل الصورة
             GestureDetector(
               onTap: _showImagePickerOptions,
               child: Column(
@@ -196,7 +220,6 @@ class _EditChildState extends State<EditChild> {
                   Stack(
                     alignment: Alignment.bottomRight,
                     children: [
-                      /// دائرة الصورة
                       Container(
                         width: 120,
                         height: 120,
@@ -229,7 +252,6 @@ class _EditChildState extends State<EditChild> {
                         ),
                       ),
 
-                      /// زر +
                       Container(
                         width: 32,
                         height: 32,
@@ -241,7 +263,6 @@ class _EditChildState extends State<EditChild> {
                       ),
                     ],
                   ),
-
                   const SizedBox(height: 10),
                   const Text(
                     "Upload Photo",
@@ -255,15 +276,19 @@ class _EditChildState extends State<EditChild> {
 
             Align(
               alignment: Alignment.centerLeft,
-              child: Text(
+              child: const Text(
                 "Child's Full Name",
-                style: const TextStyle(
-                    fontSize: 16, fontWeight: FontWeight.w500),
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
               ),
             ),
 
             TextField(
               controller: _nameController,
+              onChanged: (_) {
+                setState(() {
+                  _hasChanges = true; // ← صار تغيير
+                });
+              },
               decoration: InputDecoration(
                 hintText: "Enter child's full name",
                 border: OutlineInputBorder(
@@ -278,19 +303,21 @@ class _EditChildState extends State<EditChild> {
               width: double.infinity,
               height: 56,
               child: ElevatedButton(
-                onPressed: _saveChanges,
+                onPressed: _hasChanges ? _saveChanges : null, // ← تعطيل الزر
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF9D5C7D),
+                  backgroundColor:
+                  _hasChanges ? const Color(0xFF9D5C7D) : Colors.grey.shade300,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-                child: const Text(
+                child: Text(
                   "Save Changes",
                   style: TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white),
+                    fontSize: 17,
+                    fontWeight: FontWeight.w600,
+                    color: _hasChanges ? Colors.white : Colors.black38,
+                  ),
                 ),
               ),
             ),

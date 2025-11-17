@@ -146,6 +146,10 @@ class _LoginScreenState extends State<LoginScreen>
         case 'wrong-password':
           message = "Incorrect password. Please try again.";
           break;
+        case 'invalid-credential':
+          message = "Email or password is incorrect.";
+          break;
+
         default:
           message = e.message ?? "An unexpected error occurred.";
       }
