@@ -22,6 +22,14 @@ class _DoctorSignupState extends State<DoctorSignup> {
   final _confirmPasswordController = TextEditingController();
   final _docNumberController = TextEditingController();
 
+final _nameFocus = FocusNode();
+final _emailFocus = FocusNode();
+final _passwordFocus = FocusNode();
+final _confirmPasswordFocus = FocusNode();
+final _docNumberFocus = FocusNode();
+final FocusNode _docTypeFocus = FocusNode();
+
+
   String? _selectedDocType;
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
@@ -35,6 +43,31 @@ class _DoctorSignupState extends State<DoctorSignup> {
   bool _passwordHasNumber = false;
   bool _passwordHasLength = false;
   bool _isDocValid = false;
+bool _isDocTypeValid = false;
+bool _docTypeTouched = false;
+
+@override
+void initState() {
+  super.initState();
+  _nameFocus.addListener(() => setState(() {}));
+  _emailFocus.addListener(() => setState(() {}));
+  _passwordFocus.addListener(() => setState(() {}));
+  _confirmPasswordFocus.addListener(() => setState(() {}));
+  _docNumberFocus.addListener(() => setState(() {}));
+  _docTypeFocus.addListener(() => setState(() {
+  _docTypeTouched = true;
+}));
+}
+@override
+void dispose() {
+  _nameFocus.dispose();
+  _emailFocus.dispose();
+  _passwordFocus.dispose();
+  _confirmPasswordFocus.dispose();
+  _docNumberFocus.dispose();
+  _docTypeFocus.dispose();
+  super.dispose();
+}
 
   bool get _passwordsMatch =>
       _passwordController.text == _confirmPasswordController.text &&
@@ -67,80 +100,127 @@ class _DoctorSignupState extends State<DoctorSignup> {
     });
   }
 
-  Future<void> _showErrorPopup(String message) async {
-    await showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text("Error", style: TextStyle(color: Colors.black87)),
-        content: Text(message, style: const TextStyle(color: Colors.black54)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("OK", style: TextStyle(color: Color(0xFF9D5C7D))),
-          )
-        ],
+ Future<void> _showErrorPopup(String message) async {
+  await showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8), // same radius
       ),
-    );
-  }
+      title: const Text(
+        "Error", 
+        style: TextStyle(color: Colors.black87), // same title color
+      ),
+      content: Text(
+        message, 
+        style: const TextStyle(color: Colors.black54), // same content color
+      ),
+      actions: [
+        TextButton(
+          style: TextButton.styleFrom(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8), // same radius for button
+            ),
+          ),
+          onPressed: () => Navigator.pop(context),
+          child: const Text(
+            "OK",
+            style: TextStyle(color: Color(0xFF9D5C7D)), // same purple color
+          ),
+        ),
+      ],
+    ),
+  );
+}
 
   Future<void> _registerDoctor() async {
-    _validateFields();
+  _validateFields();
 
-    if (!_isNameValid) {
-      return _showErrorPopup("Full name must be at least 2 characters.");
-    }
-    if (!_isEmailValid) {
-      return _showErrorPopup("Please enter a valid email address.");
-    }
-    if (!_isPasswordValid) {
-      return _showErrorPopup("Password must meet all requirements.");
-    }
-    if (!_passwordsMatch) {
-      return _showErrorPopup("Passwords do not match.");
-    }
-    if (_selectedDocType == null) {
-      return _showErrorPopup("Please select a document type.");
-    }
-    if (!_isDocValid) {
-      return _showErrorPopup("Document number is invalid for selected type.");
-    }
-
-    setState(() => _isLoading = true);
-
-    try {
-      UserCredential userCred = await _auth.createUserWithEmailAndPassword(
-        email: _emailController.text.trim(),
-        password: _passwordController.text,
-      );
-
-      await _firestore.collection('users').doc(userCred.user!.uid).set({
-        'fullName': _nameController.text.trim(),
-        'email': _emailController.text.trim(),
-        'docType': _selectedDocType,
-        'docNumber': _docNumberController.text.trim(),
-        'role': 'doctor',
-      });
-
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const QRScanPage()),
-      );
-    } on FirebaseAuthException catch (e) {
-      await _showErrorPopup(e.message ?? "An error occurred.");
-    } finally {
-      setState(() => _isLoading = false);
-    }
+  // NEW: Check if ANY field is empty
+  if (_nameController.text.trim().isEmpty ||
+      _emailController.text.trim().isEmpty ||
+      _passwordController.text.isEmpty ||
+      _confirmPasswordController.text.isEmpty ||
+      _selectedDocType == null ||
+      _docNumberController.text.trim().isEmpty) {
+    return _showErrorPopup("Please fill in all fields.");
   }
+
+  if (!_isNameValid) {
+    return _showErrorPopup("Full name must be at least 2 characters.");
+  }
+  if (!_isEmailValid) {
+    return _showErrorPopup("Please enter a valid email address.");
+  }
+  if (!_isPasswordValid) {
+    return _showErrorPopup("Password must meet all requirements.");
+  }
+  if (!_passwordsMatch) {
+    return _showErrorPopup("Passwords do not match.");
+  }
+  if (!_isDocValid) {
+    return _showErrorPopup("Document number is invalid for selected type.");
+  }
+
+  setState(() => _isLoading = true);
+
+  try {
+    UserCredential userCred = await _auth.createUserWithEmailAndPassword(
+      email: _emailController.text.trim(),
+      password: _passwordController.text,
+    );
+
+    await _firestore.collection('users').doc(userCred.user!.uid).set({
+      'fullName': _nameController.text.trim(),
+      'email': _emailController.text.trim(),
+      'docType': _selectedDocType,
+      'docNumber': _docNumberController.text.trim(),
+      'role': 'doctor',
+    });
+
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => const QRScanPage()),
+    );
+  } on FirebaseAuthException catch (e) {
+    await _showErrorPopup(e.message ?? "An error occurred.");
+  } finally {
+    setState(() => _isLoading = false);
+  }
+}
 
   OutlineInputBorder _border(Color color) => OutlineInputBorder(
     borderRadius: BorderRadius.circular(8),
     borderSide: BorderSide(color: color, width: 1.5),
   );
 
-  Color _getColor(bool valid, TextEditingController controller) {
-    if (controller.text.isEmpty) return Colors.grey;
-    return valid ? Colors.green : Colors.red;
+Color _getColor(bool valid, TextEditingController controller, FocusNode focusNode) {
+  if (focusNode.hasFocus && controller.text.isEmpty) {
+    return const Color(0xFF9D5C7D); // login-style purple when first selected
   }
+  if (controller.text.isEmpty) return Colors.grey; // no input yet
+  return valid ? Colors.green : Colors.red; // validation color after typing
+}
+Color _getDocTypeColor() {
+  // Selected → green (always takes priority)
+  if (_selectedDocType != null) {
+    return Colors.green;
+  }
+
+  // Focused → purple
+  if (_docTypeFocus.hasFocus) {
+    return const Color(0xFF9D5C7D);
+  }
+
+  // Not chosen but number written → red
+  if (_selectedDocType == null && _docNumberController.text.isNotEmpty) {
+    return Colors.red;
+  }
+
+  // Default → grey
+  return Colors.grey;
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -158,47 +238,55 @@ class _DoctorSignupState extends State<DoctorSignup> {
                   style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 25),
-                Row(
-                  children: [
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () {
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => const ParentSignup()),
-                          );
-                        },
-                        style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFFE8E6E7),
-                            foregroundColor: Colors.black87),
-                        child: const Text("Parent"),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () {},
-                        style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF9D5C7D),
-                            foregroundColor: Colors.white),
-                        child: FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: Text(
-                            "Healthcare Provider",
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
+             Row(
+  children: [
+    Expanded(
+      child: ElevatedButton(
+        onPressed: () {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const ParentSignup()),
+          );
+        },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xFFE8E6E7),
+          foregroundColor: Colors.black87,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+          // Do not force height, keeps original
+        ),
+        child: const Text("Parent"),
+      ),
+    ),
+    const SizedBox(width: 12),
+    Expanded(
+      child: ElevatedButton(
+        onPressed: () {},
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xFF9D5C7D),
+          foregroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+        ),
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            "Healthcare Provider",
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: Colors.white,
+            ),
+          ),
+        ),
+      ),
+    ),
+  ],
+),
 
-                      ),
-                    ),
-                  ],
-                ),
                 const SizedBox(height: 30),
 
                 // Full Name
@@ -206,7 +294,7 @@ class _DoctorSignupState extends State<DoctorSignup> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "Full Name:",
+                      "Full Name",
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
@@ -216,14 +304,15 @@ class _DoctorSignupState extends State<DoctorSignup> {
 
                     TextField(
                       controller: _nameController,
+                      focusNode: _nameFocus,
                       onChanged: (_) => _validateFields(),
                       decoration: InputDecoration(
                         hintText: 'Enter Full Name',   // ← الـ Placeholder
                         border: _border(Colors.grey),
                         enabledBorder:
-                        _border(_getColor(_isNameValid, _nameController)),
+                        _border(_getColor(_isNameValid, _nameController, _nameFocus)),
                         focusedBorder:
-                        _border(_getColor(_isNameValid, _nameController)),
+                        _border(_getColor(_isNameValid, _nameController, _nameFocus)),
                       ),
                     ),
                   ],
@@ -236,7 +325,7 @@ class _DoctorSignupState extends State<DoctorSignup> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "Email:",
+                      "Email",
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
@@ -246,14 +335,15 @@ class _DoctorSignupState extends State<DoctorSignup> {
 
                     TextField(
                       controller: _emailController,
+                      focusNode: _emailFocus,
                       onChanged: (_) => _validateFields(),
                       decoration: InputDecoration(
                         hintText: 'example@gmail.com',   // ← الـ Placeholder
                         border: _border(Colors.grey),
                         enabledBorder:
-                        _border(_getColor(_isEmailValid, _emailController)),
+                        _border(_getColor(_isEmailValid, _emailController, _emailFocus)),
                         focusedBorder:
-                        _border(_getColor(_isEmailValid, _emailController)),
+                        _border(_getColor(_isEmailValid, _emailController, _emailFocus)),
                       ),
                     ),
                   ],
@@ -266,7 +356,7 @@ class _DoctorSignupState extends State<DoctorSignup> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "Password:",
+                      "Password",
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
@@ -276,15 +366,16 @@ class _DoctorSignupState extends State<DoctorSignup> {
 
                     TextField(
                       controller: _passwordController,
+                      focusNode: _passwordFocus,
                       obscureText: _obscurePassword,
                       onChanged: (_) => _validateFields(),
                       decoration: InputDecoration(
                         hintText: 'Enter password', // ← Placeholder
                         border: _border(Colors.grey),
                         enabledBorder:
-                        _border(_getColor(_isPasswordValid, _passwordController)),
+                        _border(_getColor(_isPasswordValid, _passwordController, _passwordFocus)),
                         focusedBorder:
-                        _border(_getColor(_isPasswordValid, _passwordController)),
+                        _border(_getColor(_isPasswordValid, _passwordController, _passwordFocus)),
                         suffixIcon: IconButton(
                           icon: Icon(
                             _obscurePassword
@@ -305,7 +396,7 @@ class _DoctorSignupState extends State<DoctorSignup> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "Confirm Password:",
+                      "Confirm Password",
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
@@ -315,16 +406,17 @@ class _DoctorSignupState extends State<DoctorSignup> {
 
                     TextField(
                       controller: _confirmPasswordController,
+                      focusNode: _confirmPasswordFocus,
                       obscureText: _obscureConfirmPassword,
                       onChanged: (_) => _validateFields(),
                       decoration: InputDecoration(
                         hintText: 'Re-enter password', // ← Placeholder
                         border: _border(Colors.grey),
                         enabledBorder: _border(
-                          _getColor(_passwordsMatch, _confirmPasswordController),
+                          _getColor(_passwordsMatch, _confirmPasswordController, _confirmPasswordFocus),
                         ),
                         focusedBorder: _border(
-                          _getColor(_passwordsMatch, _confirmPasswordController),
+                          _getColor(_passwordsMatch, _confirmPasswordController, _confirmPasswordFocus),
                         ),
                         suffixIcon: IconButton(
                           icon: Icon(
@@ -355,7 +447,7 @@ class _DoctorSignupState extends State<DoctorSignup> {
                     ],
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 16),
 
                 // Document Type
                 Column(
@@ -365,63 +457,59 @@ class _DoctorSignupState extends State<DoctorSignup> {
                       "Document Type",
                       style: TextStyle(
                         fontSize: 16,
-                        fontWeight: FontWeight.w500,
+                        fontWeight: FontWeight.w600,
                         color: Colors.black87,
                       ),
                     ),
                     const SizedBox(height: 8),
 
-                    DropdownButtonFormField<String>(
-                      value: _selectedDocType,
-                      hint: const Text("Select document type"),
+                  Focus(
+  focusNode: _docTypeFocus,
+  child: DropdownMenu<String>(
+    width: MediaQuery.of(context).size.width - 48,
 
-                      items: const [
-                        DropdownMenuItem(
-                          value: "National ID",
-                          child: Text("National ID"),
-                        ),
-                        DropdownMenuItem(
-                          value: "Iqama",
-                          child: Text("Iqama"),
-                        ),
-                        DropdownMenuItem(
-                          value: "Passport",
-                          child: Text("Passport"),
-                        ),
-                        DropdownMenuItem(
-                          value: "Medical License",
-                          child: Text("Medical License"),
-                        ),
-                      ],
+    inputDecorationTheme: InputDecorationTheme(
+      filled: true,
+      fillColor: Colors.white,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
 
-                      onChanged: (value) {
-                        setState(() {
-                          _selectedDocType = value;
-                          _validateFields();
-                        });
-                      },
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: BorderSide(color: _getDocTypeColor(), width: 1.5),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: BorderSide(color: _getDocTypeColor(), width: 1.5),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: BorderSide(color: _getDocTypeColor(), width: 1.5),
+      ),
+    ),
 
-                      decoration: InputDecoration(
-                        filled: true,
-                        fillColor: Colors.white,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: const BorderSide(color: Colors.grey),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: const BorderSide(color: Colors.grey),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: const BorderSide(color: Colors.grey),
-                        ),
-                      ),
-                    ),
+    hintText: "Select document type",
+
+    onSelected: (value) {
+      setState(() {
+        _selectedDocType = value;
+        _validateFields();
+      });
+    },
+
+    dropdownMenuEntries: const [
+      DropdownMenuEntry(value: "National ID", label: "National ID"),
+      DropdownMenuEntry(value: "Iqama", label: "Iqama"),
+      DropdownMenuEntry(value: "Passport", label: "Passport"),
+      DropdownMenuEntry(value: "Medical License", label: "Medical License"),
+    ],
+  ),
+)
+
+
                   ],
                 ),
 
-                const SizedBox(height: 25),
+                const SizedBox(height: 16),
 
 
 
@@ -430,7 +518,7 @@ class _DoctorSignupState extends State<DoctorSignup> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "Document Number:",
+                      "Document Number",
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
@@ -440,31 +528,47 @@ class _DoctorSignupState extends State<DoctorSignup> {
 
                     TextField(
                       controller: _docNumberController,
+                      focusNode: _docNumberFocus,
                       onChanged: (_) => _validateFields(),
                       decoration: InputDecoration(
-                        hintText: 'Enter document number', // placeholder
+                        hintText: 'Enter your document number', // placeholder
                         border: _border(Colors.grey),
                         enabledBorder:
-                        _border(_getColor(_isDocValid, _docNumberController)),
+                        _border(_getColor(_isDocValid, _docNumberController, _docNumberFocus)),
                         focusedBorder:
-                        _border(_getColor(_isDocValid, _docNumberController)),
+                        _border(_getColor(_isDocValid, _docNumberController, _docNumberFocus)),
                       ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 25),
 
-                _isLoading
-                    ? const CircularProgressIndicator()
-                    : ElevatedButton(
-                  onPressed: _registerDoctor,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF9D5C7D),
-                    minimumSize: const Size(double.infinity, 50),
-                  ),
-                  child: const Text("Create Account",
-                      style: TextStyle(color: Colors.white)),
-                ),
+              _isLoading
+    ? const CircularProgressIndicator()
+    : Padding(
+        padding: const EdgeInsets.only(top: 16),
+        child: SizedBox(
+          height: 56,
+          width: double.infinity,
+          child: ElevatedButton(
+            onPressed: _registerDoctor,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF9D5C7D),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: const Text(
+              "Create Account",
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ),
+      ),
 
                 const SizedBox(height: 30),
 

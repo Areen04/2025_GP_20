@@ -64,20 +64,34 @@ class _LoginScreenState extends State<LoginScreen>
   void dispose() {
     _controller.dispose();
     _waveController.dispose();
+    _email.dispose();
+    _password.dispose();
     super.dispose();
   }
+
+  // Rounded border helper
+  OutlineInputBorder _border(Color color) => OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: BorderSide(color: color, width: 1.5),
+      );
 
   Future<void> _showErrorPopup(String message) async {
     await showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title:
-            const Text("Login Failed", style: TextStyle(color: Colors.black87)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        title: const Text("Login Failed",
+            style: TextStyle(color: Colors.black87)),
         content: Text(message, style: const TextStyle(color: Colors.black54)),
         actions: [
           TextButton(
+            style: TextButton.styleFrom(
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8)),
+            ),
             onPressed: () => Navigator.pop(context),
-            child: const Text("OK", style: TextStyle(color: Color(0xFF9D5C7D))),
+            child: const Text("OK",
+                style: TextStyle(color: Color(0xFF9D5C7D))),
           ),
         ],
       ),
@@ -99,7 +113,6 @@ class _LoginScreenState extends State<LoginScreen>
         password: password,
       );
 
-      // ✅ نبدأ نحاول نقرأ من مجموعة parents أول
       DocumentSnapshot? doc;
 
       final parentDoc = await FirebaseFirestore.instance
@@ -164,86 +177,97 @@ class _LoginScreenState extends State<LoginScreen>
       context: context,
       builder: (context) {
         final controller = TextEditingController(text: _email.text.trim());
-        return AlertDialog(
-          title: const Text("Reset Password"),
-          content: TextField(
-            controller: controller,
-            decoration: const InputDecoration(
-              labelText: "Enter your email",
-              prefixIcon: Icon(Icons.email_outlined),
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text("Cancel"),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white,
-                foregroundColor: const Color(0xFF9D5C7D),
-                side: const BorderSide(color: Color(0xFF9D5C7D)),
+        bool emailSent = false;
+        String? errorMessage;
+
+        return StatefulBuilder(
+          builder: (context, setState) => AlertDialog(
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            title: Text(
+              emailSent ? "Email Sent" : "Reset Password",
+              style: const TextStyle(
+                fontFamily: 'Inter',
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF9D5C7D),
               ),
-              onPressed: () async {
-                final email = controller.text.trim();
-                if (email.isEmpty) {
-                  await _showErrorPopup("Please enter your email first.");
-                  return;
-                }
-
-                try {
-                  await _auth.sendPasswordResetEmail(email: email);
-                  if (!mounted) return;
-
-                  Navigator.pop(context);
-
-                  // 🔥 Popup بدل SnackBar
-                  await showDialog(
-                    context: context,
-                    builder: (context) => AlertDialog(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      title: const Text(
-                        "Email Sent",
-                        style: TextStyle(
-                          fontFamily: 'Inter',
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF9D5C7D),
+            ),
+            content: emailSent
+                ? Text(
+                    "A reset link has been sent to ${controller.text.trim()}.",
+                    style: const TextStyle(
+                      fontFamily: 'Inter',
+                      color: Colors.black87,
+                    ),
+                  )
+                : Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      TextField(
+                        controller: controller,
+                        decoration: InputDecoration(
+                          labelText: "Enter your email",
+                          prefixIcon: const Icon(Icons.email_outlined),
+                          border: _border(Colors.grey),
+                          enabledBorder: _border(Colors.grey),
+                          focusedBorder: _border(const Color(0xFF9D5C7D)),
                         ),
                       ),
-                      content: Text(
-                        "A reset link has been sent to $email.",
-                        style: const TextStyle(
-                          fontFamily: 'Inter',
-                          color: Colors.black87,
-                        ),
-                      ),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(context),
-                          child: const Text(
-                            "OK",
-                            style: TextStyle(
-                              color: Color(0xFF9D5C7D),
-                              fontFamily: 'Inter',
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
+                      if (errorMessage != null) ...[
+                        const SizedBox(height: 8),
+                        Text(
+                          errorMessage!,
+                          style: const TextStyle(
+                              color: Colors.red, fontSize: 13),
                         ),
                       ],
-                    ),
-                  );
-                } on FirebaseAuthException catch (e) {
-                  String msg = e.code == 'user-not-found'
-                      ? "No user found with that email."
-                      : "Something went wrong. Try again.";
-                  await _showErrorPopup(msg);
-                }
-              },
-              child: const Text("Send"),
-            ),
-          ],
+                    ],
+                  ),
+            actions: [
+              TextButton(
+                style: TextButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8)),
+                ),
+                onPressed: () => Navigator.pop(context),
+                child: Text(emailSent ? "OK" : "Cancel"),
+              ),
+              if (!emailSent)
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: const Color(0xFF9D5C7D),
+                    side: const BorderSide(color: Color(0xFF9D5C7D)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8)),
+                  ),
+                  onPressed: () async {
+                    final email = controller.text.trim();
+                    if (email.isEmpty) {
+                      setState(() {
+                        errorMessage = "Please enter your email first.";
+                      });
+                      return;
+                    }
+
+                    try {
+                      await FirebaseAuth.instance
+                          .sendPasswordResetEmail(email: email);
+                      setState(() {
+                        emailSent = true;
+                      });
+                    } on FirebaseAuthException catch (e) {
+                      setState(() {
+                        errorMessage = e.code == 'user-not-found'
+                            ? "No user found with that email."
+                            : "Something went wrong. Try again.";
+                      });
+                    }
+                  },
+                  child: const Text("Send"),
+                ),
+            ],
+          ),
         );
       },
     );
@@ -260,6 +284,7 @@ class _LoginScreenState extends State<LoginScreen>
         builder: (context, child) {
           return Stack(
             children: [
+              // Decorative waves
               Positioned(
                 top: -80 + _waveAnimation.value,
                 right: -60,
@@ -328,26 +353,34 @@ class _LoginScreenState extends State<LoginScreen>
                         position: _slideAnimation,
                         child: Column(
                           children: [
-                            const Text("Log in",
+                            const Text("Log In",
                                 style: TextStyle(
-                                    fontSize: 28,
+                                    fontSize: 26,
                                     fontWeight: FontWeight.bold,
                                     color: Colors.black)),
                             const SizedBox(height: 30),
+
+                            // Email
                             TextField(
                               controller: _email,
-                              decoration: const InputDecoration(
+                              decoration: InputDecoration(
                                 labelText: "Email",
-                                border: OutlineInputBorder(),
+                                border: _border(Colors.grey),
+                                enabledBorder: _border(Colors.grey),
+                                focusedBorder: _border(const Color(0xFF9D5C7D)),
                               ),
                             ),
                             const SizedBox(height: 15),
+
+                            // Password
                             TextField(
                               controller: _password,
                               obscureText: _obscure,
                               decoration: InputDecoration(
                                 labelText: "Password",
-                                border: const OutlineInputBorder(),
+                                border: _border(Colors.grey),
+                                enabledBorder: _border(Colors.grey),
+                                focusedBorder: _border(const Color(0xFF9D5C7D)),
                                 suffixIcon: IconButton(
                                   icon: Icon(_obscure
                                       ? Icons.visibility_off
@@ -358,26 +391,46 @@ class _LoginScreenState extends State<LoginScreen>
                               ),
                             ),
                             const SizedBox(height: 25),
+
                             _isLoading
                                 ? const CircularProgressIndicator()
-                                : ElevatedButton(
-                                    onPressed: _login,
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: const Color(0xFF9D5C7D),
-                                      minimumSize:
-                                          const Size(double.infinity, 50),
+                                : SizedBox(
+                                    height: 56,
+                                    width: double.infinity,
+                                    child: ElevatedButton(
+                                      onPressed: _login,
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: const Color(0xFF9D5C7D),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(8),
+                                        ),
+                                      ),
+                                      child: const Text(
+                                        "Log In",
+                                        style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.white,
+                                        ),
+                                      ),
                                     ),
-                                    child: const Text("Log In",
-                                        style: TextStyle(color: Colors.white))),
+                                  ),
+
                             const SizedBox(height: 10),
+
                             TextButton(
                               onPressed: _forgotPassword,
+                              style: TextButton.styleFrom(
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8)),
+                              ),
                               child: const Text(
                                 "Forgot Password?",
                                 style: TextStyle(color: Color(0xFF9D5C7D)),
                               ),
                             ),
                             const SizedBox(height: 10),
+
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [

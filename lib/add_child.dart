@@ -17,12 +17,24 @@ class _AddChildState extends State<AddChild> {
   File? _image;
   final picker = ImagePicker();
   final _nameController = TextEditingController();
+final _nameFocus = FocusNode();
+final _dayFocus = FocusNode();
+final _monthFocus = FocusNode();
+final _yearFocus = FocusNode();
+final _genderFocus = FocusNode(); // optional
+bool _dayTouched = false;
+bool _monthTouched = false;
+bool _yearTouched = false;
+bool _genderTouched = false;
 
   String? _selectedDay;
   String? _selectedMonth;
   String? _selectedYear;
   String? _selectedGender;
   bool _isLoading = false;
+bool _hasInteracted = false;
+bool _isNameValid = false;
+bool _isSaving = false;
 
   bool _isValidDate() {
     if (_selectedYear == null ||
@@ -39,13 +51,57 @@ class _AddChildState extends State<AddChild> {
 
     return selected.isBefore(today) || selected.isAtSameMomentAs(today);
   }
+OutlineInputBorder _border(Color color) => OutlineInputBorder(
+  borderRadius: BorderRadius.circular(8),
+  borderSide: BorderSide(color: color, width: 1.5),
+);
+Color _getNameColor() {
+  final text = _nameController.text.trim();
+
+  // Before interacting → grey
+  if (!_hasInteracted) return Colors.grey;
+
+  // Focused
+  if (_nameFocus.hasFocus) {
+    // Focused + empty → purple
+    if (text.isEmpty) return const Color(0xFF9D5C7D);
+    // Focused + invalid → red
+    if (text.length < 2) return Colors.red;
+    // Focused + valid → green
+    return const Color(0xFF9D5C7D);
+  }
+
+  // NOT focused
+  if (text.isEmpty) return Colors.grey; // ← THIS IS THE FIX
+
+  if (text.length >= 2) return Colors.grey;
+
+  return Colors.red;
+}
+Color _dropdownColor({
+  required String? value,
+  required bool touched,
+  required FocusNode focusNode,
+}) {
+  // Selected → green
+  if (value != null) return Colors.grey;
+
+  // Focused → purple
+  if (focusNode.hasFocus) return const Color(0xFF9D5C7D);
+
+  // If touched but no selection → grey
+  if (touched) return Colors.grey;
+
+  // Default
+  return Colors.grey;
+}
 
   // ---------------  Bottom Sheet to choose image source ---------------
   Future<void> _showImagePickerOptions() async {
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(8)),
       ),
       builder: (context) {
         return Column(
@@ -85,6 +141,22 @@ class _AddChildState extends State<AddChild> {
   // ------------------------ SAVE CHILD ------------------------
   Future<void> _addChild() async {
     final name = _nameController.text.trim();
+     if (name.length < 2) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text(
+            "Full name must be at least 2 characters.",
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
+          ),
+          backgroundColor: const Color(0xFF9D5C7D),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          margin: const EdgeInsets.all(12),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+      return; // ← IMPORTANT to stop adding
+    }
     if (name.isEmpty ||
         _selectedDay == null ||
         _selectedMonth == null ||
@@ -98,7 +170,7 @@ class _AddChildState extends State<AddChild> {
           ),
           backgroundColor: const Color(0xFF9D5C7D),
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           margin: const EdgeInsets.all(12),
           duration: const Duration(seconds: 2),
         ),
@@ -106,7 +178,7 @@ class _AddChildState extends State<AddChild> {
       return;
     }
 
-    setState(() => _isLoading = true);
+setState(() => _isSaving = true);
 
     try {
       final user = FirebaseAuth.instance.currentUser;
@@ -157,7 +229,7 @@ class _AddChildState extends State<AddChild> {
           ),
           backgroundColor: const Color(0xFF9D5C7D),
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           margin: const EdgeInsets.all(12),
           duration: const Duration(seconds: 2),
         ),
@@ -172,7 +244,7 @@ class _AddChildState extends State<AddChild> {
         SnackBar(content: Text("Error: $e")),
       );
     } finally {
-      setState(() => _isLoading = false);
+setState(() => _isSaving = false);
     }
   }
 
@@ -180,33 +252,49 @@ class _AddChildState extends State<AddChild> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back,
-            color: Color(0xFF9D5C7D),
-          ),
-
-          onPressed: () {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => const ParentDashboard()),
-            );
-          },
-        ),
-        title: const Text(
-          "Add Child",
-          style: TextStyle(color: Colors.black87, fontWeight: FontWeight.w600),
-        ),
-        centerTitle: true,
-      ),
+  backgroundColor: Colors.white,
+  appBar: PreferredSize(
+    preferredSize: const Size.fromHeight(70), // force same height as EditChild
+    child: AppBar(
       backgroundColor: Colors.white,
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          children: [
+      elevation: 0,
+      surfaceTintColor: Colors.white,
+      centerTitle: true,
+      title: const Text(
+        "Add Child",
+        style: TextStyle(
+          fontFamily: 'Inter',
+          fontWeight: FontWeight.w600,
+          fontSize: 20,
+          color: Colors.black87,
+        ),
+      ),
+      leading: IconButton(
+        icon: const Icon(
+          Icons.arrow_back_ios_new_rounded,
+          color: Color(0xFF9D5C7D),
+        ),
+        onPressed: () => Navigator.pop(context),
+      ),
+      bottom: PreferredSize(
+        preferredSize: const Size.fromHeight(1),
+        child: Container(
+          height: 1,
+          color: const Color(0xFFE0E0E0),
+        ),
+      ),
+    ),
+  ),
+body: GestureDetector(
+  behavior: HitTestBehavior.translucent,
+  onTap: () {
+    FocusScope.of(context).unfocus();     // <-- FORCE unfocus
+    setState(() {});                      // <-- refresh colors
+  },
+  child: SingleChildScrollView(
+    padding: const EdgeInsets.all(24),
+    child: Column(
+      children: [
             const SizedBox(height: 10),
 
             // ------------------ Upload Photo Circle ------------------
@@ -256,139 +344,310 @@ class _AddChildState extends State<AddChild> {
             const Text("Upload Photo", style: TextStyle(color: Colors.black54)),
             const SizedBox(height: 30),
 
-
-            // ------------------ Name ------------------
-            _buildLabel("Child's Full Name"),
-            TextField(
-              controller: _nameController,
-              decoration: InputDecoration(
-                hintText: "Enter child's full name",
-                hintStyle: const TextStyle(color: Colors.black38),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 20),
-
-            // ------------------ DOB ------------------
-            _buildLabel("Date of Birth"),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildDropdown(
-                    "Day",
-                    _selectedDay,
-                    List.generate(31, (i) => "${i + 1}"),
-                        (val) {
-                      setState(() => _selectedDay = val);
-
-                      if (!_isValidDate()) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text("You cannot select a future date."),
-                            backgroundColor: Colors.redAccent,
-                          ),
-                        );
-
-                        setState(() => _selectedDay = null);
-                      }
-                    },
-                  ),
-                ),
-
-                const SizedBox(width: 8),
-                Expanded(
-                  child: _buildDropdown(
-                    "Month",
-                    _selectedMonth,
-                    List.generate(12, (i) => "${i + 1}"),
-                        (val) {
-                      setState(() => _selectedMonth = val);
-
-                      if (!_isValidDate()) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text("You cannot select a future date."),
-                            backgroundColor: Colors.redAccent,
-                          ),
-                        );
-
-                        setState(() => _selectedMonth = null);
-                      }
-                    },
-
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: _buildDropdown(
-                    "Year",
-                    _selectedYear,
-                    List.generate(10, (i) => "${DateTime.now().year - i}"),
-                        (val) {
-                      setState(() => _selectedYear = val);
-
-                      if (!_isValidDate()) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text("You cannot select a future date."),
-                            backgroundColor: Colors.redAccent,
-                          ),
-                        );
-                        setState(() => _selectedYear = null);
-                      }
-                    },
-
-                  ),
-                ),
-              ],
-            ),
+// ------------------ Name ------------------
+_buildLabel("Child's Full Name"),
+Focus(
+  onFocusChange: (hasFocus) {
+    if (!hasFocus) {
+      setState(() {});
+    }
+  },
+  child: TextField(
+    controller: _nameController,
+    focusNode: _nameFocus,
+    onTap: () {
+      setState(() => _hasInteracted = true);
+    },
+    onChanged: (_) {
+      setState(() {
+        _hasInteracted = true;
+        _isNameValid = _nameController.text.trim().length >= 2;
+      });
+    },
+    decoration: InputDecoration(
+      hintText: "Enter child's full name",
+      hintStyle: const TextStyle(color: Colors.black38),
+      border: _border(Colors.grey),
+      enabledBorder: _border(_getNameColor()),
+      focusedBorder: _border(_getNameColor()),
+    ),
+  ),
+),
 
             const SizedBox(height: 20),
 
-            // ------------------ Gender ------------------
-            _buildLabel("Gender"),
-            DropdownButtonFormField<String>(
-              hint: const Text("Select gender"),
-              value: _selectedGender,
-              items: const [
-                DropdownMenuItem(value: "Male", child: Text("Male")),
-                DropdownMenuItem(value: "Female", child: Text("Female")),
-              ],
-              onChanged: (value) => setState(() => _selectedGender = value),
-            ),
+           // ------------------ DOB ------------------
+_buildLabel("Date of Birth"),
+Row(
+  children: [
+    // Day
+ Expanded(
+  child: Focus(
+    focusNode: _dayFocus,
+    onFocusChange: (hasFocus) {
+      if (hasFocus) {
+        _dayTouched = true;
+      }
+      setState(() {});
+    },
+    child: DropdownMenu<String>(
+      hintText: "Day",
+      textStyle: const TextStyle(color: Colors.black87, fontSize: 14),
 
-            const SizedBox(height: 30),
-
-            // ------------------ Button ------------------
-            SizedBox(
-              width: double.infinity,
-              height: 56,
-              child: ElevatedButton(
-                onPressed: _isLoading ? null : _addChild,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF9D5C7D),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                ),
-                child: _isLoading
-                    ? const CircularProgressIndicator(color: Colors.white)
-                    : const Text(
-                  "Add Child",
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ),
-          ],
+      menuStyle: const MenuStyle(
+        backgroundColor: MaterialStatePropertyAll(Color(0xFFFFF7FB)),
+        surfaceTintColor: MaterialStatePropertyAll(Colors.white),
+        elevation: MaterialStatePropertyAll(3),
+        maximumSize: MaterialStatePropertyAll(Size.fromHeight(180)),
+        padding: MaterialStatePropertyAll(EdgeInsets.symmetric(vertical: 6)),
+        shape: MaterialStatePropertyAll(
+          RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(8)),
+            side: BorderSide(color: Colors.grey),
+          ),
         ),
       ),
+
+      inputDecorationTheme: InputDecorationTheme(
+        hintStyle: const TextStyle(color: Colors.black38),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 2, vertical: 10),
+        filled: true,
+        fillColor: Colors.white,
+
+        border: _border(_dropdownColor(
+          value: _selectedDay,
+          touched: _dayTouched,
+          focusNode: _dayFocus,
+        )),
+        enabledBorder: _border(_dropdownColor(
+          value: _selectedDay,
+          touched: _dayTouched,
+          focusNode: _dayFocus,
+        )),
+        focusedBorder: _border(const Color(0xFF9D5C7D)),
+      ),
+
+      onSelected: (val) {
+        FocusScope.of(context).unfocus();
+        setState(() => _selectedDay = val);
+      },
+
+      dropdownMenuEntries: List.generate(
+        31,
+        (i) => DropdownMenuEntry(value: "${i + 1}", label: "${i + 1}"),
+      ),
+    ),
+  ),
+),
+ const SizedBox(width: 8),
+
+// Month
+Expanded(
+  child: Focus(
+    focusNode: _monthFocus,
+    onFocusChange: (hasFocus) {
+      if (hasFocus) _monthTouched = true;
+      setState(() {});
+    },
+    child: DropdownMenu<String>(
+      hintText: "Month",
+      textStyle: const TextStyle(
+        color: Colors.black87,
+        fontSize: 14,
+        overflow: TextOverflow.visible,
+      ),
+
+      menuStyle: const MenuStyle(
+        backgroundColor: MaterialStatePropertyAll(Color(0xFFFFF7FB)),
+        surfaceTintColor: MaterialStatePropertyAll(Colors.white),
+        elevation: MaterialStatePropertyAll(3),
+        maximumSize: MaterialStatePropertyAll(Size.fromHeight(180)),
+        padding: MaterialStatePropertyAll(EdgeInsets.symmetric(vertical: 6)),
+        shape: MaterialStatePropertyAll(
+          RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(8)),
+            side: BorderSide(color: Colors.grey),
+          ),
+        ),
+      ),
+
+      inputDecorationTheme: InputDecorationTheme(
+        hintStyle: const TextStyle(color: Colors.black38),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 2, vertical: 10),
+        filled: true,
+        fillColor: Colors.white,
+
+        border: _border(_dropdownColor(
+          value: _selectedMonth,
+          touched: _monthTouched,
+          focusNode: _monthFocus,
+        )),
+        enabledBorder: _border(_dropdownColor(
+          value: _selectedMonth,
+          touched: _monthTouched,
+          focusNode: _monthFocus,
+        )),
+        focusedBorder: _border(const Color(0xFF9D5C7D)),
+      ),
+
+      onSelected: (val) => setState(() => _selectedMonth = val),
+
+      dropdownMenuEntries: List.generate(
+        12,
+        (i) => DropdownMenuEntry(value: "${i + 1}", label: "${i + 1}"),
+      ),
+    ),
+  ),
+),
+
+    const SizedBox(width: 8),
+
+    // Year
+    Expanded(
+  child: Focus(
+    focusNode: _yearFocus,
+    onFocusChange: (hasFocus) {
+      if (hasFocus) _yearTouched = true;
+      setState(() {});
+    },
+    child: DropdownMenu<String>(
+      hintText: "Year",
+      textStyle: const TextStyle(color: Colors.black87, fontSize: 14),
+
+      menuStyle: const MenuStyle(
+        backgroundColor: MaterialStatePropertyAll(Color(0xFFFFF7FB)),
+        surfaceTintColor: MaterialStatePropertyAll(Colors.white),
+        elevation: MaterialStatePropertyAll(3),
+        maximumSize: MaterialStatePropertyAll(Size.fromHeight(180)),
+        padding: MaterialStatePropertyAll(EdgeInsets.symmetric(vertical: 6)),
+        shape: MaterialStatePropertyAll(
+          RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(8)),
+            side: BorderSide(color: Colors.grey),
+          ),
+        ),
+      ),
+
+      inputDecorationTheme: InputDecorationTheme(
+        hintStyle: const TextStyle(color: Colors.black38),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 2, vertical: 10),
+        filled: true,
+        fillColor: Colors.white,
+
+        border: _border(_dropdownColor(
+          value: _selectedYear,
+          touched: _yearTouched,
+          focusNode: _yearFocus,
+        )),
+        enabledBorder: _border(_dropdownColor(
+          value: _selectedYear,
+          touched: _yearTouched,
+          focusNode: _yearFocus,
+        )),
+        focusedBorder: _border(const Color(0xFF9D5C7D)),
+      ),
+
+      onSelected: (val) => setState(() => _selectedYear = val),
+
+      dropdownMenuEntries: List.generate(
+        10,
+        (i) => DropdownMenuEntry(
+          value: "${DateTime.now().year - i}",
+          label: "${DateTime.now().year - i}",
+        ),
+      ),
+    ),
+  ),
+),
+ ],
+),
+const SizedBox(height: 20),
+
+          // ------------------ Gender ------------------
+_buildLabel("Gender"),
+Focus(
+  focusNode: _genderFocus,
+  onFocusChange: (hasFocus) {
+    if (hasFocus) _genderTouched = true;
+    setState(() {});
+  },
+  child: DropdownMenu<String>(
+    width: MediaQuery.of(context).size.width - 48,
+    hintText: "Select gender",
+
+    menuStyle: const MenuStyle(
+      backgroundColor: MaterialStatePropertyAll(Color(0xFFFFF7FB)),
+      surfaceTintColor: MaterialStatePropertyAll(Colors.white),
+      elevation: MaterialStatePropertyAll(3),
+      padding: MaterialStatePropertyAll(EdgeInsets.zero),
+      maximumSize: MaterialStatePropertyAll(Size.fromHeight(120)),
+      shape: MaterialStatePropertyAll(
+        RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(8)),
+        ),
+      ),
+    ),
+
+    inputDecorationTheme: InputDecorationTheme(
+      filled: true,
+      fillColor: Colors.white,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+
+      border: _border(_dropdownColor(
+        value: _selectedGender,
+        touched: _genderTouched,
+        focusNode: _genderFocus,
+      )),
+      enabledBorder: _border(_dropdownColor(
+        value: _selectedGender,
+        touched: _genderTouched,
+        focusNode: _genderFocus,
+      )),
+      focusedBorder: _border(const Color(0xFF9D5C7D)),
+    ),
+
+    onSelected: (value) => setState(() => _selectedGender = value),
+
+    dropdownMenuEntries: const [
+      DropdownMenuEntry(value: "Male", label: "Male"),
+      DropdownMenuEntry(value: "Female", label: "Female"),
+    ],
+  ),
+),
+const SizedBox(height: 20),
+
+            // ------------------ Button ------------------
+ _isSaving
+    ? const CircularProgressIndicator(
+        color: Color(0xFF9D5C7D),
+      )
+    : SizedBox(
+        width: double.infinity,
+        height: 56,
+        child: ElevatedButton(
+          onPressed: _addChild,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFF9D5C7D),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+          child: const Text(
+            "Add Child",
+            style: TextStyle(
+              fontSize: 17,
+              fontWeight: FontWeight.w600,
+              color: Colors.white,
+            ),
+          ),
+        ),
+      ),
+         ],
+        ),
+      ),
+),
     );
   }
 

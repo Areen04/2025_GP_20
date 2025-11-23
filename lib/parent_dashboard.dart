@@ -71,7 +71,7 @@ class _ParentDashboardState extends State<ParentDashboard> {
           backgroundColor: const Color(0xFF9D5C7D),
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(8),
           ),
           margin: const EdgeInsets.all(12),
           duration: const Duration(seconds: 2),
@@ -98,42 +98,61 @@ class _ParentDashboardState extends State<ParentDashboard> {
       );
     }
   }
-  Future<void> _showConfirmDeleteChild({
-    required String message,
-    required Future<void> Function() onConfirm,
-  }) async {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text(
-          "Delete Child",
-          style: TextStyle(fontWeight: FontWeight.w600),
+ Future<void> _showConfirmDeleteChild({
+  required String message,
+  required Future<void> Function() onConfirm,
+}) async {
+  showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      title: const Text(
+        "Delete Child",
+        style: TextStyle(
+          fontFamily: 'Inter',
+          fontWeight: FontWeight.w600,
+          color: Color(0xFF9D5C7D), // purple title
         ),
-        content: Text(message),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text(
-              "Cancel",
-              style: TextStyle(color: Colors.black87),
-            ),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: const Color(0xFF9D5C7D),
-              side: const BorderSide(color: Color(0xFF9D5C7D)),
-            ),
-            onPressed: () async {
-              Navigator.pop(context);
-              await onConfirm();
-            },
-            child: const Text("Yes"),
-          ),
-        ],
       ),
-    );
-  }
+      content: Text(
+        message,
+        style: const TextStyle(
+          fontFamily: 'Inter',
+          color: Colors.black54,
+        ),
+      ),
+      actions: [
+        // Cancel button → just text purple, no background
+        TextButton(
+          style: TextButton.styleFrom(
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8)),
+          ),
+          onPressed: () => Navigator.pop(context),
+          child: const Text(
+            "Cancel",
+            style: TextStyle(color: Color(0xFF9D5C7D)), // purple text
+          ),
+        ),
+        // Yes button → white background, purple text & border
+        ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.white,
+            foregroundColor: const Color(0xFF9D5C7D),
+            side: const BorderSide(color: Color(0xFF9D5C7D)),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8)),
+          ),
+          onPressed: () async {
+            Navigator.pop(context);
+            await onConfirm();
+          },
+          child: const Text("Yes"),
+        ),
+      ],
+    ),
+  );
+}
 
   @override
   Widget build(BuildContext context) {
@@ -179,7 +198,7 @@ class _ParentDashboardState extends State<ParentDashboard> {
                       ),
                       decoration: BoxDecoration(
                         color: const Color(0xFFF8F5F6),
-                        borderRadius: BorderRadius.circular(30),
+                        borderRadius: BorderRadius.circular(8),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -244,7 +263,7 @@ class _ParentDashboardState extends State<ParentDashboard> {
                             return Card(
                               color: Colors.white,
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: BorderRadius.circular(8),
                               ),
                               margin: const EdgeInsets.only(bottom: 12),
                               child: ListTile(

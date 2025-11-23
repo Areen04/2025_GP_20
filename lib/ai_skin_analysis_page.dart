@@ -28,7 +28,8 @@ class _AiSkinAnalysisPageState extends State<AiSkinAnalysisPage> {
   bool _isLoading = false;
   bool _modelReady = false;
   List<Map<String, dynamic>> _history = [];
-
+String? _latestValidPrediction;
+Uint8List? _latestValidImage;
   final Map<String, List<String>> _diseaseTips = {
     'Atopic Dermatitis Eczema': [
       "Apply prescribed cream",
@@ -114,6 +115,14 @@ class _AiSkinAnalysisPageState extends State<AiSkinAnalysisPage> {
       setState(() {
         _history = snapshot.docs.map((doc) => doc.data()).toList();
       });
+if (_history.isNotEmpty) {
+  final latest = _history.first;
+  _latestValidPrediction = latest['label'];
+  _latestValidImage = base64Decode(latest['image']);
+}
+
+
+
     } catch (e) {
       print("Error loading history: $e");
     }
@@ -139,61 +148,140 @@ class _AiSkinAnalysisPageState extends State<AiSkinAnalysisPage> {
   Future<void> _pickImage() async {
     final picker = ImagePicker();
     final source = await showDialog<ImageSource>(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-        title: const Text("Choose Image Source"),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.photo, color: Color(0xFF9D5C7D)),
-              title: const Text("From Gallery"),
-              onTap: () => Navigator.pop(context, ImageSource.gallery),
-            ),
-            ListTile(
-              leading: const Icon(Icons.camera_alt, color: Color(0xFF9D5C7D)),
-              title: const Text("Take a Photo"),
-              onTap: () => Navigator.pop(context, ImageSource.camera),
-            ),
-          ],
+  context: context,
+  builder: (context) {
+    return AlertDialog(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
+      ),
+
+      insetPadding: const EdgeInsets.symmetric(horizontal: 40, vertical: 24),
+      contentPadding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+
+      title: const Padding(
+        padding: EdgeInsets.only(bottom: 4), // slightly tighter
+        child: Text(
+          "Choose Image",
+          style: TextStyle(
+            fontFamily: 'Inter',
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF9D5C7D),
+          ),
         ),
       ),
+
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ListTile(
+            contentPadding: EdgeInsets.zero,
+            leading: const Icon(Icons.photo, color: Color(0xFF9D5C7D)),
+            title: const Text(
+              "From Gallery",
+              style: TextStyle(
+                fontFamily: 'Inter',
+                color: Colors.black87,
+              ),
+            ),
+            onTap: () => Navigator.pop(context, ImageSource.gallery),
+          ),
+
+          ListTile(
+            contentPadding: EdgeInsets.zero,
+            leading: const Icon(Icons.camera_alt, color: Color(0xFF9D5C7D)),
+            title: const Text(
+              "Take a Photo",
+              style: TextStyle(
+                fontFamily: 'Inter',
+                color: Colors.black87,
+              ),
+            ),
+            onTap: () => Navigator.pop(context, ImageSource.camera),
+          ),
+        ],
+      ),
+
+      actionsPadding: const EdgeInsets.fromLTRB(12, 0, 12, 8), // 🔥 Tighter bottom space
+
+      actions: [
+        TextButton(
+          style: TextButton.styleFrom(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+          onPressed: () => Navigator.pop(context),
+          child: const Text(
+            "Cancel",
+            style: TextStyle(
+              fontFamily: 'Inter',
+              color: Colors.black87,
+            ),
+          ),
+        ),
+      ],
     );
+  },
+);
 
     if (source == null) return;
 
     final picked = await picker.pickImage(source: source);
     if (picked != null) {
       final bytes = await picked.readAsBytes();
-      setState(() {
-        _selectedImage = bytes;
-        _prediction = null;
-      });
+   setState(() {
+  _selectedImage = bytes;
+  _prediction = null;
+});
+
+// 🚀 Auto analyze immediately
+_analyzeImage();
+
     }
   }
 
   void _showPopup({required String title, required String message}) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-        title: Text(title,
-            style: const TextStyle(
-                fontWeight: FontWeight.bold, color: Color(0xFF9D5C7D))),
-        content: Text(message,
-            style: const TextStyle(color: Color(0xFF6D6D6D), fontSize: 15)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Re-upload",
-                style: TextStyle(
-                    fontWeight: FontWeight.bold, color: Color(0xFF9D5C7D))),
-          ),
-        ],
+  showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
       ),
-    );
-  }
+      title: Text(
+        title,
+        style: const TextStyle(
+           fontFamily: 'Inter',
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF9D5C7D),
+        ),
+      ),
+      content: Text(
+        message,
+        style: const TextStyle(
+          color: Colors.black54,
+          fontSize: 15,
+        ),
+      ),
+      actions: [
+        TextButton(
+          style: TextButton.styleFrom(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+          onPressed: () => Navigator.pop(context),
+          child: const Text(
+            "OK",
+            style: TextStyle(
+              color: Color(0xFF9D5C7D),
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
+}
 
   /// 🔹 التحليل مع فحص الجلد المصاب ونسبة اللون
   Future<void> _analyzeImage() async {
@@ -227,7 +315,7 @@ class _AiSkinAnalysisPageState extends State<AiSkinAnalysisPage> {
       _showPopup(
         title: "Re-upload",
         message:
-            "The skin area isn’t clear. Please retake the photo and make sure the affected skin is clear.",
+            "The skin area isn’t clear. Please re-upload the photo and make sure the affected skin is clear.",
       );
       setState(() => _prediction = "Re-upload");
       return;
@@ -249,11 +337,13 @@ class _AiSkinAnalysisPageState extends State<AiSkinAnalysisPage> {
         'date': now.toIso8601String(),
       };
 
-      setState(() {
-        _prediction = label;
-        _history.insert(0, entry);
-      });
-
+     setState(() {
+  _prediction = label;            // temporary for top UI
+  _history.insert(0, entry);      // add history
+  _latestValidPrediction = label; // save as latest valid
+  _latestValidImage = _selectedImage; 
+  _selectedImage = null;
+});
       await _saveHistoryToFirestore(entry);
     } catch (e) {
       ScaffoldMessenger.of(context)
@@ -289,110 +379,141 @@ class _AiSkinAnalysisPageState extends State<AiSkinAnalysisPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: AutoSizeText(
-          "${widget.childName}'s Skin Analysis",
-          maxLines: 1,
-          minFontSize: 14,
-          overflow: TextOverflow.ellipsis,
-          style: const TextStyle(
-            color: Color(0xFF9D5C7D),
-            fontWeight: FontWeight.bold,
-            fontSize: 20,
-          ),
-        ),
-        backgroundColor: Colors.white,
-        iconTheme: const IconThemeData(color: Color(0xFF9D5C7D)),
-        elevation: 1,
+     appBar: PreferredSize(
+  preferredSize: const Size.fromHeight(70),
+  child: AppBar(
+    backgroundColor: Colors.white,
+    elevation: 0,
+    surfaceTintColor: Colors.white,
+    centerTitle: true,
+    title: Text(
+      "AI Skin Analysis",
+      style: const TextStyle(
+        fontFamily: 'Inter',
+        fontWeight: FontWeight.w600,
+        fontSize: 20,
+        color: Colors.black87,
       ),
-      backgroundColor: Colors.white,
+    ),
+    leading: IconButton(
+      icon: const Icon(
+        Icons.arrow_back_ios_new_rounded,
+        color: Color(0xFF9D5C7D),
+      ),
+      onPressed: () => Navigator.pop(context),
+    ),
+    bottom: PreferredSize(
+      preferredSize: const Size.fromHeight(1),
+      child: Container(
+        height: 1,
+        color: const Color(0xFFE0E0E0),
+      ),
+    ),
+  ),
+),
+  backgroundColor: Colors.white,
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             GestureDetector(
-              onTap: _pickImage,
+              onTap: (_selectedImage == null) ? _pickImage : null,
               child: Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF8F3F6),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Column(
-                  children: [
-                    _selectedImage == null
-                        ? Column(children: const [
-                            Icon(Icons.camera_alt_rounded,
-                                size: 50, color: Color(0xFF9D5C7D)),
-                            SizedBox(height: 12),
-                            Text("Click Here",
-                                style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w700,
-                                    color: Colors.black)),
-                            SizedBox(height: 6),
-                            Text("Get an instant AI-powered skin analysis.",
-                                style: TextStyle(
-                                    fontSize: 14, color: Color(0xFF6D6D6D))),
-                          ])
-                        : ClipRRect(
-                            borderRadius: BorderRadius.circular(15),
-                            child: Image.memory(_selectedImage!,
-                                fit: BoxFit.cover,
-                                height: 200,
-                                width: double.infinity),
-                          ),
-                  ],
-                ),
-              ),
+  color: const Color(0xFFF8F5F6),
+  borderRadius: BorderRadius.circular(8),
+  border: Border.all(color: Colors.grey.shade300),
+  boxShadow: [
+    BoxShadow(
+      color: Colors.black.withOpacity(0.03),
+      blurRadius: 4,
+      offset: const Offset(0, 2),
+    ),
+  ],
+),
+
+               child: SizedBox(
+  width: double.infinity,
+  child: Column(
+    mainAxisAlignment: MainAxisAlignment.center,
+    crossAxisAlignment: CrossAxisAlignment.center,
+    children: [
+     // TOP CONTAINER UI
+// TOP BOX
+if (_selectedImage != null)
+  ClipRRect(
+    borderRadius: BorderRadius.circular(8),
+    child: Image.memory(
+      _selectedImage!,
+      height: 200,
+      width: double.infinity,
+      fit: BoxFit.cover,
+    ),
+  )
+else
+  Column(
+    mainAxisAlignment: MainAxisAlignment.center,
+    children: const [
+      Icon(Icons.camera_alt_rounded,
+          size: 50, color: Color(0xFF9D5C7D)),
+      SizedBox(height: 12),
+      Text(
+        "Click Here",
+        style: TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.w700,
+          color: Colors.black,
+        ),
+      ),
+      SizedBox(height: 6),
+      Text(
+        "Get an instant AI-powered skin analysis.",
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          fontSize: 13,
+          color: Color(0xFF6D6D6D),
+        ),
+      ),
+    ],
+  )
+
+
+    ],
+  ),
+),
+             ),
             ),
             if (_selectedImage != null) ...[
               const SizedBox(height: 20),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  ElevatedButton(
-                    onPressed:
-                        (!_modelReady || _isLoading) ? null : _analyzeImage,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF9D5C7D),
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 12, horizontal: 30),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    child: _isLoading
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                              strokeWidth: 2.5,
-                            ),
-                          )
-                        : const Text("Analyze Now",
-                            style:
-                                TextStyle(color: Colors.white, fontSize: 15)),
-                  ),
                   const SizedBox(width: 12),
-                  InkWell(
-                    onTap: _pickImage,
-                    borderRadius: BorderRadius.circular(10),
-                    child: Container(
-                      width: 46,
-                      height: 46,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        border: Border.all(
-                            color: const Color(0xFF9D5C7D), width: 1.8),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: const Icon(Icons.refresh_rounded,
-                          color: Color(0xFF9D5C7D), size: 26),
-                    ),
-                  ),
+              SizedBox(
+  width: 140,
+  child: ElevatedButton(
+    onPressed: _pickImage,
+    style: ElevatedButton.styleFrom(
+      backgroundColor: const Color(0xFF9D5C7D), // your purple
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
+      ),
+      padding: const EdgeInsets.symmetric(vertical: 12),
+    ),
+    child: const Text(
+      "Re-upload",
+      style: TextStyle(
+        fontFamily: 'Inter',
+        color: Colors.white,
+        fontSize: 15,
+        fontWeight: FontWeight.w600,
+      ),
+    ),
+  ),
+)
+
                 ],
               ),
             ],
@@ -403,67 +524,94 @@ class _AiSkinAnalysisPageState extends State<AiSkinAnalysisPage> {
                     fontWeight: FontWeight.w700,
                     color: Colors.black)),
             const SizedBox(height: 14),
-            if (_prediction != null)
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(vertical: 18, horizontal: 16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(15),
-                  border: Border.all(color: const Color(0xFFE8D8E0)),
+        if (_latestValidPrediction != null && _latestValidImage != null)
+  Container(
+    padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 16),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(8),
+      border: Border.all(color: Colors.grey.shade300),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withOpacity(0.03),
+          blurRadius: 4,
+          offset: Offset(0, 2),
+        ),
+      ],
+    ),
+    child: Row(
+      children: [
+        ClipRRect(
+          borderRadius: BorderRadius.circular(8),
+          child: Image.memory(
+            _latestValidImage!,
+            width: 80,
+            height: 80,
+            fit: BoxFit.cover,
+          ),
+        ),
+        const SizedBox(width: 14),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                _latestValidPrediction!,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 16,
+                  color: Colors.black,
                 ),
-                child: Row(children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(10),
-                    child: Image.memory(_selectedImage!,
-                        width: 80, height: 80, fit: BoxFit.cover),
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(_prediction!,
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 16,
-                                  color: Colors.black)),
-                          const SizedBox(height: 6),
-                          const Text("Recommended care tips:",
-                              style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                  color: Color(0xFF6D6D6D))),
-                          const SizedBox(height: 4),
-                          ..._getTipsForDisease(_prediction!).map((tip) => Row(
-                                children: [
-                                  Container(
-                                    width: 18,
-                                    height: 18,
-                                    margin: const EdgeInsets.only(right: 6),
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      border: Border.all(
-                                          color: const Color(0xFFD1B6C8),
-                                          width: 2),
-                                    ),
-                                    child: const Center(
-                                        child: Icon(Icons.check,
-                                            size: 11,
-                                            color: Color(0xFF9D5C7D))),
-                                  ),
-                                  Expanded(
-                                      child: Text(tip,
-                                          style: const TextStyle(
-                                              fontSize: 13.5,
-                                              color: Color(0xFF5A5A5A)))),
-                                ],
-                              )),
-                        ]),
-                  ),
-                ]),
               ),
-            const SizedBox(height: 30),
+              const SizedBox(height: 6),
+              const Text(
+                "Recommended care tips:",
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF6D6D6D),
+                ),
+              ),
+              const SizedBox(height: 4),
+              ..._getTipsForDisease(_latestValidPrediction!).map(
+                (tip) => Row(
+                  children: [
+                    Container(
+                      width: 18,
+                      height: 18,
+                      margin: const EdgeInsets.only(right: 6),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border:
+                            Border.all(color: const Color(0xFFD1B6C8), width: 2),
+                      ),
+                      child: const Center(
+                        child: Icon(
+                          Icons.check,
+                          size: 11,
+                          color: Color(0xFF9D5C7D),
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: Text(
+                        tip,
+                        style: const TextStyle(
+                          fontSize: 13,
+                          color: Color(0xFF5A5A5A),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    ),
+  ),
+           const SizedBox(height: 30),
             const Text("Analysis History",
                 style: TextStyle(
                     fontSize: 18,
@@ -477,7 +625,7 @@ class _AiSkinAnalysisPageState extends State<AiSkinAnalysisPage> {
                       child: Text(
                         "No previous analyses yet.",
                         style:
-                            TextStyle(color: Color(0xFF9D5C7D), fontSize: 14),
+                            TextStyle(color: Colors.black54, fontSize: 13),
                       ),
                     )
                   : ListView.builder(
@@ -488,43 +636,49 @@ class _AiSkinAnalysisPageState extends State<AiSkinAnalysisPage> {
                         final imgBytes = base64Decode(item['image']);
                         final date = DateTime.parse(item['date']);
                         return Container(
-                          width: 125,
-                          margin: const EdgeInsets.only(right: 10),
-                          child: Stack(
-                            alignment: Alignment.bottomLeft,
-                            children: [
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(12),
-                                child: Image.memory(
-                                  imgBytes,
-                                  width: 125,
-                                  height: 130,
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                              Container(
-                                width: double.infinity,
-                                padding: const EdgeInsets.all(6),
-                                decoration: BoxDecoration(
-                                  borderRadius: const BorderRadius.only(
-                                    bottomLeft: Radius.circular(12),
-                                    bottomRight: Radius.circular(12),
-                                  ),
-                                  color: Colors.black.withOpacity(0.35),
-                                ),
-                                child: Text(
-                                  "${item['label']}\n${date.toLocal().toString().split(' ')[0]}",
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
+  width: 125,
+  margin: const EdgeInsets.only(right: 10),
+  decoration: BoxDecoration(
+    color: Colors.white,
+    borderRadius: BorderRadius.circular(8),
+    border: Border.all(color: Colors.grey.shade300),
+    boxShadow: [
+      BoxShadow(
+        color: Colors.black.withOpacity(0.03),
+        blurRadius: 4,
+        offset: Offset(0, 2),
+      ),
+    ],
+  ),
+  child: ClipRRect(
+    borderRadius: BorderRadius.circular(8),
+    child: Stack(
+      alignment: Alignment.bottomLeft,
+      children: [
+        Image.memory(
+          imgBytes,
+          width: 125,
+          height: 130,
+          fit: BoxFit.cover,
+        ),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(6),
+          color: Colors.black.withOpacity(0.35),
+          child: Text(
+            "${item['label']}\n${date.toLocal().toString().split(' ')[0]}",
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+      ],
+    ),
+  ),
+);
+                     },
                     ),
             ),
           ],

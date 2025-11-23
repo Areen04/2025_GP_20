@@ -37,6 +37,22 @@ class _ChildDashboardState extends State<ChildDashboard> {
   String? childAge;
   String? updatedImageUrl;
   bool _loading = true;
+  final List<GlobalKey> _ageKeys = List.generate(12, (_) => GlobalKey());
+
+int getAgeIndex(int totalMonths) {
+  if (totalMonths <= 2) return 0;
+  if (totalMonths <= 4) return 1;
+  if (totalMonths <= 6) return 2;
+  if (totalMonths <= 9) return 3;
+  if (totalMonths <= 12) return 4;
+  if (totalMonths <= 15) return 5;
+  if (totalMonths <= 18) return 6;
+  if (totalMonths <= 24) return 7;
+  if (totalMonths <= 30) return 8;
+  if (totalMonths <= 36) return 9;
+  if (totalMonths <= 48) return 10;
+  return 11;
+}
 
   @override
   void initState() {
@@ -44,64 +60,96 @@ class _ChildDashboardState extends State<ChildDashboard> {
     _loadChildData();
   }
 
-  Future<void> _loadChildData() async {
-    try {
-      final uid = FirebaseAuth.instance.currentUser?.uid;
-      final doc = await FirebaseFirestore.instance
-          .collection('parents')
-          .doc(uid)
-          .collection('children')
-          .doc(widget.childId)
-          .get();
+Future<void> _loadChildData() async {
+  try {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    final doc = await FirebaseFirestore.instance
+        .collection('parents')
+        .doc(uid)
+        .collection('children')
+        .doc(widget.childId)
+        .get();
 
-      if (doc.exists) {
-        DateTime? birthDate;
-        final data = doc.data()!;
-        final newImage = data['imageUrl'];
+    if (doc.exists) {
+      DateTime? birthDate;
+      final data = doc.data()!;
+      final newImage = data['imageUrl'];
 
-        if (data['birthDate'] is Timestamp) {
-          birthDate = (data['birthDate'] as Timestamp).toDate();
-        } else if (data['birthDate'] is String) {
-          birthDate = DateTime.tryParse(data['birthDate']);
+      if (data['birthDate'] is Timestamp) {
+        birthDate = (data['birthDate'] as Timestamp).toDate();
+      } else if (data['birthDate'] is String) {
+        birthDate = DateTime.tryParse(data['birthDate']);
+      }
+
+      setState(() {
+        updatedImageUrl = newImage ?? widget.imageUrl;
+
+        if (birthDate != null) {
+          // 🔥 NEW improved age calculator
+          final ageData = _calculateAge(birthDate);
+
+          int totalMonths = ageData["totalMonths"];  
+          childAge = ageData["display"];              // pretty text for UI
+
+          // 🔥 Auto-select correct milestone index
+          int index = getAgeIndex(totalMonths);
+          selectedIndex = index;
+          viewIndex = index;
+
+        } else {
+          childAge = "Unknown";
         }
 
-        setState(() {
-          updatedImageUrl = newImage ?? widget.imageUrl;
-          if (birthDate != null) {
-            childAge = _calculateAge(birthDate);
-          } else {
-            childAge = "Unknown";
-          }
-          _loading = false;
-        });
-      } else {
-        setState(() {
-          childAge = "Unknown";
-          _loading = false;
-        });
-      }
-    } catch (e) {
+        _loading = false;
+      });
+    } else {
       setState(() {
         childAge = "Unknown";
         _loading = false;
       });
     }
+  } catch (e) {
+    setState(() {
+      childAge = "Unknown";
+      _loading = false;
+    });
   }
 
-  String _calculateAge(DateTime birthDate) {
-    final now = DateTime.now();
-    int years = now.year - birthDate.year;
-    int months = now.month - birthDate.month;
+  // 🔥 Center the selected age after layout is built
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    _scrollToIndex(selectedIndex);
+  });
+}
 
-    if (months < 0) {
-      years--;
-      months += 12;
-    }
+ Map<String, dynamic> _calculateAge(DateTime birthDate) {
+  final now = DateTime.now();
 
-    if (years == 0) return "$months months";
-    if (months == 0) return "$years years";
-    return "$years years, $months months";
+  int years = now.year - birthDate.year;
+  int months = now.month - birthDate.month;
+
+  if (months < 0) {
+    years--;
+    months += 12;
   }
+
+  int totalMonths = years * 12 + months;
+
+  // Pretty string
+  String displayText;
+
+  if (years == 0) {
+    displayText = "$months months";
+  } else if (months == 0) {
+    displayText = "$years years";
+  } else {
+    displayText = "$years years, $months months";
+  }
+
+  return {
+    "totalMonths": totalMonths,
+    "display": displayText,
+  };
+}
 
   final List<String> ages = [
     '2M',
@@ -123,27 +171,69 @@ class _ChildDashboardState extends State<ChildDashboard> {
   final ScrollController _scrollController = ScrollController();
 
   void nextAge() {
-    if (viewIndex < ages.length - 1) {
-      setState(() => viewIndex++);
-      _scrollToIndex(viewIndex);
-    }
+  if (viewIndex < ages.length - 1) {
+    setState(() {
+      viewIndex++;
+      selectedIndex = viewIndex;   // 🔥 update pink indicator & content
+    });
+    _scrollToIndex(viewIndex);
   }
+}
 
-  void previousAge() {
-    if (viewIndex > 0) {
-      setState(() => viewIndex--);
-      _scrollToIndex(viewIndex);
-    }
+void previousAge() {
+  if (viewIndex > 0) {
+    setState(() {
+      viewIndex--;
+      selectedIndex = viewIndex;   // 🔥 update pink indicator & content
+    });
+    _scrollToIndex(viewIndex);
   }
+}
 
-  void _scrollToIndex(int index) {
-    final position = index * 45.0;
-    _scrollController.animateTo(
-      position,
-      duration: const Duration(milliseconds: 400),
-      curve: Curves.easeInOut,
-    );
-  }
+
+ void _scrollToIndex(int index) {
+  // Run after render to measure item sizes
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    if (_scrollController.hasClients) {
+      try {
+        // Find the RenderBox of the item at this index
+        final key = _ageKeys[index];
+        final context = key.currentContext;
+
+        if (context == null) return;
+
+        final box = context.findRenderObject() as RenderBox;
+        final itemWidth = box.size.width;
+
+        final itemOffset = box.localToGlobal(Offset.zero, ancestor: context.findAncestorRenderObjectOfType<RenderBox>()).dx;
+
+        final screenWidth = MediaQuery.of(context).size.width;
+
+        // Center calculation
+        final targetOffset = itemOffset + (itemWidth / 2) - (screenWidth / 2);
+
+        // Clamp to valid scroll bounds
+        final safeOffset = targetOffset.clamp(
+          0.0,
+          _scrollController.position.maxScrollExtent,
+        );
+
+        _scrollController.animateTo(
+          safeOffset,
+          duration: const Duration(milliseconds: 350),
+          curve: Curves.easeInOut,
+        );
+      } catch (e) {
+        // Fallback: smooth scroll using index * 45
+        _scrollController.animateTo(
+          index * 45.0,
+          duration: const Duration(milliseconds: 350),
+          curve: Curves.easeInOut,
+        );
+      }
+    }
+  });
+}
 
   void selectAge(int index) {
     setState(() => selectedIndex = index);
@@ -159,29 +249,47 @@ class _ChildDashboardState extends State<ChildDashboard> {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0.8,
-        leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back_ios_new_rounded,
-            color: Color(0xFF9D5C7D),
-            size: 20,
-          ),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: Text(
-          widget.childName,
-          style: const TextStyle(
-            color: Colors.black,
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-            fontFamily: 'Inter',
-          ),
-        ),
-        centerTitle: true,
+     appBar: PreferredSize(
+  preferredSize: const Size.fromHeight(70),
+  child: AppBar(
+    backgroundColor: Colors.white,
+    elevation: 0,
+    surfaceTintColor: Colors.white,
+    centerTitle: true,
+
+    title: Text(
+      widget.childName,
+      style: const TextStyle(
+        fontFamily: 'Inter',
+        fontWeight: FontWeight.w600,
+        fontSize: 20,
+        color: Colors.black87,
       ),
-      body: SingleChildScrollView(
+    ),
+
+    leading: IconButton(
+      icon: const Icon(
+        Icons.arrow_back_ios_new_rounded,
+        color: Color(0xFF9D5C7D),
+        size: 23, // ← bigger like the EditProfile header
+      ),
+      onPressed: () => Navigator.pop(context),
+    ),
+
+    actions: const [
+      SizedBox(width: 18), // same spacing as EditProfile
+    ],
+
+    bottom: PreferredSize(
+      preferredSize: const Size.fromHeight(1),
+      child: Container(
+        height: 1,
+        color: const Color(0xFFE0E0E0),
+      ),
+    ),
+  ),
+),
+   body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 25),
         child: Column(
           children: [
@@ -190,17 +298,10 @@ class _ChildDashboardState extends State<ChildDashboard> {
               width: double.infinity,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               decoration: BoxDecoration(
-                color: const Color(0xFFFDFBFB),
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 4,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Row(
+  color: const Color(0xFFF8F5F6),
+  borderRadius: BorderRadius.circular(8),
+),
+   child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Row(
@@ -221,7 +322,7 @@ class _ChildDashboardState extends State<ChildDashboard> {
                           Text(
                             widget.childName,
                             style: const TextStyle(
-                              fontSize: 17,
+                              fontSize: 18,
                               fontWeight: FontWeight.w600,
                               color: Colors.black,
                               fontFamily: 'Inter',
@@ -253,8 +354,8 @@ class _ChildDashboardState extends State<ChildDashboard> {
                     width: 38,
                     height: 38,
                     decoration: BoxDecoration(
-                      color: const Color(0xFFF8F1F4),
-                      borderRadius: BorderRadius.circular(12),
+                      color: const Color.fromARGB(255, 255, 255, 255),
+                      borderRadius: BorderRadius.circular(20),
                     ),
                     child: const Icon(
                       Icons.qr_code_2_outlined,
@@ -272,25 +373,19 @@ class _ChildDashboardState extends State<ChildDashboard> {
             Container(
               width: double.infinity,
               padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 22),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(18),
-                border: Border.all(color: const Color(0xFFF2E6EB), width: 1),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.03),
-                    blurRadius: 5,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
+          decoration: BoxDecoration(
+  color: Colors.white,
+  borderRadius: BorderRadius.circular(8),
+  border: Border.all(color: Colors.grey.shade300),
+),
+
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
                     "Health Journey",
                     style: TextStyle(
-                      fontSize: 17,
+                      fontSize: 18,
                       fontWeight: FontWeight.w700,
                       color: Colors.black,
                       fontFamily: 'Inter',
@@ -308,57 +403,52 @@ class _ChildDashboardState extends State<ChildDashboard> {
                       Expanded(
                         child: Column(
                           children: [
-                            SingleChildScrollView(
-                              controller: _scrollController,
-                              scrollDirection: Axis.horizontal,
-                              physics: const BouncingScrollPhysics(),
-                              child: Row(
-                                children: ages.asMap().entries.map((entry) {
-                                  final index = entry.key;
-                                  final age = entry.value;
-                                  final isSelected = index == selectedIndex;
+                           SingleChildScrollView(
+  controller: _scrollController,
+  scrollDirection: Axis.horizontal,
+  physics: const NeverScrollableScrollPhysics(), // ❌ disables swiping
+child: Row(
+  children: ages.asMap().entries.map((entry) {
+    final index = entry.key;
+    final age = entry.value;
+    final isSelected = index == selectedIndex;
 
-                                  return GestureDetector(
-                                    onTap: () => selectAge(index),
-                                    child: AnimatedContainer(
-                                      duration:
-                                          const Duration(milliseconds: 250),
-                                      margin: const EdgeInsets.symmetric(
-                                          horizontal: 6),
-                                      padding: EdgeInsets.symmetric(
-                                        horizontal: 8,
-                                        vertical: isSelected ? 4 : 2,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: isSelected
-                                            ? const Color(0xFFC9A2B8)
-                                            : Colors.transparent,
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
-                                      child: Text(
-                                        age,
-                                        style: TextStyle(
-                                          color: isSelected
-                                              ? Colors.white
-                                              : const Color(0xFF5E5E5E),
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.w600,
-                                          fontFamily: 'Inter',
-                                        ),
-                                      ),
-                                    ),
-                                  );
-                                }).toList(),
-                              ),
-                            ),
-                            const SizedBox(height: 14),
+    return Container(
+      key: _ageKeys[index],   // 🔥 THIS must wrap the item
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 250),
+        margin: const EdgeInsets.symmetric(horizontal: 6),
+        padding: EdgeInsets.symmetric(
+          horizontal: 8,
+          vertical: isSelected ? 4 : 2,
+        ),
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFFC9A2B8) : Colors.transparent,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Text(
+          age,
+          style: TextStyle(
+            color:
+                isSelected ? Colors.white : const Color(0xFF5E5E5E),
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            fontFamily: 'Inter',
+          ),
+        ),
+      ),
+    );
+  }).toList(),
+),
+),
+                           const SizedBox(height: 14),
                             Stack(
                               children: [
                                 Container(
                                   height: 8,
                                   decoration: BoxDecoration(
                                     color: const Color(0xFFF2F2F2),
-                                    borderRadius: BorderRadius.circular(10),
+                                    borderRadius: BorderRadius.circular(8),
                                   ),
                                 ),
                                 FractionallySizedBox(
@@ -373,7 +463,7 @@ class _ChildDashboardState extends State<ChildDashboard> {
                                           Color(0xFFC9A2B8),
                                         ],
                                       ),
-                                      borderRadius: BorderRadius.circular(10),
+                                      borderRadius: BorderRadius.circular(8),
                                     ),
                                   ),
                                 ),
@@ -654,17 +744,18 @@ class _DashboardCard extends StatelessWidget {
           vertical: padding + 6,
         ),
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0xFFF2E6EB), width: 1),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.04),
-              blurRadius: 5,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
+  color: Colors.white,
+  borderRadius: BorderRadius.circular(8),
+  border: Border.all(color: Colors.grey.shade300),
+  boxShadow: [
+    BoxShadow(
+      color: Colors.black.withOpacity(0.03),
+      blurRadius: 4,
+      offset: const Offset(0, 2),
+    ),
+  ],
+),
+
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [

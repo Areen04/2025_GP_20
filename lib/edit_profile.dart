@@ -13,8 +13,17 @@ class EditProfile extends StatefulWidget {
 class _EditProfileState extends State<EditProfile> {
   final _auth = FirebaseAuth.instance;
   final _firestore = FirebaseFirestore.instance;
+
   final _nameController = TextEditingController();
+  final _nameFocus = FocusNode();
+
   bool _isLoading = true;
+  bool _isSaving = false;
+
+  String? _originalName;
+  bool _hasChanges = false;
+  bool _hasInteracted = false;
+  bool _isNameValid = false;
 
   @override
   void initState() {
@@ -22,23 +31,75 @@ class _EditProfileState extends State<EditProfile> {
     _loadProfile();
   }
 
-  Future<void> _loadProfile() async {
-    final user = _auth.currentUser;
-    if (user == null) return;
+  @override
+  void dispose() {
+    _nameFocus.dispose();
+    super.dispose();
+  }
 
-    try {
-      final doc = await _firestore.collection('parents').doc(user.uid).get();
-      if (doc.exists) {
-        final data = doc.data()!;
-        _nameController.text = data['fullName'] ?? '';
+Future<void> _loadProfile() async {
+  final user = _auth.currentUser;
+  if (user == null) return;
+
+  try {
+    // 1) Try parents collection
+    final parentDoc =
+        await _firestore.collection('parents').doc(user.uid).get();
+
+    if (parentDoc.exists) {
+      _nameController.text = parentDoc['fullName'] ?? '';
+      _originalName = parentDoc['fullName'] ?? '';
+    } else {
+      // 2) If not parent → try users collection (for doctors)
+      final doctorDoc =
+          await _firestore.collection('users').doc(user.uid).get();
+
+      if (doctorDoc.exists) {
+        _nameController.text = doctorDoc['fullName'] ?? '';
+        _originalName = doctorDoc['fullName'] ?? '';
       } else {
+        // 3) Fallback to FirebaseAuth displayName
         _nameController.text = user.displayName ?? '';
+        _originalName = user.displayName ?? '';
       }
-    } catch (e) {
-      _showSnackBar("Error loading profile: $e", isError: true);
+    }
+  } catch (e) {
+    _showSnackBar("Error loading profile: $e", isError: true);
+  }
+
+  setState(() {
+    _isLoading = false;
+    _isNameValid = _nameController.text.trim().length >= 2;
+  });
+}
+
+  OutlineInputBorder _border(Color color) => OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: BorderSide(color: color, width: 1.5),
+      );
+
+  Color _getColor(
+    bool valid,
+    TextEditingController controller,
+    FocusNode focusNode,
+  ) {
+    final text = controller.text.trim();
+
+    if (!_hasInteracted) return Colors.grey;
+
+    if (focusNode.hasFocus && text.isEmpty) {
+      return const Color(0xFF9D5C7D);
     }
 
-    setState(() => _isLoading = false);
+    if (text.isEmpty) return Colors.grey;
+
+    if (valid && text == _originalName) {
+      return const Color(0xFF9D5C7D);
+    }
+
+    if (valid) return const Color(0xFF9D5C7D);
+
+    return Colors.red;
   }
 
   Future<void> _updateProfile() async {
@@ -46,12 +107,13 @@ class _EditProfileState extends State<EditProfile> {
     if (user == null) return;
 
     final newName = _nameController.text.trim();
+
     if (newName.isEmpty) {
       _showSnackBar("Name cannot be empty", isError: true);
       return;
     }
 
-    setState(() => _isLoading = true);
+    setState(() => _isSaving = true);
 
     try {
       await user.updateDisplayName(newName);
@@ -69,30 +131,46 @@ class _EditProfileState extends State<EditProfile> {
       }, SetOptions(merge: true));
 
       _showSnackBar("Profile updated successfully");
+
+      _originalName = newName;
+      _hasChanges = false;
     } catch (e) {
       _showSnackBar("Error updating profile: $e", isError: true);
     }
 
-    setState(() => _isLoading = false);
+    setState(() => _isSaving = false);
   }
 
   Future<void> _showResetPasswordDialog() async {
-    final email = _auth.currentUser?.email ?? "";
-    final controller = TextEditingController(text: email);
+  final email = _auth.currentUser?.email ?? "";
 
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text("Reset Password"),
-        content: TextField(
-          controller: controller,
-          decoration: const InputDecoration(
-            labelText: "Enter your email",
-            prefixIcon: Icon(Icons.email_outlined),
+  showDialog(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        title: const Text(
+          "Reset Password",
+          style: TextStyle(
+            fontFamily: 'Inter',
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF9D5C7D),
+          ),
+        ),
+        content: Text(
+          "A password reset link will be sent to:\n$email\nPress Send to continue.",
+          style: const TextStyle(
+            fontFamily: 'Inter',
+            color: Colors.black87,
+            height: 1.4,
           ),
         ),
         actions: [
           TextButton(
+            style: TextButton.styleFrom(
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8)),
+            ),
             onPressed: () => Navigator.pop(context),
             child: const Text("Cancel"),
           ),
@@ -101,15 +179,15 @@ class _EditProfileState extends State<EditProfile> {
               backgroundColor: Colors.white,
               foregroundColor: const Color(0xFF9D5C7D),
               side: const BorderSide(color: Color(0xFF9D5C7D)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8)),
             ),
             onPressed: () async {
               try {
-                await _auth.sendPasswordResetEmail(
-                    email: controller.text.trim());
+                await _auth.sendPasswordResetEmail(email: email);
                 if (!mounted) return;
                 Navigator.pop(context);
-                _showSnackBar(
-                    "Reset link sent to ${controller.text.trim()}");
+                _showSnackBar("Password reset link sent to $email");
               } catch (e) {
                 _showSnackBar("Error: $e", isError: true);
               }
@@ -117,32 +195,52 @@ class _EditProfileState extends State<EditProfile> {
             child: const Text("Send"),
           ),
         ],
-      ),
-    );
-  }
+      );
+    },
+  );
+}
 
-  Future<void> _confirmAction({
-    required String title,
-    required String message,
-    required Future<void> Function() onConfirm,
-  }) async {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(title,
-            style: const TextStyle(fontWeight: FontWeight.w600)),
-        content: Text(message),
+ Future<void> _confirmAction({
+  required String title,
+  required String message,
+  required Future<void> Function() onConfirm,
+}) async {
+  showDialog(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        title: Text(
+          title,
+          style: const TextStyle(
+            fontFamily: 'Inter',
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF9D5C7D),
+          ),
+        ),
+        content: Text(
+          message,
+          style: const TextStyle(
+            fontFamily: 'Inter',
+            color: Colors.black87,
+          ),
+        ),
         actions: [
           TextButton(
+            style: TextButton.styleFrom(
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8)),
+            ),
             onPressed: () => Navigator.pop(context),
-            child: const Text("Cancel",
-                style: TextStyle(color: Colors.black87)),
+            child: const Text("Cancel"),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.white,
               foregroundColor: const Color(0xFF9D5C7D),
               side: const BorderSide(color: Color(0xFF9D5C7D)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8)),
             ),
             onPressed: () async {
               Navigator.pop(context);
@@ -151,15 +249,15 @@ class _EditProfileState extends State<EditProfile> {
             child: const Text("Yes"),
           ),
         ],
-      ),
-    );
-  }
+      );
+    },
+  );
+}
 
   Future<void> _deleteAccount() async {
     await _confirmAction(
       title: "Delete Account",
-      message:
-      "Are you sure you want to delete your account permanently?",
+      message: "Are you sure you want to delete your account permanently?",
       onConfirm: () async {
         final user = _auth.currentUser;
         if (user == null) return;
@@ -173,7 +271,7 @@ class _EditProfileState extends State<EditProfile> {
           Navigator.pushAndRemoveUntil(
             context,
             MaterialPageRoute(builder: (_) => const LoginScreen()),
-                (route) => false,
+            (route) => false,
           );
         } catch (e) {
           _showSnackBar("Error deleting account: $e", isError: true);
@@ -192,7 +290,7 @@ class _EditProfileState extends State<EditProfile> {
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (_) => const LoginScreen()),
-              (route) => false,
+          (route) => false,
         );
       },
     );
@@ -207,7 +305,7 @@ class _EditProfileState extends State<EditProfile> {
               color: Colors.white, fontWeight: FontWeight.w500),
         ),
         backgroundColor:
-        isError ? Colors.redAccent : const Color(0xFF9D5C7D),
+            isError ? Colors.redAccent : const Color(0xFF9D5C7D),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
@@ -230,79 +328,148 @@ class _EditProfileState extends State<EditProfile> {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black87),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text(
-          "Settings",
-          style: TextStyle(
-            color: Colors.black87,
-            fontWeight: FontWeight.w600,
+
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(70),
+        child: AppBar(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          surfaceTintColor: Colors.white,
+          centerTitle: true,
+
+          title: const Text(
+            "Settings",
+            style: TextStyle(
+              fontFamily: 'Inter',
+              fontWeight: FontWeight.w600,
+              fontSize: 20,
+              color: Colors.black87,
+            ),
           ),
-        ),
-        centerTitle: true,
-        actions: [
-          GestureDetector(
-            onTap: _logout,
-            child: const Padding(
-              padding: EdgeInsets.only(right: 16),
-              child: Text(
-                "Log out",
-                style: TextStyle(
-                  color: Colors.redAccent,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 16,
+
+          leading: IconButton(
+            icon: const Icon(
+              Icons.arrow_back_ios_new_rounded,
+              color: Color(0xFF9D5C7D),
+            ),
+            onPressed: () => Navigator.pop(context),
+          ),
+
+          actions: [
+            GestureDetector(
+              onTap: _logout,
+              child: const Padding(
+                padding: EdgeInsets.only(right: 18),
+                child: Text(
+                  "Log out",
+                  style: TextStyle(
+                    color: Colors.redAccent,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 16,
+                  ),
                 ),
               ),
             ),
+          ],
+
+          bottom: PreferredSize(
+            preferredSize: const Size.fromHeight(1),
+            child: Container(
+              height: 1,
+              color: const Color(0xFFE0E0E0),
+            ),
           ),
-        ],
+        ),
       ),
+
       body: SafeArea(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildLabel("Full Name"),
-              TextField(
-                controller: _nameController,
-                onChanged: (_) => setState(() {}),
-                decoration: _inputDecoration("Enter your full name"),
-              ),
-              const SizedBox(height: 20),
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
-                  onPressed: _nameController.text.trim().isEmpty
-                      ? null
-                      : _updateProfile,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: _nameController.text.trim().isEmpty
-                        ? Colors.grey.shade300
-                        : const Color(0xFF9D5C7D),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                  ),
-                  child: Text(
-                    "Save Changes",
-                    style: TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w600,
-                      color: _nameController.text.trim().isEmpty
-                          ? Colors.black38
-                          : Colors.white,
-                    ),
-                  ),
+              const SizedBox(height: 6),
+
+              // ---- LABEL ----
+              const Text(
+                "Full Name",
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
+              const SizedBox(height: 6),
+
+              // ---- TEXT FIELD (same as EditChild) ----
+              TextField(
+                controller: _nameController,
+                focusNode: _nameFocus,
+                onTap: () {
+                  setState(() => _hasInteracted = true);
+                },
+                onChanged: (_) {
+                  setState(() {
+                    _hasInteracted = true;
+                    _isNameValid =
+                        _nameController.text.trim().length >= 2;
+                    _hasChanges = _isNameValid &&
+                        _nameController.text.trim() != _originalName;
+                  });
+                },
+                decoration: InputDecoration(
+                  hintText: "Enter your full name",
+                  hintStyle: const TextStyle(color: Colors.black26),
+                  border: _border(Colors.grey),
+                  enabledBorder: _border(_getColor(
+                    _isNameValid,
+                    _nameController,
+                    _nameFocus,
+                  )),
+                  focusedBorder: _border(_getColor(
+                    _isNameValid,
+                    _nameController,
+                    _nameFocus,
+                  )),
+                ),
+              ),
+
+              const SizedBox(height: 40),
+
+              // ---- SAVE BUTTON ----
+              _isSaving
+                  ? const Center(
+                      child: CircularProgressIndicator(
+                        color: Color(0xFF9D5C7D),
+                      ),
+                    )
+                  : SizedBox(
+                      width: double.infinity,
+                      height: 56,
+                      child: ElevatedButton(
+                        onPressed: _hasChanges ? _updateProfile : null,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: _hasChanges
+                              ? const Color(0xFF9D5C7D)
+                              : Colors.grey.shade300,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        child: Text(
+                          "Save Changes",
+                          style: TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w600,
+                            color: _hasChanges
+                                ? Colors.white
+                                : Colors.black38,
+                          ),
+                        ),
+                      ),
+                    ),
+
               const SizedBox(height: 30),
+
               const Text(
                 "Account Actions",
                 style: TextStyle(
@@ -311,7 +478,9 @@ class _EditProfileState extends State<EditProfile> {
                   color: Colors.black87,
                 ),
               ),
+
               const SizedBox(height: 10),
+
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
@@ -338,7 +507,9 @@ class _EditProfileState extends State<EditProfile> {
                         ],
                       ),
                     ),
+
                     const SizedBox(height: 12),
+
                     GestureDetector(
                       onTap: _deleteAccount,
                       child: const Text(
@@ -354,30 +525,6 @@ class _EditProfileState extends State<EditProfile> {
               ),
             ],
           ),
-        ),
-      ),
-    );
-  }
-
-  InputDecoration _inputDecoration(String hint) {
-    return InputDecoration(
-      hintText: hint,
-      hintStyle: const TextStyle(color: Colors.black26),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-      ),
-    );
-  }
-
-  Widget _buildLabel(String text) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Text(
-        text,
-        style: const TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.w500,
-          color: Colors.black87,
         ),
       ),
     );
