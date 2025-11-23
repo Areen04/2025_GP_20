@@ -38,23 +38,26 @@ class _DevelopmentalMilestonesFourMonthState
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  // registry of all milestone cards (for video reset)
-  final List<_MilestoneCardState> _milestoneStates = [];
+  final ScrollController _scrollController = ScrollController();
 
-  void _resetAllVideos() {
-    for (var m in _milestoneStates) {
-      m.resetVideo();
-    }
+  /// 🔥 Same video coordination logic as 15-month page
+  final ValueNotifier<String?> activeVideo = ValueNotifier<String?>(null);
+
+  /// 🔥 Section scroll anchors
+  final Map<int, GlobalKey> _sectionKeys = {
+    0: GlobalKey(),
+    1: GlobalKey(),
+    2: GlobalKey(),
+    3: GlobalKey(),
+  };
+
+  @override
+  void initState() {
+    super.initState();
+    loadProgressFromFirebase();
   }
 
-  void updateProgress(bool isChecked) {
-    setState(() {
-      completedCount += isChecked ? 1 : -1;
-      if (completedCount < 0) completedCount = 0;
-      if (completedCount > totalMilestones) completedCount = totalMilestones;
-    });
-  }
-
+  // -------------------- LOAD CHECKBOXES --------------------
   Future<void> loadProgressFromFirebase() async {
     try {
       final user = _auth.currentUser;
@@ -70,17 +73,23 @@ class _DevelopmentalMilestonesFourMonthState
           .get();
 
       if (doc.exists) {
-        final data = doc.data()!;
-        int count = data.values.where((v) => v == true).length;
+        int count = 0;
+        doc.data()!.forEach((key, value) {
+          if (value == true) count++;
+        });
+
         setState(() => completedCount = count);
       }
     } catch (_) {}
   }
 
-  @override
-  void initState() {
-    super.initState();
-    loadProgressFromFirebase();
+  void updateProgress(bool isChecked) {
+    setState(() {
+      completedCount += isChecked ? 1 : -1;
+
+      if (completedCount < 0) completedCount = 0;
+      if (completedCount > totalMilestones) completedCount = totalMilestones;
+    });
   }
 
   @override
@@ -88,55 +97,53 @@ class _DevelopmentalMilestonesFourMonthState
     final progress = completedCount / totalMilestones;
 
     return Scaffold(
-     appBar: PreferredSize(
-  preferredSize: const Size.fromHeight(70),
-  child: AppBar(
-    backgroundColor: Colors.white,
-    elevation: 0,
-    surfaceTintColor: Colors.white,
-    centerTitle: true,
-    title: const Text(
-      "Developmental Milestones",
-      style: TextStyle(
-        fontFamily: 'Inter',
-        fontWeight: FontWeight.w600,
-        fontSize: 20,
-        color: Colors.black87,
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(70),
+        child: AppBar(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          surfaceTintColor: Colors.transparent,
+          centerTitle: true,
+          title: const Text(
+            "Developmental Milestones",
+            style: TextStyle(
+              fontFamily: 'Inter',
+              fontWeight: FontWeight.w600,
+              fontSize: 20,
+              color: Colors.black87,
+            ),
+          ),
+          leading: IconButton(
+            icon: const Icon(
+              Icons.arrow_back_ios_new_rounded,
+              color: Color(0xFF9D5C7D),
+              size: 23,
+            ),
+            onPressed: () => Navigator.pop(context),
+          ),
+          bottom: PreferredSize(
+            preferredSize: const Size.fromHeight(1),
+            child: Container(
+              height: 1,
+              color: const Color(0xFFE0E0E0),
+            ),
+          ),
+        ),
       ),
-    ),
-    leading: IconButton(
-      icon: const Icon(
-        Icons.arrow_back_ios_new_rounded,
-        color: Color(0xFF9D5C7D),
-        size: 23,
-      ),
-      onPressed: () => Navigator.pop(context),
-    ),
-
-    // ⭐ EXACT SAME LINE AS 15-MONTH PAGE
-    bottom: PreferredSize(
-      preferredSize: const Size.fromHeight(1),
-      child: Container(
-        height: 1,
-        color: const Color(0xFFE0E0E0),
-      ),
-    ),
-  ),
-),
       body: SafeArea(
         child: Column(
           children: [
             Expanded(
               child: SingleChildScrollView(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                controller: _scrollController,
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _buildProgressCard(progress),
                     const SizedBox(height: 20),
 
-                    // ----------------- SOCIAL -----------------
+                    // ⭐ SOCIAL
                     _buildSection(
                       title: "Social & Emotional Milestones",
                       index: 0,
@@ -144,11 +151,10 @@ class _DevelopmentalMilestonesFourMonthState
                         _MilestoneCard(
                           title: "Smiles on his own to get your attention",
                           videoUrl: firebase('videos/4m_smiles_attention.mp4'),
-                          thumbUrl:
-                              firebase('images/4m_smiles_attention_thumb.jpg'),
+                          thumbUrl: firebase('images/4m_smiles_attention_thumb.jpg'),
                           childId: widget.childId,
                           onChecked: updateProgress,
-                          stateRegistry: _milestoneStates,
+                          notifier: activeVideo,
                         ),
                         _MilestoneCard(
                           title:
@@ -157,7 +163,7 @@ class _DevelopmentalMilestonesFourMonthState
                           thumbUrl: firebase('images/4m_chuckles_thumb.jpg'),
                           childId: widget.childId,
                           onChecked: updateProgress,
-                          stateRegistry: _milestoneStates,
+                          notifier: activeVideo,
                         ),
                         _MilestoneCard(
                           title:
@@ -168,12 +174,12 @@ class _DevelopmentalMilestonesFourMonthState
                               'images/4m_looks_moves_attention_thumb.jpg'),
                           childId: widget.childId,
                           onChecked: updateProgress,
-                          stateRegistry: _milestoneStates,
+                          notifier: activeVideo,
                         ),
                       ],
                     ),
 
-                    // ----------------- SPEECH -----------------
+                    // ⭐ SPEECH
                     _buildSection(
                       title: "Speech & Language",
                       index: 1,
@@ -184,7 +190,7 @@ class _DevelopmentalMilestonesFourMonthState
                           thumbUrl: firebase('images/4m_cooing_thumb.jpg'),
                           childId: widget.childId,
                           onChecked: updateProgress,
-                          stateRegistry: _milestoneStates,
+                          notifier: activeVideo,
                         ),
                         _MilestoneCard(
                           title: "Makes sounds back when you talk to her",
@@ -192,7 +198,7 @@ class _DevelopmentalMilestonesFourMonthState
                           thumbUrl: firebase('images/4m_talk_back_thumb.jpg'),
                           childId: widget.childId,
                           onChecked: updateProgress,
-                          stateRegistry: _milestoneStates,
+                          notifier: activeVideo,
                         ),
                         _MilestoneCard(
                           title: "Turns head towards sound of your voice",
@@ -200,12 +206,12 @@ class _DevelopmentalMilestonesFourMonthState
                           thumbUrl: firebase('images/4m_turns_head_thumb.jpg'),
                           childId: widget.childId,
                           onChecked: updateProgress,
-                          stateRegistry: _milestoneStates,
+                          notifier: activeVideo,
                         ),
                       ],
                     ),
 
-                    // ----------------- COGNITIVE -----------------
+                    // ⭐ COGNITIVE
                     _buildSection(
                       title: "Cognitive Development",
                       index: 2,
@@ -216,7 +222,7 @@ class _DevelopmentalMilestonesFourMonthState
                           imageUrl: firebase('images/4m_open_mouth_hungry.jpg'),
                           childId: widget.childId,
                           onChecked: updateProgress,
-                          stateRegistry: _milestoneStates,
+                          notifier: activeVideo,
                         ),
                         _MilestoneCard(
                           title: "Looks at hands with interest",
@@ -224,12 +230,12 @@ class _DevelopmentalMilestonesFourMonthState
                           thumbUrl: firebase('images/4m_looks_hands_thumb.jpg'),
                           childId: widget.childId,
                           onChecked: updateProgress,
-                          stateRegistry: _milestoneStates,
+                          notifier: activeVideo,
                         ),
                       ],
                     ),
 
-                    // ----------------- MOVEMENT -----------------
+                    // ⭐ MOVEMENT
                     _buildSection(
                       title: "Movement & Physical Development",
                       index: 3,
@@ -240,7 +246,7 @@ class _DevelopmentalMilestonesFourMonthState
                           thumbUrl: firebase('images/4m_hold_head_thumb.jpg'),
                           childId: widget.childId,
                           onChecked: updateProgress,
-                          stateRegistry: _milestoneStates,
+                          notifier: activeVideo,
                         ),
                         _MilestoneCard(
                           title: "Holds a toy when you put it in her hand",
@@ -248,7 +254,7 @@ class _DevelopmentalMilestonesFourMonthState
                           thumbUrl: firebase('images/4m_hold_toy_thumb.jpg'),
                           childId: widget.childId,
                           onChecked: updateProgress,
-                          stateRegistry: _milestoneStates,
+                          notifier: activeVideo,
                         ),
                         _MilestoneCard(
                           title: "Uses arm to swing at toys",
@@ -256,23 +262,23 @@ class _DevelopmentalMilestonesFourMonthState
                           thumbUrl: firebase('images/4m_swing_toys_thumb.jpg'),
                           childId: widget.childId,
                           onChecked: updateProgress,
-                          stateRegistry: _milestoneStates,
+                          notifier: activeVideo,
                         ),
                         _MilestoneCard(
                           title: "Brings hands to mouth",
                           videoUrl: firebase('videos/4m_hands_to_mouth.mp4'),
-                          thumbUrl:
-                              firebase('images/4m_hands_to_mouth_thumb.jpg'),
+                          thumbUrl: firebase('images/4m_hands_to_mouth_thumb.jpg'),
                           childId: widget.childId,
                           onChecked: updateProgress,
-                          stateRegistry: _milestoneStates,
+                          notifier: activeVideo,
                         ),
                         _MilestoneCard(
-                          title: "Pushes up onto elbows/forearms when on tummy",
+                          title:
+                              "Pushes up onto elbows/forearms when on tummy",
                           imageUrl: firebase('images/4m_push_elbows.jpg'),
                           childId: widget.childId,
                           onChecked: updateProgress,
-                          stateRegistry: _milestoneStates,
+                          notifier: activeVideo,
                         ),
                       ],
                     ),
@@ -286,9 +292,7 @@ class _DevelopmentalMilestonesFourMonthState
     );
   }
 
-  // ------------------------------------------------------------
-  //                      Progress Card
-  // ------------------------------------------------------------
+  // -------------------- PROGRESS CARD --------------------
   Widget _buildProgressCard(double progress) => Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
@@ -298,11 +302,13 @@ class _DevelopmentalMilestonesFourMonthState
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text("Overall Progress",
-                style: TextStyle(
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w700,
-                    fontSize: 18)),
+            const Text(
+              "Overall Progress",
+              style: TextStyle(
+                  fontFamily: 'Inter',
+                  fontWeight: FontWeight.w700,
+                  fontSize: 18),
+            ),
             const SizedBox(height: 6),
             Text(
               "$completedCount of $totalMilestones milestones complete",
@@ -319,22 +325,22 @@ class _DevelopmentalMilestonesFourMonthState
                 value: progress,
                 minHeight: 8,
                 backgroundColor: Colors.grey.withOpacity(0.3),
-                valueColor: const AlwaysStoppedAnimation(Color(0xFF9D5C7D)),
+                valueColor:
+                    const AlwaysStoppedAnimation(Color(0xFF9D5C7D)),
               ),
             ),
           ],
         ),
       );
 
-  // ------------------------------------------------------------
-  //                      Section Builder
-  // ------------------------------------------------------------
+  // -------------------- SECTION BUILDER --------------------
   Widget _buildSection({
     required String title,
     required int index,
     required List<Widget> milestones,
   }) =>
       Container(
+        key: _sectionKeys[index],
         margin: const EdgeInsets.only(bottom: 12),
         decoration: BoxDecoration(
           color: Colors.white,
@@ -344,16 +350,28 @@ class _DevelopmentalMilestonesFourMonthState
         child: Theme(
           data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
           child: ExpansionTile(
+            key: ValueKey("$index-${expandedIndex == index}"),
             initiallyExpanded: expandedIndex == index,
             onExpansionChanged: (isOpen) {
-              if (!isOpen) _resetAllVideos();
-              setState(() => expandedIndex = isOpen ? index : -1);
-            },
-            iconColor: const Color(0xFF9D5C7D),
+              if (isOpen) {
+                setState(() => expandedIndex = index);
 
-            // ⭐ CUSTOM ROTATING ARROW
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  Scrollable.ensureVisible(
+                    _sectionKeys[index]!.currentContext!,
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeInOut,
+                  );
+                });
+
+                activeVideo.value = null;
+              } else {
+                setState(() => expandedIndex = -1);
+                activeVideo.value = null;
+              }
+            },
             trailing: AnimatedRotation(
-              turns: expandedIndex == index ? 0.5 : 0,
+              turns: expandedIndex == index ? 0.5 : 0.0,
               duration: const Duration(milliseconds: 250),
               child: const Icon(
                 Icons.keyboard_arrow_down_rounded,
@@ -361,7 +379,6 @@ class _DevelopmentalMilestonesFourMonthState
                 color: Color(0xFF9D5C7D),
               ),
             ),
-
             title: Text(
               title,
               style: const TextStyle(
@@ -378,9 +395,9 @@ class _DevelopmentalMilestonesFourMonthState
       );
 }
 
-// #####################################################################
-//                 M I L E S T O N E   C A R D (v3-year style)
-// #####################################################################
+// ---------------------------------------------------------------------------
+// ⭐ Reusable Milestone Card (same logic as 15-month page)
+// ---------------------------------------------------------------------------
 
 class _MilestoneCard extends StatefulWidget {
   final String title;
@@ -389,7 +406,7 @@ class _MilestoneCard extends StatefulWidget {
   final String? thumbUrl;
   final Function(bool)? onChecked;
   final String childId;
-  final List<_MilestoneCardState> stateRegistry;
+  final ValueNotifier<String?> notifier;
 
   const _MilestoneCard({
     required this.title,
@@ -398,7 +415,7 @@ class _MilestoneCard extends StatefulWidget {
     this.thumbUrl,
     this.onChecked,
     required this.childId,
-    required this.stateRegistry,
+    required this.notifier,
   });
 
   @override
@@ -409,14 +426,14 @@ class _MilestoneCardState extends State<_MilestoneCard> {
   VideoPlayerController? _controller;
   bool isChecked = false;
   bool isPlaying = false;
-  bool isPaused = false;
   bool initialized = false;
+  bool isPaused = false;
 
   @override
   void initState() {
     super.initState();
-    widget.stateRegistry.add(this);
 
+    widget.notifier.addListener(_checkPause);
     _loadCheckboxState();
 
     if (widget.videoUrl != null) {
@@ -424,31 +441,37 @@ class _MilestoneCardState extends State<_MilestoneCard> {
           VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl!));
 
       _controller!.initialize().then((_) async {
-        // force first frame render
-        await _controller!.setLooping(true);
         await _controller!.play();
-        await Future.delayed(const Duration(milliseconds: 80));
+        await Future.delayed(const Duration(milliseconds: 250));
         await _controller!.pause();
+        await _controller!.seekTo(const Duration(milliseconds: 350));
 
-        setState(() {
-          initialized = true;
-          isPlaying = false;
-          isPaused = false;
-        });
-      });
-
-      _controller!.addListener(() {
-        if (_controller == null) return;
-        final finished =
-            _controller!.value.position >= _controller!.value.duration;
-
-        if (finished) {
+        if (mounted) {
           setState(() {
+            initialized = true;
             isPlaying = false;
             isPaused = false;
           });
-          _controller!.seekTo(Duration.zero);
+        }
+      });
+
+      _controller!.addListener(() {
+        if (!mounted) return;
+
+        final position = _controller!.value.position;
+        final duration = _controller!.value.duration;
+
+        if (duration.inMilliseconds > 0 &&
+            duration.inMilliseconds - position.inMilliseconds <= 150) {
           _controller!.pause();
+          _controller!.seekTo(const Duration(milliseconds: 350));
+
+          if (mounted) {
+            setState(() {
+              isPlaying = false;
+              isPaused = false;
+            });
+          }
         }
       });
     }
@@ -456,12 +479,20 @@ class _MilestoneCardState extends State<_MilestoneCard> {
 
   @override
   void dispose() {
-    widget.stateRegistry.remove(this);
+    widget.notifier.removeListener(_checkPause);
     _controller?.dispose();
     super.dispose();
   }
 
-  // ---------------- FIREBASE CHECKBOX ----------------
+  void _checkPause() {
+    if (widget.notifier.value != widget.title && isPlaying) {
+      _controller?.pause();
+      setState(() {
+        isPlaying = false;
+        isPaused = true;
+      });
+    }
+  }
 
   Future<void> _loadCheckboxState() async {
     try {
@@ -484,41 +515,75 @@ class _MilestoneCardState extends State<_MilestoneCard> {
   }
 
   Future<void> _saveCheckboxState(bool v) async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return;
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) return;
 
-    await FirebaseFirestore.instance
-        .collection('parents')
-        .doc(user.uid)
-        .collection('children')
-        .doc(widget.childId)
-        .collection('milestones')
-        .doc('4_months')
-        .set({widget.title: v}, SetOptions(merge: true));
+      await FirebaseFirestore.instance
+          .collection('parents')
+          .doc(user.uid)
+          .collection('children')
+          .doc(widget.childId)
+          .collection('milestones')
+          .doc('4_months')
+          .set({widget.title: v}, SetOptions(merge: true));
+    } catch (_) {}
   }
 
-  void pauseVideo() {
-    if (_controller != null && _controller!.value.isPlaying) {
-      _controller!.pause();
-    }
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey.shade300),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Checkbox(
+                activeColor: const Color(0xFF9D5C7D),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(5),
+                ),
+                value: isChecked,
+                onChanged: (v) {
+                  if (v == null) return;
+                  setState(() => isChecked = v);
+                  widget.onChecked?.call(v);
+                  _saveCheckboxState(v);
+                },
+              ),
+              Expanded(
+                child: Text(
+                  widget.title,
+                  style: const TextStyle(
+                    fontFamily: 'Inter',
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                  ),
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 12),
+
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: _buildMedia(),
+          ),
+        ],
+      ),
+    );
   }
 
-  void resetVideo() {
-    if (_controller != null) {
-      _controller!.pause();
-      _controller!.seekTo(Duration.zero);
-      setState(() {
-        isPlaying = false;
-        isPaused = false;
-      });
-    }
-  }
-
-  // ------------------------------------------------------------
-  //                     MEDIA BUILDER
-  // ------------------------------------------------------------
+  // -------------------- MEDIA BUILDER --------------------
   Widget _buildMedia() {
-    // IMAGE MILESTONE (no video)
     if (widget.videoUrl == null) {
       return SizedBox(
         height: 200,
@@ -530,7 +595,6 @@ class _MilestoneCardState extends State<_MilestoneCard> {
       );
     }
 
-    // VIDEO NOT READY YET
     if (!initialized) {
       return const SizedBox(
         height: 200,
@@ -538,7 +602,6 @@ class _MilestoneCardState extends State<_MilestoneCard> {
       );
     }
 
-    // VIDEO READY – always show frame
     return Stack(
       alignment: Alignment.center,
       children: [
@@ -548,15 +611,16 @@ class _MilestoneCardState extends State<_MilestoneCard> {
           child: VideoPlayer(_controller!),
         ),
 
-        // BEFORE PLAYING → SHOW PLAY ICON
-        if (!isPlaying && !isPaused)
+        // PLAY ICON
+        if (!isPlaying)
           IconButton(
             icon: Icon(
               Icons.play_circle_fill,
               size: 60,
-              color: Colors.white.withOpacity(0.6),
+              color: Colors.white.withOpacity(0.7),
             ),
             onPressed: () {
+              widget.notifier.value = widget.title;
               setState(() {
                 isPlaying = true;
                 isPaused = false;
@@ -565,24 +629,7 @@ class _MilestoneCardState extends State<_MilestoneCard> {
             },
           ),
 
-        // WHEN PAUSED → SHOW PLAY ICON AGAIN
-        if (isPaused)
-          IconButton(
-            icon: Icon(
-              Icons.play_circle_fill,
-              size: 60,
-              color: Colors.white.withOpacity(0.6),
-            ),
-            onPressed: () {
-              setState(() {
-                isPlaying = true;
-                isPaused = false;
-              });
-              _controller!.play();
-            },
-          ),
-
-        // WHEN PLAYING → TAP ANYWHERE TO PAUSE
+        // PAUSE ON TAP
         if (isPlaying)
           GestureDetector(
             onTap: () {
@@ -601,55 +648,4 @@ class _MilestoneCardState extends State<_MilestoneCard> {
       ],
     );
   }
-
-  // ------------------------------------------------------------
-  //                       CARD UI
-  // ------------------------------------------------------------
-  @override
-  Widget build(BuildContext context) => Container(
-        margin: const EdgeInsets.only(bottom: 16),
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: const Color(0xFFFFFFFF),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.grey.shade300),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Checkbox(
-                  activeColor: const Color(0xFF9D5C7D),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(5),
-                  ),
-                  value: isChecked,
-                  onChanged: (v) {
-                    if (v == null) return;
-                    setState(() => isChecked = v);
-                    widget.onChecked?.call(v);
-                    _saveCheckboxState(v);
-                  },
-                ),
-                Expanded(
-                  child: Text(
-                    widget.title,
-                    style: const TextStyle(
-                      fontFamily: 'Inter',
-                      fontWeight: FontWeight.w600,
-                      fontSize: 14,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: _buildMedia(),
-            ),
-          ],
-        ),
-      );
 }

@@ -35,6 +35,18 @@ class _DevelopmentalMilestones3yearState
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final ScrollController _scrollController = ScrollController();
+
+  /// 🔔 هذا هو الكنترولر الذي يخبر الكروت أي فيديو هو النشط الآن
+  final ValueNotifier<String?> activeVideo = ValueNotifier<String?>(null);
+
+  // مفاتيح الأقسام للسكرول
+  final Map<int, GlobalKey> _sectionKeys = {
+    0: GlobalKey(),
+    1: GlobalKey(),
+    2: GlobalKey(),
+    3: GlobalKey(),
+  };
 
   // تحميل من Firebase
   Future<void> loadProgressFromFirebase() async {
@@ -68,13 +80,6 @@ class _DevelopmentalMilestones3yearState
       if (completedCount > totalMilestones) completedCount = totalMilestones;
     });
   }
-final List<_MilestoneCardState> _milestoneStates = [];
-
-void _resetAllVideos() {
-  for (var m in _milestoneStates) {
-    m.resetVideo();
-  }
-}
 
   @override
   void initState() {
@@ -87,12 +92,13 @@ void _resetAllVideos() {
     double progress = completedCount / totalMilestones;
 
     return Scaffold(
-     appBar: PreferredSize(
+    appBar: PreferredSize(
   preferredSize: const Size.fromHeight(70),
   child: AppBar(
     backgroundColor: Colors.white,
     elevation: 0,
-    surfaceTintColor: Colors.white,
+    surfaceTintColor: Colors.transparent,   // ← prevents turning pink
+    scrolledUnderElevation: 0,               // ← prevents shadow color blending
     centerTitle: true,
     title: const Text(
       "Developmental Milestones",
@@ -120,14 +126,12 @@ void _resetAllVideos() {
     ),
   ),
 ),
-
-      body: SafeArea(
+     body: SafeArea(
         child: Column(
           children: [
-            // ثابت
-
             Expanded(
               child: SingleChildScrollView(
+                controller: _scrollController,
                 padding:
                     const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                 child: Column(
@@ -147,7 +151,7 @@ void _resetAllVideos() {
                           imageUrl: firebase('images/3y_calms_down.jpg'),
                           onChecked: updateProgress,
                           childId: widget.childId,
-                          stateRegistry: _milestoneStates,
+                          notifier: activeVideo,
                         ),
                         _MilestoneCard(
                           title:
@@ -156,7 +160,7 @@ void _resetAllVideos() {
                           thumbUrl: firebase('images/3y_notices_children.jpg'),
                           onChecked: updateProgress,
                           childId: widget.childId,
-                          stateRegistry: _milestoneStates,
+                          notifier: activeVideo,
                         ),
                       ],
                     ),
@@ -173,7 +177,7 @@ void _resetAllVideos() {
                           thumbUrl: firebase('images/3y_talks_with_you.jpg'),
                           onChecked: updateProgress,
                           childId: widget.childId,
-                          stateRegistry: _milestoneStates,
+                          notifier: activeVideo,
                         ),
                         _MilestoneCard(
                           title:
@@ -182,7 +186,7 @@ void _resetAllVideos() {
                           thumbUrl: firebase('images/3y_asks_questions.jpg'),
                           onChecked: updateProgress,
                           childId: widget.childId,
-                          stateRegistry: _milestoneStates,
+                          notifier: activeVideo,
                         ),
                         _MilestoneCard(
                           title:
@@ -191,7 +195,7 @@ void _resetAllVideos() {
                           thumbUrl: firebase('images/3y_says_action.jpg'),
                           onChecked: updateProgress,
                           childId: widget.childId,
-                          stateRegistry: _milestoneStates,
+                          notifier: activeVideo,
                         ),
                         _MilestoneCard(
                           title: "Says first name when asked",
@@ -199,7 +203,7 @@ void _resetAllVideos() {
                           thumbUrl: firebase('images/3y_says_first_name.jpg'),
                           onChecked: updateProgress,
                           childId: widget.childId,
-                          stateRegistry: _milestoneStates,
+                          notifier: activeVideo,
                         ),
                         _MilestoneCard(
                           title: "Talks well enough for others to understand",
@@ -207,7 +211,7 @@ void _resetAllVideos() {
                           thumbUrl: firebase('images/3y_talks_clear.jpg'),
                           onChecked: updateProgress,
                           childId: widget.childId,
-                          stateRegistry: _milestoneStates,
+                          notifier: activeVideo,
                         ),
                       ],
                     ),
@@ -223,7 +227,7 @@ void _resetAllVideos() {
                           thumbUrl: firebase('images/3y_draws_circle.jpg'),
                           onChecked: updateProgress,
                           childId: widget.childId,
-                          stateRegistry: _milestoneStates,
+                          notifier: activeVideo,
                         ),
                         _MilestoneCard(
                           title: "Avoids touching hot objects",
@@ -233,7 +237,7 @@ void _resetAllVideos() {
                               firebase('images/3y_avoids_hot_objects.jpg'),
                           onChecked: updateProgress,
                           childId: widget.childId,
-                          stateRegistry: _milestoneStates,
+                          notifier: activeVideo,
                         ),
                       ],
                     ),
@@ -248,21 +252,21 @@ void _resetAllVideos() {
                           imageUrl: firebase('images/3y_strings_items.jpg'),
                           onChecked: updateProgress,
                           childId: widget.childId,
-                          stateRegistry: _milestoneStates,
+                          notifier: activeVideo,
                         ),
                         _MilestoneCard(
                           title: "Puts on some clothes by herself",
                           imageUrl: firebase('images/3y_puts_clothes.jpg'),
                           onChecked: updateProgress,
                           childId: widget.childId,
-                          stateRegistry: _milestoneStates,
+                          notifier: activeVideo,
                         ),
                         _MilestoneCard(
                           title: "Uses a fork",
                           imageUrl: firebase('images/3y_uses_fork.jpg'),
                           onChecked: updateProgress,
                           childId: widget.childId,
-                          stateRegistry: _milestoneStates,
+                          notifier: activeVideo,
                         ),
                       ],
                     ),
@@ -276,7 +280,6 @@ void _resetAllVideos() {
     );
   }
 
- 
   Widget _buildProgressCard(double progress) => Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
@@ -320,6 +323,7 @@ void _resetAllVideos() {
     required List<Widget> milestones,
   }) =>
       Container(
+        key: _sectionKeys[index],
         margin: const EdgeInsets.only(bottom: 12),
         decoration: BoxDecoration(
           color: Colors.white,
@@ -328,42 +332,56 @@ void _resetAllVideos() {
         ),
         child: Theme(
           data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-         child: ExpansionTile(
-  initiallyExpanded: expandedIndex == index,
-  onExpansionChanged: (isOpen) {
-    if (!isOpen) _resetAllVideos();
-    setState(() => expandedIndex = isOpen ? index : -1);
-  },
+          child: ExpansionTile(
+            key: ValueKey("$index-${expandedIndex == index}"),
+            initiallyExpanded: expandedIndex == index,
+            onExpansionChanged: (isOpen) {
+              if (isOpen) {
+                setState(() {
+                  expandedIndex = index;
+                });
 
-  iconColor: const Color(0xFF9D5C7D),
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  Scrollable.ensureVisible(
+                    _sectionKeys[index]!.currentContext!,
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeInOut,
+                  );
+                });
 
-  // ⭐ CUSTOM ROTATING ARROW
-  trailing: AnimatedRotation(
-    turns: expandedIndex == index ? 0.5 : 0,   // 0 → down, 0.5 → up
-    duration: const Duration(milliseconds: 250),
-    child: const Icon(
-      Icons.keyboard_arrow_down_rounded,
-      size: 32,                                 // 👈 bigger size
-      color: Color(0xFF9D5C7D),
-    ),
-  ),
-
-  title: Text(
-    title,
-    style: const TextStyle(
-      fontFamily: 'Inter',
-      fontWeight: FontWeight.w700,
-      fontSize: 18,
-    ),
-  ),
-  childrenPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-  children: milestones,
-),
+                // إيقاف أي فيديو شغال عند تغيير القسم
+                activeVideo.value = null;
+              } else {
+                setState(() => expandedIndex = -1);
+                activeVideo.value = null;
+              }
+            },
+            trailing: AnimatedRotation(
+              turns: expandedIndex == index ? 0.5 : 0.0,
+              duration: const Duration(milliseconds: 250),
+              child: const Icon(
+                Icons.keyboard_arrow_down_rounded,
+                size: 32,
+                color: Color(0xFF9D5C7D),
+              ),
+            ),
+            title: Text(
+              title,
+              style: const TextStyle(
+                fontFamily: 'Inter',
+                fontWeight: FontWeight.w700,
+                fontSize: 18,
+              ),
+            ),
+            childrenPadding:
+                const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            children: milestones,
+          ),
         ),
       );
 }
 
-// ★★★ MilestoneCard — نفس TwoMonth 100%
+// ★★★ MilestoneCard
 class _MilestoneCard extends StatefulWidget {
   final String title;
   final String? imageUrl;
@@ -371,7 +389,7 @@ class _MilestoneCard extends StatefulWidget {
   final String? thumbUrl;
   final Function(bool)? onChecked;
   final String childId;
-final List<_MilestoneCardState> stateRegistry;
+  final ValueNotifier<String?> notifier;
 
   const _MilestoneCard({
     required this.title,
@@ -380,7 +398,7 @@ final List<_MilestoneCardState> stateRegistry;
     this.thumbUrl,
     this.onChecked,
     required this.childId,
-    required this.stateRegistry,
+    required this.notifier,
   });
 
   @override
@@ -388,60 +406,84 @@ final List<_MilestoneCardState> stateRegistry;
 }
 
 class _MilestoneCardState extends State<_MilestoneCard> {
-  
-  
   VideoPlayerController? _controller;
   bool isChecked = false;
   bool isPlaying = false;
-  bool isPaused = false;     // video is paused but frame still visible
+  bool isPaused = false;
   bool initialized = false;
 
   @override
   void initState() {
     super.initState();
-    widget.stateRegistry.add(this);
 
+    widget.notifier.addListener(_checkPause);
     _loadCheckboxState();
 
-  if (widget.videoUrl != null) {
-  _controller = VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl!));
+    if (widget.videoUrl != null) {
+      _controller =
+          VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl!));
 
-  _controller!.initialize().then((_) async {
-    // Forces video engine to render something
-    await _controller!.setLooping(true);
-    await _controller!.play();
-    await Future.delayed(const Duration(milliseconds: 80));
-    await _controller!.pause();
+      _controller!.initialize().then((_) async {
+        // Warm up decoder
+        await _controller!.play();
+        await Future.delayed(const Duration(milliseconds: 250));
+        await _controller!.pause();
 
-    setState(() {
-      initialized = true;
-      isPlaying = false;
-      isPaused = false;
-    });
-  });
+        // Show preview frame at 0.35s
+        await _controller!.seekTo(const Duration(milliseconds: 350));
 
-  _controller!.addListener(() {
-    final finished =
-        _controller!.value.position >= _controller!.value.duration;
-
-    if (finished) {
-      setState(() {
-        isPlaying = false;
-        isPaused = false;
+        if (mounted) {
+          setState(() {
+            initialized = true;
+            isPlaying = false;
+            isPaused = false;
+          });
+        }
       });
-      _controller!.seekTo(Duration.zero);
-      _controller!.pause();
-    }
-  });
-}
 
+      _controller!.addListener(() {
+        if (!mounted) return;
+
+        final position = _controller!.value.position;
+        final duration = _controller!.value.duration;
+
+        // If video is within last 150ms → treat it as finished
+        if (duration.inMilliseconds > 0 &&
+            duration.inMilliseconds - position.inMilliseconds <= 150) {
+          _controller!.pause();
+          _controller!.seekTo(const Duration(milliseconds: 350)).then((_) {
+            if (mounted) {
+              setState(() {
+                isPlaying = false;
+                isPaused = false;
+              });
+            }
+          });
+        }
+      });
+    }
   }
+
   @override
   void dispose() {
-widget.stateRegistry.remove(this);
+    widget.notifier.removeListener(_checkPause);
     _controller?.dispose();
     super.dispose();
   }
+
+  void _checkPause() {
+    // إذا النوتيفاير تغيّر لعنوان فيديو آخر و هذا الفيديو شغّال → أوقفه
+    if (widget.notifier.value != widget.title && isPlaying) {
+      _controller?.pause();
+      if (mounted) {
+        setState(() {
+          isPlaying = false;
+          isPaused = true;
+        });
+      }
+    }
+  }
+
   Future<void> _loadCheckboxState() async {
     try {
       final user = FirebaseAuth.instance.currentUser;
@@ -476,145 +518,128 @@ widget.stateRegistry.remove(this);
         .set({widget.title: v}, SetOptions(merge: true));
   }
 
- 
-void pauseVideo() {
-  if (_controller != null && _controller!.value.isPlaying) {
-    _controller!.pause();
-  }
-}
-
-void resetVideo() {
-  if (_controller != null) {
-    _controller!.pause();
-    _controller!.seekTo(Duration.zero);
-    setState(() => isPlaying = false); // show thumbnail again
-  }
-}
-
   @override
-  Widget build(BuildContext context) => Container(
-        margin: const EdgeInsets.only(bottom: 16),
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: const Color.fromARGB(255, 255, 255, 255),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.grey.shade300),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Checkbox(
-                  activeColor: const Color(0xFF9D5C7D),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(5),
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey.shade300),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Checkbox(
+                activeColor: const Color(0xFF9D5C7D),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(5)),
+                value: isChecked,
+                onChanged: (v) {
+                  if (v == null) return;
+                  setState(() => isChecked = v);
+                  widget.onChecked?.call(v);
+                  _saveCheckboxState(v);
+                },
+              ),
+              Expanded(
+                child: Text(
+                  widget.title,
+                  style: const TextStyle(
+                    fontFamily: 'Inter',
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
                   ),
-                  value: isChecked,
-                  onChanged: (v) {
-                    if (v == null) return;
-                    setState(() => isChecked = v);
-                    widget.onChecked?.call(v);
-                    _saveCheckboxState(v);
-                  },
                 ),
-                Expanded(
-                  child: Text(
-                    widget.title,
-                    style: const TextStyle(
-                      fontFamily: 'Inter',
-                      fontWeight: FontWeight.w600,
-                      fontSize: 14,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: _buildMedia(),
-            ),
-          ],
-        ),
-      );
-
-Widget _buildMedia() {
-  // IMAGE MILESTONE (no video)
-  if (widget.videoUrl == null) {
-    return SizedBox(
-      height: 200,
-      width: double.infinity,
-      child: Image.network(
-        widget.imageUrl!,
-        fit: BoxFit.cover,
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: _buildMedia(),
+          ),
+        ],
       ),
     );
   }
 
-  // VIDEO NOT READY YET
-  if (!initialized) {
-    return const SizedBox(
-      height: 200,
-      child: Center(child: CircularProgressIndicator()),
-    );
-  }
-
-  // ALWAYS SHOW VIDEO FRAME — EVEN BEFORE PLAYING
-  return Stack(
-    alignment: Alignment.center,
-    children: [
-      SizedBox(
+  Widget _buildMedia() {
+    if (widget.videoUrl == null) {
+      return SizedBox(
         height: 200,
         width: double.infinity,
-        child: VideoPlayer(_controller!),
-      ),
-
-      // BEFORE PLAYING → SHOW PLAY ICON
-      if (!isPlaying && !isPaused)
-        IconButton(
-          icon:  Icon(Icons.play_circle_fill,
-              size: 60, color: Colors.white.withOpacity(0.6)),
-          onPressed: () {
-            setState(() {
-              isPlaying = true;
-              isPaused = false;
-            });
-            _controller!.play();
+        child: Image.network(
+          widget.imageUrl!,
+          fit: BoxFit.cover,
+          loadingBuilder: (context, child, loadingProgress) {
+            if (loadingProgress == null) return child;
+            return const SizedBox(
+              height: 200,
+              child: Center(child: CircularProgressIndicator()),
+            );
           },
+          errorBuilder: (context, error, stackTrace) =>
+              const Center(child: Icon(Icons.error)),
+        ),
+      );
+    }
+
+    if (!initialized) {
+      return const SizedBox(
+        height: 200,
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        SizedBox(
+          height: 200,
+          width: double.infinity,
+          child: VideoPlayer(_controller!),
         ),
 
-      // WHEN PAUSED → SHOW PLAY ICON AGAIN
-      if (isPaused)
-        IconButton(
-          icon:  Icon(Icons.play_circle_fill,
-              size: 60, color: Colors.white.withOpacity(0.6)),
-          onPressed: () {
-            setState(() {
-              isPlaying = true;
-              isPaused = false;
-            });
-            _controller!.play();
-          },
-        ),
+        // Not playing → show play icon
+        if (!isPlaying)
+          IconButton(
+            icon: Icon(
+              Icons.play_circle_fill,
+              size: 60,
+              color: Colors.white.withOpacity(0.7),
+            ),
+            onPressed: () {
+              widget.notifier.value = widget.title; // اجعل هذا الفيديو هو النشط
+              setState(() {
+                isPlaying = true;
+                isPaused = false;
+              });
 
-      // WHEN PLAYING → TAP ANYWHERE TO PAUSE
-      if (isPlaying)
-        GestureDetector(
-          onTap: () {
-            _controller!.pause();
-            setState(() {
-              isPaused = true;
-              isPlaying = false;
-            });
-          },
-          child: Container(
-            height: 200,
-            width: double.infinity,
-            color: Colors.transparent, // no dark dim
+              _controller!.play();
+            },
           ),
-        ),
-    ],
-  );
-}
+
+        // Playing → tap to pause
+        if (isPlaying)
+          GestureDetector(
+            onTap: () {
+              _controller!.pause();
+              setState(() {
+                isPaused = true;
+                isPlaying = false;
+              });
+            },
+            child: Container(
+              height: 200,
+              width: double.infinity,
+              color: Colors.transparent,
+            ),
+          ),
+      ],
+    );
+  }
 }

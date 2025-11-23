@@ -15,7 +15,7 @@ String firebase(String path, [String? token]) {
 }
 
 /// ---------------------------------------------------------------------------
-/// 📌 DevelopmentalMilestones24month — unified with 3y/4y/5y/18m
+/// 📌 DevelopmentalMilestones24month — unified with 3y behavior
 /// ---------------------------------------------------------------------------
 class DevelopmentalMilestones24month extends StatefulWidget {
   final String childId;
@@ -40,15 +40,18 @@ class _DevelopmentalMilestones24monthState
   final int totalMilestones = 13;
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final ScrollController _scrollController = ScrollController();
 
-  // registry to reset all videos when closing a section
-  final List<_MilestoneCardState> _milestoneStates = [];
+  /// 🔔 هذا هو الكنترولر الذي يخبر الكروت أي فيديو هو النشط الآن
+  final ValueNotifier<String?> activeVideo = ValueNotifier<String?>(null);
 
-  void _resetAllVideos() {
-    for (var m in _milestoneStates) {
-      m.resetVideo();
-    }
-  }
+  // مفاتيح الأقسام للسكرول
+  final Map<int, GlobalKey> _sectionKeys = {
+    0: GlobalKey(),
+    1: GlobalKey(),
+    2: GlobalKey(),
+    3: GlobalKey(),
+  };
 
   void updateProgress(bool isChecked) {
     setState(() {
@@ -97,7 +100,8 @@ class _DevelopmentalMilestones24monthState
         child: AppBar(
           backgroundColor: Colors.white,
           elevation: 0,
-          surfaceTintColor: Colors.white,
+          surfaceTintColor: Colors.transparent, // لتجنب تغير اللون مع السكرول
+          scrolledUnderElevation: 0,
           centerTitle: true,
           title: const Text(
             "Developmental Milestones",
@@ -125,12 +129,12 @@ class _DevelopmentalMilestones24monthState
           ),
         ),
       ),
-
       body: SafeArea(
         child: Column(
           children: [
             Expanded(
               child: SingleChildScrollView(
+                controller: _scrollController,
                 padding:
                     const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                 child: Column(
@@ -150,7 +154,7 @@ class _DevelopmentalMilestones24monthState
                           imageUrl: firebase('images/24m_notices_hurt.jpg'),
                           childId: widget.childId,
                           onChecked: updateProgress,
-                          stateRegistry: _milestoneStates,
+                          notifier: activeVideo,
                         ),
                         _MilestoneCard(
                           title:
@@ -158,7 +162,7 @@ class _DevelopmentalMilestones24monthState
                           imageUrl: firebase('images/24m_looks_face.jpg'),
                           childId: widget.childId,
                           onChecked: updateProgress,
-                          stateRegistry: _milestoneStates,
+                          notifier: activeVideo,
                         ),
                       ],
                     ),
@@ -176,7 +180,7 @@ class _DevelopmentalMilestones24monthState
                               firebase('images/24m_points_book_thumb.jpg'),
                           childId: widget.childId,
                           onChecked: updateProgress,
-                          stateRegistry: _milestoneStates,
+                          notifier: activeVideo,
                         ),
                         _MilestoneCard(
                           title:
@@ -185,7 +189,7 @@ class _DevelopmentalMilestones24monthState
                           thumbUrl: firebase('images/24m_two_words_thumb.jpg'),
                           childId: widget.childId,
                           onChecked: updateProgress,
-                          stateRegistry: _milestoneStates,
+                          notifier: activeVideo,
                         ),
                         _MilestoneCard(
                           title:
@@ -195,7 +199,7 @@ class _DevelopmentalMilestones24monthState
                               firebase('images/24m_points_body_thumb.jpg'),
                           childId: widget.childId,
                           onChecked: updateProgress,
-                          stateRegistry: _milestoneStates,
+                          notifier: activeVideo,
                         ),
                         _MilestoneCard(
                           title:
@@ -204,7 +208,7 @@ class _DevelopmentalMilestones24monthState
                           thumbUrl: firebase('images/24m_gestures_thumb.jpg'),
                           childId: widget.childId,
                           onChecked: updateProgress,
-                          stateRegistry: _milestoneStates,
+                          notifier: activeVideo,
                         ),
                       ],
                     ),
@@ -222,7 +226,7 @@ class _DevelopmentalMilestones24monthState
                               firebase('images/24m_holds_container_thumb.jpg'),
                           childId: widget.childId,
                           onChecked: updateProgress,
-                          stateRegistry: _milestoneStates,
+                          notifier: activeVideo,
                         ),
                         _MilestoneCard(
                           title:
@@ -230,7 +234,7 @@ class _DevelopmentalMilestones24monthState
                           imageUrl: firebase('images/24m_uses_switch.jpg'),
                           childId: widget.childId,
                           onChecked: updateProgress,
-                          stateRegistry: _milestoneStates,
+                          notifier: activeVideo,
                         ),
                         _MilestoneCard(
                           title:
@@ -238,7 +242,7 @@ class _DevelopmentalMilestones24monthState
                           imageUrl: firebase('images/24m_plays_toys.jpg'),
                           childId: widget.childId,
                           onChecked: updateProgress,
-                          stateRegistry: _milestoneStates,
+                          notifier: activeVideo,
                         ),
                       ],
                     ),
@@ -253,7 +257,7 @@ class _DevelopmentalMilestones24monthState
                           imageUrl: firebase('images/24m_kicks_ball.jpg'),
                           childId: widget.childId,
                           onChecked: updateProgress,
-                          stateRegistry: _milestoneStates,
+                          notifier: activeVideo,
                         ),
                         _MilestoneCard(
                           title: "Runs",
@@ -261,7 +265,7 @@ class _DevelopmentalMilestones24monthState
                           thumbUrl: firebase('images/24m_runs_thumb.jpg'),
                           childId: widget.childId,
                           onChecked: updateProgress,
-                          stateRegistry: _milestoneStates,
+                          notifier: activeVideo,
                         ),
                         _MilestoneCard(
                           title:
@@ -269,14 +273,14 @@ class _DevelopmentalMilestones24monthState
                           imageUrl: firebase('images/24m_walks_stairs.jpg'),
                           childId: widget.childId,
                           onChecked: updateProgress,
-                          stateRegistry: _milestoneStates,
+                          notifier: activeVideo,
                         ),
                         _MilestoneCard(
                           title: "Eats with a spoon",
                           imageUrl: firebase('images/24m_eats_spoon.jpg'),
                           childId: widget.childId,
                           onChecked: updateProgress,
-                          stateRegistry: _milestoneStates,
+                          notifier: activeVideo,
                         ),
                       ],
                     ),
@@ -328,13 +332,14 @@ class _DevelopmentalMilestones24monthState
         ),
       );
 
-  // SECTION — unified with rotating arrow + reset videos
+  // SECTION — unified with 3y (scroll + arrow + single expanded)
   Widget _buildSection({
     required String title,
     required int index,
     required List<Widget> milestones,
   }) =>
       Container(
+        key: _sectionKeys[index],
         margin: const EdgeInsets.only(bottom: 12),
         decoration: BoxDecoration(
           color: Colors.white,
@@ -344,14 +349,32 @@ class _DevelopmentalMilestones24monthState
         child: Theme(
           data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
           child: ExpansionTile(
+            key: ValueKey("$index-${expandedIndex == index}"),
             initiallyExpanded: expandedIndex == index,
             onExpansionChanged: (isOpen) {
-              if (!isOpen) _resetAllVideos();
-              setState(() => expandedIndex = isOpen ? index : -1);
+              if (isOpen) {
+                setState(() {
+                  expandedIndex = index;
+                });
+
+                // سكرول بحيث يبقى عنوان القسم ظاهر
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  Scrollable.ensureVisible(
+                    _sectionKeys[index]!.currentContext!,
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeInOut,
+                  );
+                });
+
+                // إيقاف أي فيديو شغال عند تغيير القسم
+                activeVideo.value = null;
+              } else {
+                setState(() => expandedIndex = -1);
+                activeVideo.value = null;
+              }
             },
-            iconColor: const Color(0xFF9D5C7D),
             trailing: AnimatedRotation(
-              turns: expandedIndex == index ? 0.5 : 0,
+              turns: expandedIndex == index ? 0.5 : 0.0,
               duration: const Duration(milliseconds: 250),
               child: const Icon(
                 Icons.keyboard_arrow_down_rounded,
@@ -376,7 +399,7 @@ class _DevelopmentalMilestones24monthState
 }
 
 /// ---------------------------------------------------------------------------
-/// ⭐ _MilestoneCard — unified with 3y/4y/5y/18m
+/// ⭐ _MilestoneCard — unified with 3y behavior (ValueNotifier + warm start)
 /// ---------------------------------------------------------------------------
 class _MilestoneCard extends StatefulWidget {
   final String title;
@@ -385,7 +408,7 @@ class _MilestoneCard extends StatefulWidget {
   final String? thumbUrl;
   final Function(bool)? onChecked;
   final String childId;
-  final List<_MilestoneCardState> stateRegistry;
+  final ValueNotifier<String?> notifier;
 
   const _MilestoneCard({
     required this.title,
@@ -394,7 +417,7 @@ class _MilestoneCard extends StatefulWidget {
     this.thumbUrl,
     this.onChecked,
     required this.childId,
-    required this.stateRegistry,
+    required this.notifier,
   });
 
   @override
@@ -411,8 +434,8 @@ class _MilestoneCardState extends State<_MilestoneCard> {
   @override
   void initState() {
     super.initState();
-    widget.stateRegistry.add(this);
 
+    widget.notifier.addListener(_checkPause);
     _loadCheckboxState();
 
     if (widget.videoUrl != null) {
@@ -420,43 +443,63 @@ class _MilestoneCardState extends State<_MilestoneCard> {
           VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl!));
 
       _controller!.initialize().then((_) async {
-        // show first frame
-        await _controller!.setLooping(true);
+        // Warm up decoder
         await _controller!.play();
-        await Future.delayed(const Duration(milliseconds: 80));
+        await Future.delayed(const Duration(milliseconds: 250));
         await _controller!.pause();
 
-        setState(() {
-          initialized = true;
-          isPlaying = false;
-          isPaused = false;
-        });
-      });
+        // Show preview frame at 0.35s
+        await _controller!.seekTo(const Duration(milliseconds: 350));
 
-      _controller!.addListener(() {
-        final finished =
-            _controller!.value.position >= _controller!.value.duration;
-
-        if (finished) {
+        if (mounted) {
           setState(() {
+            initialized = true;
             isPlaying = false;
             isPaused = false;
           });
-          _controller!.seekTo(Duration.zero);
+        }
+      });
+
+      _controller!.addListener(() {
+        if (!mounted) return;
+
+        final position = _controller!.value.position;
+        final duration = _controller!.value.duration;
+
+        // If video is within last 150ms → treat it as finished
+        if (duration.inMilliseconds > 0 &&
+            duration.inMilliseconds - position.inMilliseconds <= 150) {
           _controller!.pause();
+          _controller!.seekTo(const Duration(milliseconds: 350)).then((_) {
+            if (mounted) {
+              setState(() {
+                isPlaying = false;
+                isPaused = false;
+              });
+            }
+          });
         }
       });
     }
   }
 
-  void resetVideo() {
-    if (_controller != null) {
-      _controller!.pause();
-      _controller!.seekTo(Duration.zero);
-      setState(() {
-        isPlaying = false;
-        isPaused = false;
-      });
+  @override
+  void dispose() {
+    widget.notifier.removeListener(_checkPause);
+    _controller?.dispose();
+    super.dispose();
+  }
+
+  void _checkPause() {
+    // إذا النوتيفاير تغيّر لعنوان فيديو آخر و هذا الفيديو شغّال → أوقفه
+    if (widget.notifier.value != widget.title && isPlaying) {
+      _controller?.pause();
+      if (mounted) {
+        setState(() {
+          isPlaying = false;
+          isPaused = true;
+        });
+      }
     }
   }
 
@@ -474,13 +517,13 @@ class _MilestoneCardState extends State<_MilestoneCard> {
           .doc('24_month')
           .get();
 
-      if (doc.exists && doc.data()?[widget.title] != null) {
+      if (doc.exists && doc.data()![widget.title] != null) {
         setState(() => isChecked = doc.data()![widget.title]);
       }
     } catch (_) {}
   }
 
-  Future<void> _saveCheckboxState(bool value) async {
+  Future<void> _saveCheckboxState(bool v) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
 
@@ -491,65 +534,57 @@ class _MilestoneCardState extends State<_MilestoneCard> {
         .doc(widget.childId)
         .collection('milestones')
         .doc('24_month')
-        .set({widget.title: value}, SetOptions(merge: true));
+        .set({widget.title: v}, SetOptions(merge: true));
   }
 
   @override
-  void dispose() {
-    widget.stateRegistry.remove(this);
-    _controller?.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) => Container(
-        margin: const EdgeInsets.only(bottom: 16),
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: const Color.fromARGB(255, 255, 255, 255),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.grey.shade300),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // CHECK + TITLE
-            Row(
-              children: [
-                Checkbox(
-                  activeColor: const Color(0xFF9D5C7D),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(5)),
-                  value: isChecked,
-                  onChanged: (v) {
-                    if (v == null) return;
-                    setState(() => isChecked = v);
-                    widget.onChecked?.call(v);
-                    _saveCheckboxState(v);
-                  },
-                ),
-                Expanded(
-                  child: Text(
-                    widget.title,
-                    style: const TextStyle(
-                      fontFamily: 'Inter',
-                      fontWeight: FontWeight.w600,
-                      fontSize: 14,
-                    ),
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey.shade300),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Checkbox(
+                activeColor: const Color(0xFF9D5C7D),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(5)),
+                value: isChecked,
+                onChanged: (v) {
+                  if (v == null) return;
+                  setState(() => isChecked = v);
+                  widget.onChecked?.call(v);
+                  _saveCheckboxState(v);
+                },
+              ),
+              Expanded(
+                child: Text(
+                  widget.title,
+                  style: const TextStyle(
+                    fontFamily: 'Inter',
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
                   ),
                 ),
-              ],
-            ),
-
-            const SizedBox(height: 12),
-
-            ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: _buildMedia(),
-            ),
-          ],
-        ),
-      );
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: _buildMedia(),
+          ),
+        ],
+      ),
+    );
+  }
 
   Widget _buildMedia() {
     // صورة فقط
@@ -560,6 +595,15 @@ class _MilestoneCardState extends State<_MilestoneCard> {
         child: Image.network(
           widget.imageUrl!,
           fit: BoxFit.cover,
+          loadingBuilder: (context, child, loadingProgress) {
+            if (loadingProgress == null) return child;
+            return const SizedBox(
+              height: 200,
+              child: Center(child: CircularProgressIndicator()),
+            );
+          },
+          errorBuilder: (context, error, stackTrace) =>
+              const Center(child: Icon(Icons.error)),
         ),
       );
     }
@@ -582,41 +626,27 @@ class _MilestoneCardState extends State<_MilestoneCard> {
           child: VideoPlayer(_controller!),
         ),
 
-        // زر التشغيل الأول
-        if (!isPlaying && !isPaused)
+        // Not playing → show play icon
+        if (!isPlaying)
           IconButton(
             icon: Icon(
               Icons.play_circle_fill,
               size: 60,
-              color: Colors.white.withOpacity(0.6),
+              color: Colors.white.withOpacity(0.7),
             ),
             onPressed: () {
+              widget.notifier.value =
+                  widget.title; // اجعل هذا الفيديو هو النشط
               setState(() {
                 isPlaying = true;
                 isPaused = false;
               });
+
               _controller!.play();
             },
           ),
 
-        // زر التشغيل بعد الإيقاف المؤقت
-        if (isPaused)
-          IconButton(
-            icon: Icon(
-              Icons.play_circle_fill,
-              size: 60,
-              color: Colors.white.withOpacity(0.6),
-            ),
-            onPressed: () {
-              setState(() {
-                isPlaying = true;
-                isPaused = false;
-              });
-              _controller!.play();
-            },
-          ),
-
-        // أثناء التشغيل → لمس الشاشة يوقف الفيديو
+        // Playing → tap to pause
         if (isPlaying)
           GestureDetector(
             onTap: () {
