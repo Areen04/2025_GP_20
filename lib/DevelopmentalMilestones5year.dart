@@ -144,7 +144,7 @@ class _DevelopmentalMilestones5yearState
                     // ------------------ SECTIONS ------------------
 
                     _buildSection(
-                      title: "Social & Emotional Milestones",
+                      title: "Social & Emotional",
                       index: 0,
                       milestones: [
                         _MilestoneCard(
@@ -394,8 +394,7 @@ class _DevelopmentalMilestones5yearState
         ),
       );
 }
-
-// ★★★ MilestoneCard مع نفس النظام بالضبط مثل 3 سنوات
+// ★★★ MilestoneCard — EXACT SAME LOGIC AS 3-YEAR PAGE ★★★
 class _MilestoneCard extends StatefulWidget {
   final String title;
   final String? imageUrl;
@@ -421,88 +420,68 @@ class _MilestoneCard extends StatefulWidget {
 
 class _MilestoneCardState extends State<_MilestoneCard> {
   VideoPlayerController? _controller;
+
   bool isChecked = false;
-  bool isPlaying = false;
-  bool isPaused = false;
   bool initialized = false;
+  bool loading = false;
+  bool isPlaying = false;
+
+  late final VoidCallback _notifierListener;
 
   @override
   void initState() {
     super.initState();
-
-    widget.notifier.addListener(_checkPause);
     _loadCheckboxState();
 
-    if (widget.videoUrl != null) {
-      _controller = VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl!));
-
-      _controller!.initialize().then((_) async {
-        await _controller!.play();
-        await Future.delayed(const Duration(milliseconds: 250));
-        await _controller!.pause();
-        await _controller!.seekTo(const Duration(milliseconds: 350));
-
+    // Pause only when another card becomes active
+    _notifierListener = () {
+      if (widget.notifier.value != widget.title && isPlaying) {
+        _controller?.pause();
         if (mounted) {
-          setState(() {
-            initialized = true;
-          });
+          setState(() => isPlaying = false);
         }
-
-        _controller!.addListener(() {
-          if (!mounted) return;
-
-          final pos = _controller!.value.position;
-          final dur = _controller!.value.duration;
-
-          if (dur.inMilliseconds > 0 &&
-              dur.inMilliseconds - pos.inMilliseconds <= 150) {
-            _controller!.pause();
-            _controller!.seekTo(const Duration(milliseconds: 350));
-            setState(() {
-              isPlaying = false;
-              isPaused = false;
-            });
-          }
-        });
-      });
-    }
+      }
+    };
+    widget.notifier.addListener(_notifierListener);
   }
 
   @override
   void dispose() {
-    widget.notifier.removeListener(_checkPause);
+    widget.notifier.removeListener(_notifierListener);
     _controller?.dispose();
     super.dispose();
   }
 
-  void _checkPause() {
-    if (widget.notifier.value != widget.title && isPlaying) {
-      _controller?.pause();
-      if (mounted) {
-        setState(() {
-          isPlaying = false;
-          isPaused = true;
-        });
-      }
-    }
+  void _resetToThumbnail() {
+    _controller?.pause();
+    _controller?.dispose();
+    _controller = null;
+
+    setState(() {
+      initialized = false;
+      isPlaying = false;
+      loading = false;
+    });
   }
 
   Future<void> _loadCheckboxState() async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return;
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) return;
 
-    final doc = await FirebaseFirestore.instance
-        .collection('parents')
-        .doc(user.uid)
-        .collection('children')
-        .doc(widget.childId)
-        .collection('milestones')
-        .doc('5_years')
-        .get();
+      final doc = await FirebaseFirestore.instance
+          .collection('parents')
+          .doc(user.uid)
+          .collection('children')
+          .doc(widget.childId)
+          .collection('milestones')
+          .doc('5_years')
+          .get();
 
-    if (doc.exists && doc.data()![widget.title] != null) {
-      setState(() => isChecked = doc.data()![widget.title]);
-    }
+      if (doc.exists && doc.data()![widget.title] != null) {
+        setState(() => isChecked = doc.data()![widget.title]);
+      }
+    } catch (_) {}
   }
 
   Future<void> _saveCheckboxState(bool v) async {
@@ -519,6 +498,67 @@ class _MilestoneCardState extends State<_MilestoneCard> {
         .set({widget.title: v}, SetOptions(merge: true));
   }
 
+  Future<void> _initializeAndPlay() async {
+    if (loading) return;
+
+    setState(() => loading = true);
+
+    _controller =
+        VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl!));
+
+    try {
+      await _controller!.initialize();
+      if (!mounted) return;
+
+      _controller!.addListener(() {
+        if (!mounted) return;
+
+        final v = _controller!.value;
+
+        // 🎬 Finished → Reset to thumbnail
+        if (v.isInitialized &&
+            !v.isPlaying &&
+            v.position >= v.duration &&
+            v.duration > Duration.zero) {
+          _resetToThumbnail();
+        }
+      });
+
+      setState(() {
+        initialized = true;
+        loading = false;
+        isPlaying = true;
+      });
+
+      widget.notifier.value = widget.title;
+      _controller!.play();
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => loading = false);
+    }
+  }
+
+  Future<void> _togglePlayPause() async {
+    if (_controller == null) {
+      await _initializeAndPlay();
+      return;
+    }
+
+    final v = _controller!.value;
+
+    if (!isPlaying) {
+      if (v.position >= v.duration - const Duration(milliseconds: 200)) {
+        await _controller!.seekTo(Duration.zero);
+      }
+      widget.notifier.value = widget.title;
+      await _controller!.play();
+      setState(() => isPlaying = true);
+    } else {
+      await _controller!.pause();
+      setState(() => isPlaying = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -532,7 +572,6 @@ class _MilestoneCardState extends State<_MilestoneCard> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // --- Checkbox row ---
           Row(
             children: [
               Checkbox(
@@ -571,80 +610,77 @@ class _MilestoneCardState extends State<_MilestoneCard> {
     );
   }
 
-  // ------------------ MEDIA (Video or Image) ------------------
   Widget _buildMedia() {
-    // IMAGE ONLY
+    // 📌 no video → image only
     if (widget.videoUrl == null) {
-      return SizedBox(
+      return Image.network(
+        widget.imageUrl!,
         height: 200,
         width: double.infinity,
-        child: Image.network(
-          widget.imageUrl!,
-          fit: BoxFit.cover,
-          loadingBuilder: (context, child, loadingProgress) {
-            if (loadingProgress == null) return child;
-            return const SizedBox(
-              height: 200,
-              child: Center(child: CircularProgressIndicator()),
-            );
-          },
-        ),
+        fit: BoxFit.cover,
       );
     }
 
-    // VIDEO LOADING
+    // 📌 show thumbnail first
     if (!initialized) {
-      return const SizedBox(
-        height: 200,
-        child: Center(child: CircularProgressIndicator()),
+      return Stack(
+        alignment: Alignment.center,
+        children: [
+          Image.network(
+            widget.thumbUrl!,
+            height: 200,
+            width: double.infinity,
+            fit: BoxFit.cover,
+          ),
+          if (loading)
+            const SizedBox(
+              height: 60,
+              width: 60,
+              child: CircularProgressIndicator(
+                color: Colors.white,
+                strokeWidth: 5,
+              ),
+            )
+          else
+            IconButton(
+              icon: const Icon(
+                Icons.play_circle_fill,
+                size: 60,
+                color: Colors.white,
+              ),
+              onPressed: _togglePlayPause,
+            ),
+        ],
       );
     }
 
-    // VIDEO
-    return Stack(
-      alignment: Alignment.center,
-      children: [
-        SizedBox(
-          height: 200,
-          width: double.infinity,
-          child: VideoPlayer(_controller!),
-        ),
-
-        // SHOW PLAY ICON WHEN NOT PLAYING
-        if (!isPlaying)
-          IconButton(
-            icon: Icon(
-              Icons.play_circle_fill,
-              size: 60,
-              color: Colors.white.withOpacity(0.7),
-            ),
-            onPressed: () {
-              widget.notifier.value = widget.title;
-              setState(() {
-                isPlaying = true;
-                isPaused = false;
-              });
-              _controller!.play();
-            },
+    // 🎥 video active
+    return GestureDetector(
+      onTap: _togglePlayPause,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          SizedBox(
+            height: 200,
+            width: double.infinity,
+            child: VideoPlayer(_controller!),
           ),
 
-        // TAP ANYWHERE TO PAUSE
-        if (isPlaying)
-          GestureDetector(
-            onTap: () {
-              _controller!.pause();
-              setState(() {
-                isPlaying = false;
-                isPaused = true;
-              });
-            },
-            child: Container(
+          if (!isPlaying)
+            Container(
               height: 200,
               width: double.infinity,
-              color: Colors.transparent,
+              color: Colors.black26,
+              child: const Center(
+                child: Icon(
+                  Icons.play_circle_fill,
+                  size: 60,
+                  color: Colors.white,
+                ),
+              ),
             ),
-          ),
-      ],
+        ],
+      ),
     );
   }
 }

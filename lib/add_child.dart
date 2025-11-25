@@ -157,26 +157,43 @@ Color _dropdownColor({
       );
       return; // ← IMPORTANT to stop adding
     }
-    if (name.isEmpty ||
-        _selectedDay == null ||
-        _selectedMonth == null ||
-        _selectedYear == null ||
-        _selectedGender == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text(
-            "Please fill all required fields.",
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
-          ),
-          backgroundColor: const Color(0xFF9D5C7D),
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-          margin: const EdgeInsets.all(12),
-          duration: const Duration(seconds: 2),
-        ),
-      );
-      return;
-    }
+   if (name.isEmpty ||
+    _selectedDay == null ||
+    _selectedMonth == null ||
+    _selectedYear == null ||
+    _selectedGender == null) {
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: const Text("Please fill all required fields.",
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500)),
+      backgroundColor: const Color(0xFF9D5C7D),
+      behavior: SnackBarBehavior.floating,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      margin: const EdgeInsets.all(12),
+      duration: const Duration(seconds: 2),
+    ),
+  );
+  return;
+}
+
+// ❌ Prevent future date of birth
+if (!_isValidDate()) {
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: const Text(
+        "Date of birth cannot be in the future.",
+        style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
+      ),
+      backgroundColor: const Color(0xFF9D5C7D),
+      behavior: SnackBarBehavior.floating,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      margin: const EdgeInsets.all(12),
+      duration: const Duration(seconds: 2),
+    ),
+  );
+  return;
+}
+
 
 setState(() => _isSaving = true);
 

@@ -142,7 +142,7 @@ class _DevelopmentalMilestones3yearState
 
                     // SOCIAL
                     _buildSection(
-                      title: "Social & Emotional Milestones",
+                      title: "Social & Emotional",
                       index: 0,
                       milestones: [
                         _MilestoneCard(
@@ -381,7 +381,6 @@ class _DevelopmentalMilestones3yearState
       );
 }
 
-// ★★★ MilestoneCard
 class _MilestoneCard extends StatefulWidget {
   final String title;
   final String? imageUrl;
@@ -408,81 +407,47 @@ class _MilestoneCard extends StatefulWidget {
 class _MilestoneCardState extends State<_MilestoneCard> {
   VideoPlayerController? _controller;
   bool isChecked = false;
-  bool isPlaying = false;
-  bool isPaused = false;
+
   bool initialized = false;
+  bool loading = false;
+  bool isPlaying = false;
+
+  late final VoidCallback _notifierListener;
 
   @override
   void initState() {
     super.initState();
-
-    widget.notifier.addListener(_checkPause);
     _loadCheckboxState();
 
-    if (widget.videoUrl != null) {
-      _controller =
-          VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl!));
-
-      _controller!.initialize().then((_) async {
-        // Warm up decoder
-        await _controller!.play();
-        await Future.delayed(const Duration(milliseconds: 250));
-        await _controller!.pause();
-
-        // Show preview frame at 0.35s
-        await _controller!.seekTo(const Duration(milliseconds: 350));
-
+    // عندما فيديو آخر يصير active → بس نعمل pause (بدون reset)
+    _notifierListener = () {
+      if (widget.notifier.value != widget.title && isPlaying) {
+        _controller?.pause();
         if (mounted) {
-          setState(() {
-            initialized = true;
-            isPlaying = false;
-            isPaused = false;
-          });
+          setState(() => isPlaying = false);
         }
-      });
-
-      _controller!.addListener(() {
-        if (!mounted) return;
-
-        final position = _controller!.value.position;
-        final duration = _controller!.value.duration;
-
-        // If video is within last 150ms → treat it as finished
-        if (duration.inMilliseconds > 0 &&
-            duration.inMilliseconds - position.inMilliseconds <= 150) {
-          _controller!.pause();
-          _controller!.seekTo(const Duration(milliseconds: 350)).then((_) {
-            if (mounted) {
-              setState(() {
-                isPlaying = false;
-                isPaused = false;
-              });
-            }
-          });
-        }
-      });
-    }
+      }
+    };
+    widget.notifier.addListener(_notifierListener);
   }
 
   @override
   void dispose() {
-    widget.notifier.removeListener(_checkPause);
+    widget.notifier.removeListener(_notifierListener);
     _controller?.dispose();
     super.dispose();
   }
+void _resetToThumbnail() {
+  _controller?.pause();
+  _controller?.dispose();
+  _controller = null;
 
-  void _checkPause() {
-    // إذا النوتيفاير تغيّر لعنوان فيديو آخر و هذا الفيديو شغّال → أوقفه
-    if (widget.notifier.value != widget.title && isPlaying) {
-      _controller?.pause();
-      if (mounted) {
-        setState(() {
-          isPlaying = false;
-          isPaused = true;
-        });
-      }
-    }
-  }
+  setState(() {
+    initialized = false;   // ← back to thumbnail
+    isPlaying = false;
+    loading = false;
+  });
+}
 
   Future<void> _loadCheckboxState() async {
     try {
@@ -516,6 +481,71 @@ class _MilestoneCardState extends State<_MilestoneCard> {
         .collection('milestones')
         .doc('3_years')
         .set({widget.title: v}, SetOptions(merge: true));
+  }
+
+  Future<void> _initializeAndPlay() async {
+    if (loading) return;
+
+    setState(() => loading = true);
+
+    _controller =
+        VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl!));
+
+    try {
+      await _controller!.initialize();
+      if (!mounted) return;
+
+     _controller!.addListener(() {
+  if (!mounted) return;
+
+  final v = _controller!.value;
+
+  // 🎯 Video finished
+  if (v.isInitialized &&
+      !v.isPlaying &&
+      v.position >= v.duration &&
+      v.duration > Duration.zero) {
+    _resetToThumbnail();
+  }
+});
+
+
+      setState(() {
+        initialized = true;
+        loading = false;
+        isPlaying = true;
+      });
+
+      widget.notifier.value = widget.title;
+      _controller!.play();
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => loading = false);
+    }
+  }
+
+  /// تشغيل / إكمال / إعادة تشغيل
+  Future<void> _togglePlayPause() async {
+    if (_controller == null) {
+      // أول مرة بعد الثمب
+      await _initializeAndPlay();
+      return;
+    }
+
+    final v = _controller!.value;
+
+    if (!isPlaying) {
+      // لو الفيديو في آخره → أعد من البداية
+      if (v.position >= v.duration - const Duration(milliseconds: 200)) {
+        await _controller!.seekTo(Duration.zero);
+      }
+      widget.notifier.value = widget.title;
+      await _controller!.play();
+      setState(() => isPlaying = true);
+    } else {
+      await _controller!.pause();
+      setState(() => isPlaying = false);
+    }
   }
 
   @override
@@ -568,78 +598,78 @@ class _MilestoneCardState extends State<_MilestoneCard> {
   }
 
   Widget _buildMedia() {
+    // 🖼 بدون فيديو → صورة فقط
     if (widget.videoUrl == null) {
-      return SizedBox(
+      return Image.network(
+        widget.imageUrl!,
         height: 200,
         width: double.infinity,
-        child: Image.network(
-          widget.imageUrl!,
-          fit: BoxFit.cover,
-          loadingBuilder: (context, child, loadingProgress) {
-            if (loadingProgress == null) return child;
-            return const SizedBox(
-              height: 200,
-              child: Center(child: CircularProgressIndicator()),
-            );
-          },
-          errorBuilder: (context, error, stackTrace) =>
-              const Center(child: Icon(Icons.error)),
-        ),
+        fit: BoxFit.cover,
       );
     }
 
+    // 🎞 قبل التهيئة → نعرض الثمب + زر تشغيل أو لودينغ
     if (!initialized) {
-      return const SizedBox(
-        height: 200,
-        child: Center(child: CircularProgressIndicator()),
+      return Stack(
+        alignment: Alignment.center,
+        children: [
+          Image.network(
+            widget.thumbUrl!,
+            height: 200,
+            width: double.infinity,
+            fit: BoxFit.cover,
+          ),
+          if (loading)
+            const SizedBox(
+              height: 60,
+              width: 60,
+              child: CircularProgressIndicator(
+                color: Colors.white,
+                strokeWidth: 5,
+              ),
+            )
+          else
+            IconButton(
+              icon: const Icon(
+                Icons.play_circle_fill,
+                size: 60,
+                color: Colors.white,
+              ),
+              onPressed: _togglePlayPause,
+            ),
+        ],
       );
     }
 
-    return Stack(
-      alignment: Alignment.center,
-      children: [
-        SizedBox(
-          height: 200,
-          width: double.infinity,
-          child: VideoPlayer(_controller!),
-        ),
-
-        // Not playing → show play icon
-        if (!isPlaying)
-          IconButton(
-            icon: Icon(
-              Icons.play_circle_fill,
-              size: 60,
-              color: Colors.white.withOpacity(0.7),
-            ),
-            onPressed: () {
-              widget.notifier.value = widget.title; // اجعل هذا الفيديو هو النشط
-              setState(() {
-                isPlaying = true;
-                isPaused = false;
-              });
-
-              _controller!.play();
-            },
+    // 🎥 بعد التهيئة → نعرض الفيديو مع أوفرلاي للأيقونة
+    return GestureDetector(
+      onTap: _togglePlayPause,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          SizedBox(
+            height: 200,
+            width: double.infinity,
+            child: VideoPlayer(_controller!),
           ),
 
-        // Playing → tap to pause
-        if (isPlaying)
-          GestureDetector(
-            onTap: () {
-              _controller!.pause();
-              setState(() {
-                isPaused = true;
-                isPlaying = false;
-              });
-            },
-            child: Container(
+          // لو مو شغال → أظهر زر التشغيل فوق الفيديو (بدون reset)
+          if (!isPlaying)
+            Container(
               height: 200,
               width: double.infinity,
-              color: Colors.transparent,
+              color: Colors.black26,
+              child: const Center(
+                child: Icon(
+                  Icons.play_circle_fill,
+                  size: 60,
+                  color: Colors.white,
+                ),
+              ),
             ),
-          ),
-      ],
+        ],
+      ),
     );
   }
 }
+

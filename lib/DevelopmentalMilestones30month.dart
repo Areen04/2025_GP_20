@@ -148,7 +148,7 @@ class _DevelopmentalMilestones30monthState
                     /// 1 — SOCIAL
                     /// --------------------------------------------------------
                     _buildSection(
-                      title: "Social & Emotional Milestones",
+                      title: "Social & Emotional",
                       index: 0,
                       milestones: [
                         _MilestoneCard(
@@ -444,7 +444,7 @@ class _DevelopmentalMilestones30monthState
 }
 
 /// ---------------------------------------------------------------------------
-/// ⭐ MilestoneCard — unified with 3y / 24m (ValueNotifier + warm start)
+/// ⭐ MilestoneCard — identical logic to 3y / 4y / 5y (thumbnail + play/pause)
 /// ---------------------------------------------------------------------------
 class _MilestoneCard extends StatefulWidget {
   final String title;
@@ -471,81 +471,46 @@ class _MilestoneCard extends StatefulWidget {
 
 class _MilestoneCardState extends State<_MilestoneCard> {
   VideoPlayerController? _controller;
+
   bool isChecked = false;
-  bool isPlaying = false;
-  bool isPaused = false;
   bool initialized = false;
+  bool loading = false;
+  bool isPlaying = false;
+
+  late final VoidCallback _notifierListener;
 
   @override
   void initState() {
     super.initState();
-
-    widget.notifier.addListener(_checkPause);
     _loadCheckbox();
 
-    if (widget.videoUrl != null) {
-      _controller =
-          VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl!));
-
-      _controller!.initialize().then((_) async {
-        // Warm up decoder
-        await _controller!.play();
-        await Future.delayed(const Duration(milliseconds: 250));
-        await _controller!.pause();
-
-        // Show preview frame at 0.35s
-        await _controller!.seekTo(const Duration(milliseconds: 350));
-
-        if (mounted) {
-          setState(() {
-            initialized = true;
-            isPlaying = false;
-            isPaused = false;
-          });
-        }
-      });
-
-      _controller!.addListener(() {
-        if (!mounted) return;
-
-        final position = _controller!.value.position;
-        final duration = _controller!.value.duration;
-
-        // إذا الفيديو قرب ينتهي (آخر 150ms) → اعتبره انتهى وأعده لبداية المعاينة
-        if (duration.inMilliseconds > 0 &&
-            duration.inMilliseconds - position.inMilliseconds <= 150) {
-          _controller!.pause();
-          _controller!.seekTo(const Duration(milliseconds: 350)).then((_) {
-            if (mounted) {
-              setState(() {
-                isPlaying = false;
-                isPaused = false;
-              });
-            }
-          });
-        }
-      });
-    }
+    // Pause when another card becomes active
+    _notifierListener = () {
+      if (widget.notifier.value != widget.title && isPlaying) {
+        _controller?.pause();
+        if (mounted) setState(() => isPlaying = false);
+      }
+    };
+    widget.notifier.addListener(_notifierListener);
   }
 
   @override
   void dispose() {
-    widget.notifier.removeListener(_checkPause);
+    widget.notifier.removeListener(_notifierListener);
     _controller?.dispose();
     super.dispose();
   }
 
-  void _checkPause() {
-    // إذا تم اختيار فيديو آخر كنشط وهذا الفيديو كان يعمل → أوقفه
-    if (widget.notifier.value != widget.title && isPlaying) {
-      _controller?.pause();
-      if (mounted) {
-        setState(() {
-          isPlaying = false;
-          isPaused = true;
-        });
-      }
-    }
+  void _resetToThumbnail() {
+    _controller?.pause();
+    _controller?.dispose();
+    _controller = null;
+
+    setState(() {
+      initialized = false;
+      isPlaying = false;
+      loading = false;
+    });
   }
 
   Future<void> _loadCheckbox() async {
@@ -582,6 +547,67 @@ class _MilestoneCardState extends State<_MilestoneCard> {
         .set({widget.title: v}, SetOptions(merge: true));
   }
 
+  // Initialize + play on demand
+  Future<void> _initializeAndPlay() async {
+    if (loading) return;
+
+    setState(() => loading = true);
+
+    _controller = VideoPlayerController.networkUrl(
+      Uri.parse(widget.videoUrl!),
+    );
+
+    try {
+      await _controller!.initialize();
+      if (!mounted) return;
+
+      // Detect finish → reset to thumbnail
+      _controller!.addListener(() {
+        if (!mounted) return;
+
+        final v = _controller!.value;
+        if (v.isInitialized &&
+            !v.isPlaying &&
+            v.position >= v.duration &&
+            v.duration > Duration.zero) {
+          _resetToThumbnail();
+        }
+      });
+
+      setState(() {
+        initialized = true;
+        loading = false;
+        isPlaying = true;
+      });
+
+      widget.notifier.value = widget.title;
+      _controller!.play();
+    } catch (_) {
+      if (mounted) setState(() => loading = false);
+    }
+  }
+
+  Future<void> _togglePlayPause() async {
+    if (_controller == null) {
+      await _initializeAndPlay();
+      return;
+    }
+
+    final v = _controller!.value;
+
+    if (!isPlaying) {
+      if (v.position >= v.duration - const Duration(milliseconds: 200)) {
+        await _controller!.seekTo(Duration.zero);
+      }
+      widget.notifier.value = widget.title;
+      await _controller!.play();
+      setState(() => isPlaying = true);
+    } else {
+      await _controller!.pause();
+      setState(() => isPlaying = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) => Container(
         margin: const EdgeInsets.only(bottom: 16),
@@ -594,7 +620,7 @@ class _MilestoneCardState extends State<_MilestoneCard> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            /// Checkbox + title
+            /// Checkbox row
             Row(
               children: [
                 Checkbox(
@@ -633,82 +659,77 @@ class _MilestoneCardState extends State<_MilestoneCard> {
         ),
       );
 
-  /// MEDIA (image or video with overlay)
   Widget _buildMedia() {
-    // IMAGE ONLY
+    // no video → just image
     if (widget.videoUrl == null) {
-      return SizedBox(
+      return Image.network(
+        widget.imageUrl!,
         height: 200,
         width: double.infinity,
-        child: Image.network(
-          widget.imageUrl!,
-          fit: BoxFit.cover,
-          loadingBuilder: (context, child, loadingProgress) {
-            if (loadingProgress == null) return child;
-            return const SizedBox(
-              height: 200,
-              child: Center(child: CircularProgressIndicator()),
-            );
-          },
-          errorBuilder: (context, error, stackTrace) =>
-              const Center(child: Icon(Icons.error)),
-        ),
+        fit: BoxFit.cover,
       );
     }
 
-    // VIDEO NOT READY YET
+    // video not initialized → show thumbnail + button
     if (!initialized) {
-      return const SizedBox(
-        height: 200,
-        child: Center(child: CircularProgressIndicator()),
+      return Stack(
+        alignment: Alignment.center,
+        children: [
+          Image.network(
+            widget.thumbUrl!,
+            height: 200,
+            width: double.infinity,
+            fit: BoxFit.cover,
+          ),
+          if (loading)
+            const SizedBox(
+              height: 60,
+              width: 60,
+              child: CircularProgressIndicator(
+                color: Colors.white,
+                strokeWidth: 5,
+              ),
+            )
+          else
+            IconButton(
+              icon: const Icon(
+                Icons.play_circle_fill,
+                size: 60,
+                color: Colors.white,
+              ),
+              onPressed: _togglePlayPause,
+            ),
+        ],
       );
     }
 
-    // VIDEO PLAYER WITH PLAY/PAUSE OVERLAY
-    return Stack(
-      alignment: Alignment.center,
-      children: [
-        SizedBox(
-          height: 200,
-          width: double.infinity,
-          child: VideoPlayer(_controller!),
-        ),
-
-        // Not playing → show play icon
-        if (!isPlaying)
-          IconButton(
-            icon: Icon(
-              Icons.play_circle_fill,
-              size: 60,
-              color: Colors.white.withOpacity(0.7),
-            ),
-            onPressed: () {
-              widget.notifier.value = widget.title; // set this video as active
-              setState(() {
-                isPlaying = true;
-                isPaused = false;
-              });
-              _controller!.play();
-            },
+    // video is ready
+    return GestureDetector(
+      onTap: _togglePlayPause,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          SizedBox(
+            height: 200,
+            width: double.infinity,
+            child: VideoPlayer(_controller!),
           ),
 
-        // Playing → tap to pause
-        if (isPlaying)
-          GestureDetector(
-            onTap: () {
-              _controller!.pause();
-              setState(() {
-                isPaused = true;
-                isPlaying = false;
-              });
-            },
-            child: Container(
+          if (!isPlaying)
+            Container(
               height: 200,
               width: double.infinity,
-              color: Colors.transparent,
+              color: Colors.black26,
+              child: const Center(
+                child: Icon(
+                  Icons.play_circle_fill,
+                  size: 60,
+                  color: Colors.white,
+                ),
+              ),
             ),
-          ),
-      ],
+        ],
+      ),
     );
   }
 }

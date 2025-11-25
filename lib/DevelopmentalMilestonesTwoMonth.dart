@@ -3,11 +3,10 @@ import 'package:video_player/video_player.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-// 🔗 Firebase base URL
+// 🔗 رابط Firebase
 const String baseFirebaseURL =
     'https://firebasestorage.googleapis.com/v0/b/rafiq-app-95bb1.firebasestorage.app/o/';
 
-// Generate Firebase URL
 String firebase(String path, [String? token]) {
   String url = '$baseFirebaseURL${Uri.encodeComponent(path)}?alt=media';
   if (token != null) url += '&token=$token';
@@ -37,12 +36,12 @@ class _DevelopmentalMilestonesTwoMonthState
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final ScrollController _scrollController = ScrollController();
 
-  /// 🎯 Unified video controller (same style as 6m / 4m / 9m...)
+  /// 🔔 يخبر الكروت أي فيديو شغال الآن
   final ValueNotifier<String?> activeVideo = ValueNotifier<String?>(null);
 
-  /// 🎯 Auto-scroll to opened section
-  final ScrollController _scrollController = ScrollController();
+  // مفاتيح الأقسام للسكرول
   final Map<int, GlobalKey> _sectionKeys = {
     0: GlobalKey(),
     1: GlobalKey(),
@@ -50,10 +49,12 @@ class _DevelopmentalMilestonesTwoMonthState
     3: GlobalKey(),
   };
 
-  @override
-  void initState() {
-    super.initState();
-    loadProgressFromFirebase();
+  void updateProgress(bool isChecked) {
+    setState(() {
+      completedCount += isChecked ? 1 : -1;
+      if (completedCount < 0) completedCount = 0;
+      if (completedCount > totalMilestones) completedCount = totalMilestones;
+    });
   }
 
   Future<void> loadProgressFromFirebase() async {
@@ -71,21 +72,20 @@ class _DevelopmentalMilestonesTwoMonthState
           .get();
 
       if (doc.exists) {
+        final data = doc.data()!;
         int count = 0;
-        doc.data()!.forEach((k, v) {
-          if (v == true) count++;
+        data.forEach((key, value) {
+          if (value == true) count++;
         });
         setState(() => completedCount = count);
       }
     } catch (_) {}
   }
 
-  void updateProgress(bool isChecked) {
-    setState(() {
-      completedCount += isChecked ? 1 : -1;
-      if (completedCount < 0) completedCount = 0;
-      if (completedCount > totalMilestones) completedCount = totalMilestones;
-    });
+  @override
+  void initState() {
+    super.initState();
+    loadProgressFromFirebase();
   }
 
   @override
@@ -98,7 +98,8 @@ class _DevelopmentalMilestonesTwoMonthState
         child: AppBar(
           backgroundColor: Colors.white,
           elevation: 0,
-          surfaceTintColor: Colors.transparent,
+          surfaceTintColor: Colors.transparent, // يمنع تحوّل اللون عند السكروول
+          scrolledUnderElevation: 0,
           centerTitle: true,
           title: const Text(
             "Developmental Milestones",
@@ -117,15 +118,11 @@ class _DevelopmentalMilestonesTwoMonthState
             ),
             onPressed: () => Navigator.pop(context),
           ),
-          bottom: const PreferredSize(
-            preferredSize: Size.fromHeight(1),
-            child: SizedBox(
+          bottom: PreferredSize(
+            preferredSize: const Size.fromHeight(1),
+            child: Container(
               height: 1,
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  color: Color(0xFFE0E0E0),
-                ),
-              ),
+              color: const Color(0xFFE0E0E0),
             ),
           ),
         ),
@@ -137,7 +134,7 @@ class _DevelopmentalMilestonesTwoMonthState
               child: SingleChildScrollView(
                 controller: _scrollController,
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -145,7 +142,7 @@ class _DevelopmentalMilestonesTwoMonthState
                     const SizedBox(height: 20),
 
                     // ---------------------------
-                    // SOCIAL & EMOTIONAL
+                    // SOCIAL
                     // ---------------------------
                     _buildSection(
                       title: "Social & Emotional Milestones",
@@ -177,7 +174,9 @@ class _DevelopmentalMilestonesTwoMonthState
                         ),
                         _MilestoneCard(
                           title: "Smiles when you talk to or smile at her",
-                          videoUrl: firebase("videos/ezgif.com-video-merger-2.mp4"),
+                          videoUrl: firebase("videos/2m_social_smile.mp4"),
+                          thumbUrl:
+                              firebase("images/2m_social_smile_thumb.jpg"),
                           childId: widget.childId,
                           onChecked: updateProgress,
                           notifier: activeVideo,
@@ -185,9 +184,7 @@ class _DevelopmentalMilestonesTwoMonthState
                       ],
                     ),
 
-                    // ---------------------------
-                    // SPEECH & LANGUAGE
-                    // ---------------------------
+                    // SPEECH
                     _buildSection(
                       title: "Speech & Language",
                       index: 1,
@@ -195,6 +192,8 @@ class _DevelopmentalMilestonesTwoMonthState
                         _MilestoneCard(
                           title: "Makes cooing sounds",
                           videoUrl: firebase("videos/2m_language_cooing.mp4"),
+                          thumbUrl:
+                              firebase("images/2m_language_cooing_thumb.jpg"),
                           childId: widget.childId,
                           onChecked: updateProgress,
                           notifier: activeVideo,
@@ -202,6 +201,8 @@ class _DevelopmentalMilestonesTwoMonthState
                         _MilestoneCard(
                           title: "Reacts to loud sounds",
                           videoUrl: firebase("videos/2m_language_reacts.mp4"),
+                          thumbUrl:
+                              firebase("images/2m_language_reacts_thumb.jpg"),
                           childId: widget.childId,
                           onChecked: updateProgress,
                           notifier: activeVideo,
@@ -209,9 +210,7 @@ class _DevelopmentalMilestonesTwoMonthState
                       ],
                     ),
 
-                    // ---------------------------
                     // COGNITIVE
-                    // ---------------------------
                     _buildSection(
                       title: "Cognitive Development",
                       index: 2,
@@ -219,6 +218,8 @@ class _DevelopmentalMilestonesTwoMonthState
                         _MilestoneCard(
                           title: "Watches you as you move",
                           videoUrl: firebase("videos/2m_cognitive_watch.mp4"),
+                          thumbUrl:
+                              firebase("images/2m_cognitive_watch_thumb.jpg"),
                           childId: widget.childId,
                           onChecked: updateProgress,
                           notifier: activeVideo,
@@ -234,17 +235,14 @@ class _DevelopmentalMilestonesTwoMonthState
                       ],
                     ),
 
-                    // ---------------------------
                     // MOVEMENT
-                    // ---------------------------
                     _buildSection(
                       title: "Movement & Physical Development",
                       index: 3,
                       milestones: [
                         _MilestoneCard(
                           title: "Holds head up when on tummy",
-                          imageUrl:
-                              firebase("images/2m_movement_head_up.jpg"),
+                          imageUrl: firebase("images/2m_movement_head_up.jpg"),
                           childId: widget.childId,
                           onChecked: updateProgress,
                           notifier: activeVideo,
@@ -253,6 +251,8 @@ class _DevelopmentalMilestonesTwoMonthState
                           title: "Moves both arms and both legs",
                           videoUrl:
                               firebase("videos/2m_movement_arms_legs.mp4"),
+                          thumbUrl: firebase(
+                              "images/2m_movement_arms_legs_thumb.jpg"),
                           childId: widget.childId,
                           onChecked: updateProgress,
                           notifier: activeVideo,
@@ -261,6 +261,8 @@ class _DevelopmentalMilestonesTwoMonthState
                           title: "Opens hands briefly",
                           videoUrl:
                               firebase("videos/2m_movement_opens_hands.mp4"),
+                          thumbUrl: firebase(
+                              "images/2m_movement_opens_hands_thumb.jpg"),
                           childId: widget.childId,
                           onChecked: updateProgress,
                           notifier: activeVideo,
@@ -277,7 +279,6 @@ class _DevelopmentalMilestonesTwoMonthState
     );
   }
 
-  // ---------------- PROGRESS CARD ----------------
   Widget _buildProgressCard(double progress) => Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
@@ -300,8 +301,8 @@ class _DevelopmentalMilestonesTwoMonthState
               "$completedCount of $totalMilestones milestones complete",
               style: const TextStyle(
                 fontFamily: 'Inter',
-                fontSize: 13,
                 color: Colors.black54,
+                fontSize: 13,
               ),
             ),
             const SizedBox(height: 10),
@@ -311,15 +312,13 @@ class _DevelopmentalMilestonesTwoMonthState
                 value: progress,
                 minHeight: 8,
                 backgroundColor: Colors.grey.withOpacity(0.3),
-                valueColor:
-                    const AlwaysStoppedAnimation<Color>(Color(0xFF9D5C7D)),
+                valueColor: const AlwaysStoppedAnimation(Color(0xFF9D5C7D)),
               ),
             ),
           ],
         ),
       );
 
-  // ---------------- SECTION BUILDER ----------------
   Widget _buildSection({
     required String title,
     required int index,
@@ -334,15 +333,15 @@ class _DevelopmentalMilestonesTwoMonthState
           border: Border.all(color: Colors.grey.shade300),
         ),
         child: Theme(
-          data: Theme.of(context).copyWith(
-            dividerColor: Colors.transparent,
-          ),
+          data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
           child: ExpansionTile(
             key: ValueKey("$index-${expandedIndex == index}"),
             initiallyExpanded: expandedIndex == index,
             onExpansionChanged: (isOpen) {
               if (isOpen) {
-                setState(() => expandedIndex = index);
+                setState(() {
+                  expandedIndex = index;
+                });
 
                 WidgetsBinding.instance.addPostFrameCallback((_) {
                   Scrollable.ensureVisible(
@@ -352,6 +351,7 @@ class _DevelopmentalMilestonesTwoMonthState
                   );
                 });
 
+                // إيقاف أي فيديو شغال عند تغيير القسم
                 activeVideo.value = null;
               } else {
                 setState(() => expandedIndex = -1);
@@ -359,7 +359,7 @@ class _DevelopmentalMilestonesTwoMonthState
               }
             },
             trailing: AnimatedRotation(
-              turns: expandedIndex == index ? 0.5 : 0,
+              turns: expandedIndex == index ? 0.5 : 0.0,
               duration: const Duration(milliseconds: 250),
               child: const Icon(
                 Icons.keyboard_arrow_down_rounded,
@@ -383,10 +383,9 @@ class _DevelopmentalMilestonesTwoMonthState
       );
 }
 
-// #####################################################################
-// UNIFIED MILESTONE CARD (2 MONTHS, MATCHING 6M BEHAVIOR)
-// #####################################################################
-
+// ==========================================
+// CARD
+// ==========================================
 class _MilestoneCard extends StatefulWidget {
   final String title;
   final String? imageUrl;
@@ -413,77 +412,49 @@ class _MilestoneCard extends StatefulWidget {
 class _MilestoneCardState extends State<_MilestoneCard> {
   VideoPlayerController? _controller;
   bool isChecked = false;
-  bool isPlaying = false;
-  bool isPaused = false;
+
   bool initialized = false;
+  bool loading = false;
+  bool isPlaying = false;
+
+  late final VoidCallback _notifierListener;
 
   @override
   void initState() {
     super.initState();
-
-    widget.notifier.addListener(_checkPause);
     _loadCheckboxState();
 
-    if (widget.videoUrl != null) {
-      _controller =
-          VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl!));
-
-      _controller!.initialize().then((_) async {
-        await _controller!.play();
-        await Future.delayed(const Duration(milliseconds: 250));
-        await _controller!.pause();
-        await _controller!.seekTo(const Duration(milliseconds: 350));
-
+    // لما فيديو ثاني يصير active → نوقف هذا بس بدون reset
+    _notifierListener = () {
+      if (widget.notifier.value != widget.title && isPlaying) {
+        _controller?.pause();
         if (mounted) {
-          setState(() {
-            initialized = true;
-            isPlaying = false;
-            isPaused = false;
-          });
+          setState(() => isPlaying = false);
         }
-      });
-
-      _controller!.addListener(() {
-        if (!mounted) return;
-
-        final pos = _controller!.value.position;
-        final dur = _controller!.value.duration;
-
-        if (dur.inMilliseconds > 0 &&
-            dur.inMilliseconds - pos.inMilliseconds <= 150) {
-          _controller!.pause();
-          _controller!.seekTo(const Duration(milliseconds: 350));
-
-          if (mounted) {
-            setState(() {
-              isPlaying = false;
-              isPaused = false;
-            });
-          }
-        }
-      });
-    }
+      }
+    };
+    widget.notifier.addListener(_notifierListener);
   }
 
   @override
   void dispose() {
-    widget.notifier.removeListener(_checkPause);
+    widget.notifier.removeListener(_notifierListener);
     _controller?.dispose();
     super.dispose();
   }
 
-  // Auto-pause when another video plays
-  void _checkPause() {
-    if (widget.notifier.value != widget.title && isPlaying) {
-      _controller?.pause();
-      setState(() {
-        isPlaying = false;
-        isPaused = true;
-      });
-    }
+  void _resetToThumbnail() {
+    _controller?.pause();
+    _controller?.dispose();
+    _controller = null;
+
+    setState(() {
+      initialized = false; // ← يرجع للثمب
+      isPlaying = false;
+      loading = false;
+    });
   }
 
-  // Load checkbox state (Firestore, 2_months)
   Future<void> _loadCheckboxState() async {
     try {
       final user = FirebaseAuth.instance.currentUser;
@@ -504,7 +475,7 @@ class _MilestoneCardState extends State<_MilestoneCard> {
     } catch (_) {}
   }
 
-  Future<void> _saveCheckboxState(bool value) async {
+  Future<void> _saveCheckboxState(bool v) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
 
@@ -515,113 +486,192 @@ class _MilestoneCardState extends State<_MilestoneCard> {
         .doc(widget.childId)
         .collection('milestones')
         .doc('2_months')
-        .set({widget.title: value}, SetOptions(merge: true));
+        .set({widget.title: v}, SetOptions(merge: true));
   }
 
-  // -------------------- MEDIA BUILDER --------------------
-  Widget _buildMedia() {
-    if (widget.videoUrl == null) {
-      return SizedBox(
-        height: 200,
-        width: double.infinity,
-        child: Image.network(widget.imageUrl!, fit: BoxFit.cover),
-      );
+  Future<void> _initializeAndPlay() async {
+    if (loading) return;
+
+    setState(() => loading = true);
+
+    _controller =
+        VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl!));
+
+    try {
+      await _controller!.initialize();
+      if (!mounted) return;
+
+      _controller!.addListener(() {
+        if (!mounted) return;
+        final v = _controller!.value;
+
+        // 🎯 لما يخلص الفيديو → يرجع للثمب
+        if (v.isInitialized &&
+            !v.isPlaying &&
+            v.position >= v.duration &&
+            v.duration > Duration.zero) {
+          _resetToThumbnail();
+        }
+      });
+
+      setState(() {
+        initialized = true;
+        loading = false;
+        isPlaying = true;
+      });
+
+      widget.notifier.value = widget.title;
+      _controller!.play();
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => loading = false);
+    }
+  }
+
+  /// تشغيل / إكمال / إعادة تشغيل
+  Future<void> _togglePlayPause() async {
+    if (_controller == null) {
+      // أول مرة بعد الثمب
+      await _initializeAndPlay();
+      return;
     }
 
-    if (!initialized) {
-      return const SizedBox(
-        height: 200,
-        child: Center(child: CircularProgressIndicator()),
-      );
+    final v = _controller!.value;
+
+    if (!isPlaying) {
+      // لو الفيديو في آخره → أعد من البداية
+      if (v.position >= v.duration - const Duration(milliseconds: 200)) {
+        await _controller!.seekTo(Duration.zero);
+      }
+      widget.notifier.value = widget.title;
+      await _controller!.play();
+      setState(() => isPlaying = true);
+    } else {
+      await _controller!.pause();
+      setState(() => isPlaying = false);
     }
-
-    return Stack(
-      alignment: Alignment.center,
-      children: [
-        SizedBox(
-          height: 200,
-          width: double.infinity,
-          child: VideoPlayer(_controller!),
-        ),
-
-        if (!isPlaying)
-          IconButton(
-            icon: Icon(Icons.play_circle_fill,
-                size: 60, color: Colors.white.withOpacity(0.7)),
-            onPressed: () {
-              widget.notifier.value = widget.title;
-              setState(() {
-                isPlaying = true;
-                isPaused = false;
-              });
-              _controller!.play();
-            },
-          ),
-
-        if (isPlaying)
-          GestureDetector(
-            onTap: () {
-              _controller!.pause();
-              setState(() {
-                isPaused = true;
-                isPlaying = false;
-              });
-            },
-            child: Container(
-              height: 200,
-              width: double.infinity,
-              color: Colors.transparent,
-            ),
-          ),
-      ],
-    );
   }
 
   @override
-  Widget build(BuildContext context) => Container(
-        margin: const EdgeInsets.only(bottom: 16),
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.grey.shade300),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Checkbox(
-                  activeColor: const Color(0xFF9D5C7D),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(5),
-                  ),
-                  value: isChecked,
-                  onChanged: (v) {
-                    if (v == null) return;
-                    setState(() => isChecked = v);
-                    widget.onChecked?.call(v);
-                    _saveCheckboxState(v);
-                  },
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey.shade300),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Checkbox(
+                activeColor: const Color(0xFF9D5C7D),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(5),
                 ),
-                Expanded(
-                  child: Text(
-                    widget.title,
-                    style: const TextStyle(
-                      fontFamily: 'Inter',
-                      fontWeight: FontWeight.w600,
-                      fontSize: 14,
-                    ),
+                value: isChecked,
+                onChanged: (v) {
+                  if (v == null) return;
+                  setState(() => isChecked = v);
+                  widget.onChecked?.call(v);
+                  _saveCheckboxState(v);
+                },
+              ),
+              Expanded(
+                child: Text(
+                  widget.title,
+                  style: const TextStyle(
+                    fontFamily: 'Inter',
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
                   ),
                 ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: _buildMedia(),
-            ),
-          ],
-        ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: _buildMedia(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMedia() {
+    // 🖼 بدون فيديو → صورة فقط
+    if (widget.videoUrl == null) {
+      return Image.network(
+        widget.imageUrl!,
+        height: 200,
+        width: double.infinity,
+        fit: BoxFit.cover,
       );
+    }
+
+    // 🎞 قبل التهيئة → نعرض الثمب + زر تشغيل أو لودينغ
+    if (!initialized) {
+      return Stack(
+        alignment: Alignment.center,
+        children: [
+          Image.network(
+            widget.thumbUrl!,
+            height: 200,
+            width: double.infinity,
+            fit: BoxFit.cover,
+          ),
+          if (loading)
+            const SizedBox(
+              height: 60,
+              width: 60,
+              child: CircularProgressIndicator(
+                color: Colors.white,
+                strokeWidth: 5,
+              ),
+            )
+          else
+            IconButton(
+              icon: const Icon(
+                Icons.play_circle_fill,
+                size: 60,
+                color: Colors.white,
+              ),
+              onPressed: _togglePlayPause,
+            ),
+        ],
+      );
+    }
+
+    // 🎥 بعد التهيئة → نعرض الفيديو مع أوفرلاي للأيقونة
+    return GestureDetector(
+      onTap: _togglePlayPause,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          SizedBox(
+            height: 200,
+            width: double.infinity,
+            child: VideoPlayer(_controller!),
+          ),
+          if (!isPlaying)
+            Container(
+              height: 200,
+              width: double.infinity,
+              color: Colors.black26,
+              child: const Center(
+                child: Icon(
+                  Icons.play_circle_fill,
+                  size: 60,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
 }
