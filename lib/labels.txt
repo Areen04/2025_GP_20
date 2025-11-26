@@ -1,0 +1,8 @@
+Atopic_dermatitis_Eczema
+Bacterial_Skin_Infection
+Chickenpox
+Fungal-Infections
+Hand-Foot-And-Mouth_Disease
+Urticaria
+Warts_and_Viral_Infections
+insect_bite
