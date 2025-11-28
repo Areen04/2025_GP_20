@@ -215,7 +215,7 @@ class _ParentDashboardState extends State<ParentDashboard> {
                           const Text(
                             "Manage your children's health journey.",
                             style: TextStyle(
-                              color: Color(0xFF5E5E5E),
+                              color: Color(0xFF6F6F6F),
                               fontSize: 13,
                               height: 1.3,
                               fontFamily: 'Inter',

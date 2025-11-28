@@ -469,11 +469,11 @@ else
       ),
       SizedBox(height: 6),
       Text(
-        "Get an instant AI-powered skin analysis. \nFocus the camera on the skin area.",
+        "Get an instant AI-powered skin analysis\nFocus the camera on the skin area",
         textAlign: TextAlign.center,
         style: TextStyle(
           fontSize: 13,
-          color: Color(0xFF6D6D6D),
+          color: Color(0xFF6F6F6F),
         ),
       ),
     ],
@@ -569,7 +569,7 @@ else
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: Color(0xFF6D6D6D),
+                  color: Color(0xFF6F6F6F),
                 ),
               ),
               const SizedBox(height: 4),
@@ -598,7 +598,7 @@ else
                         tip,
                         style: const TextStyle(
                           fontSize: 13,
-                          color: Color(0xFF5A5A5A),
+                          color: Color(0xFF6F6F6F),
                         ),
                       ),
                     ),

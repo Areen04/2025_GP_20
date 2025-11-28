@@ -357,11 +357,11 @@ class _DevelopmentalMilestones30monthState
             ),
 
                  const Text(
-        "Only check milestones you're confident your child has achieved ",
+        "Only check milestones you're confident your child has achieved",
         style: TextStyle(
           fontFamily: 'Inter',
-          color: Colors.black45,
-          fontSize: 12,
+          color: Color(0xFF6F6F6F),
+          fontSize: 13,
         ),
       ),
 
@@ -371,10 +371,10 @@ class _DevelopmentalMilestones30monthState
               style: const TextStyle(
                 fontFamily: 'Inter',
                 fontSize: 13,
-                color: Colors.black54,
+                color: Color(0xFF6F6F6F),
               ),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 6),
             ClipRRect(
               borderRadius: BorderRadius.circular(10),
               child: LinearProgressIndicator(
