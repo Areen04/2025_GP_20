@@ -52,4 +52,4 @@ This combination makes consultations faster and more effective, as doctors can i
 -Open in Android Studio or VS Code.  
 
 -Run flutter pub get.
->>>>>>> fabdf70cf9415ea6e9b98b12050a973ebc660c8f
+
