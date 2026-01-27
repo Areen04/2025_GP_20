@@ -16,6 +16,7 @@ import 'DevelopmentalMilestones30month.dart';
 import 'DevelopmentalMilestones3year.dart';
 import 'DevelopmentalMilestones4year.dart';
 import 'DevelopmentalMilestones5year.dart';
+import 'activity_library_page.dart';
 
 class ChildDashboard extends StatefulWidget {
   final String childId;
@@ -669,14 +670,26 @@ child: Row(
                   fontSizeSubtitle: fontSizeSubtitle,
                 ),
                 _DashboardCard(
-                  iconPath: 'lib/icons/book.svg',
-                  title: "Activity Library",
-                  subtitle: "Engaging learning resources and curated content.",
-                  iconSize: iconSize,
-                  padding: cardPadding,
-                  fontSizeTitle: fontSizeTitle,
-                  fontSizeSubtitle: fontSizeSubtitle,
-                ),
+  iconPath: 'lib/icons/book.svg',
+  title: "Activity Library",
+  subtitle: "Engaging learning resources and curated content.",
+  iconSize: iconSize,
+  padding: cardPadding,
+  fontSizeTitle: fontSizeTitle,
+  fontSizeSubtitle: fontSizeSubtitle,
+  onTap: () {
+    final selectedAge = ages[selectedIndex];
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ActivityLibraryPage(
+          ageKey: selectedAge,
+        ),
+      ),
+    );
+  },
+),
+
               ],
             ),
           ],
