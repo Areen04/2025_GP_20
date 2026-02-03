@@ -3,6 +3,8 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'edit_profile.dart';
+import 'services/visit_token_service.dart';
+import 'doctor_visit_page.dart';
 
 class QRScanPage extends StatefulWidget {
   const QRScanPage({super.key});
@@ -14,6 +16,7 @@ class QRScanPage extends StatefulWidget {
 class _QRScanPageState extends State<QRScanPage> {
   String? doctorName;
   bool _loading = true;
+bool _isProcessing = false;
 
   @override
   void initState() {
@@ -49,6 +52,30 @@ class _QRScanPageState extends State<QRScanPage> {
       });
     }
   }
+Future<void> _handleScannedQR(String token) async {
+  if (_isProcessing) return;
+  _isProcessing = true;
+
+  final childId = await VisitTokenService.consumeToken(token);
+
+  if (childId == null) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('QR code expired or invalid'),
+      ),
+    );
+    _isProcessing = false;
+    return;
+  }
+
+  Navigator.push(
+  context,
+  MaterialPageRoute(
+    builder: (_) => DoctorVisitPage(childId: childId),
+  ),
+);
+
+}
 
   @override
   Widget build(BuildContext context) {
@@ -167,21 +194,14 @@ class _QRScanPageState extends State<QRScanPage> {
                     clipBehavior: Clip.hardEdge,
                     child: MobileScanner(
                       onDetect: (capture) {
-                        for (final barcode in capture.barcodes) {
-                          final code = barcode.rawValue ?? '';
+  for (final barcode in capture.barcodes) {
+    final token = barcode.rawValue;
+    if (token != null) {
+      _handleScannedQR(token); // ✅ async handled safely
+    }
+  }
+},
 
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('QR Detected: $code'),
-                              backgroundColor: const Color(0xFF9D5C7D),
-                              behavior: SnackBarBehavior.floating,
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8)),
-                              duration: const Duration(seconds: 2),
-                            ),
-                          );
-                        }
-                      },
                     ),
                   ),
                 ],

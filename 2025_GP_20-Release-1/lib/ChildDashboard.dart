@@ -17,6 +17,7 @@ import 'DevelopmentalMilestones3year.dart';
 import 'DevelopmentalMilestones4year.dart';
 import 'DevelopmentalMilestones5year.dart';
 import 'activity_library_page.dart';
+import 'widgets/child_qr_popup.dart';
 
 class ChildDashboard extends StatefulWidget {
   final String childId;
@@ -351,19 +352,32 @@ void previousAge() {
                       ),
                     ],
                   ),
-                  Container(
-                    width: 38,
-                    height: 38,
-                    decoration: BoxDecoration(
-                      color: const Color.fromARGB(255, 255, 255, 255),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: const Icon(
-                      Icons.qr_code_2_outlined,
-                      color: Color(0xFF9D5C7D),
-                      size: 22,
-                    ),
-                  ),
+              GestureDetector(
+  onTap: () {
+    showDialog(
+      context: context,
+      builder: (_) => ChildQRPopup(
+        childId: widget.childId,
+        childName: widget.childName,
+      ),
+    );
+  },
+  child: Container(
+    width: 38,
+    height: 38,
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(20),
+    ),
+    child: const Icon(
+      Icons.qr_code_2_outlined,
+      color: Color(0xFF9D5C7D),
+      size: 22,
+    ),
+  ),
+),
+
+
                 ],
               ),
             ),
