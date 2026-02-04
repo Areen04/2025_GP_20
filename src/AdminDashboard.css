@@ -1,0 +1,252 @@
+.dashPage{
+  min-height: 100vh;
+  background: #f6f6f6;
+  padding: 28px 16px 60px;
+}
+
+.dashWrap{
+  max-width: 1100px;
+  margin: 0 auto;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.06);
+  overflow: hidden;
+}
+
+/* ================= TOP BAR ================= */
+
+.dashTopBar{
+  height: 88px;                 /* ⬅️ كبرنا الهيدر */
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding: 0 20px;
+  border-bottom: 1px solid #eee;
+}
+
+/* براند */
+.brand{
+  display:flex;
+  align-items:center;
+  gap: 14px;
+  padding-top: 3px;             /* ⬅️ نزّلنا المحتوى شوي */
+}
+
+/* الشعار */
+.logoCircle{
+  width: 84px;                  /* ⬅️ حجم الشعار */
+  height: 84px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid #f0e6ea;
+  flex-shrink: 0;
+}
+
+.logoCircle img{
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain;
+  object-position: center;
+}
+
+/* زر الخروج */
+.logoutBtn{
+  border: 1px solid transparent;
+  background: #8c5b6d;
+  color: #fff;
+  padding: 10px 18px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 13px;
+}
+.logoutBtn:hover{ opacity: .92; }
+
+/* ================= CONTENT ================= */
+
+.dashTitle{
+  font-size: 28px;
+  font-weight: 700;
+  padding: 22px 18px 0;
+  color:#222;
+}
+
+.sectionTitle{
+  font-size: 14px;
+  font-weight: 700;
+  padding: 18px;
+  color:#222;
+}
+
+.cardsGrid{
+  display:grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  padding: 0 18px 8px;
+}
+
+.statCard{
+  background:#fff;
+  border: 1px solid #eee;
+  border-radius: 12px;
+  padding: 14px;
+}
+
+.statLabel{
+  font-size: 11px;
+  color:#666;
+  margin-bottom: 10px;
+}
+
+.statRow{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+
+.statValue{
+  font-size: 22px;
+  font-weight: 800;
+  color:#111;
+}
+
+.statIcon{
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  display:grid;
+  place-items:center;
+  border: 1px solid #f0e6ea;
+  color:#8c5b6d;
+  background: #fff;
+}
+
+.tableCard{
+  margin: 0 18px;
+  border: 1px solid #eee;
+  border-radius: 12px;
+  overflow:hidden;
+  background:#fff;
+}
+
+.tableHead{
+  display:grid;
+  grid-template-columns: 2fr 2.2fr 1.6fr 1.6fr 1.2fr;
+  gap: 10px;
+  padding: 12px 14px;
+  background:#fafafa;
+  border-bottom: 1px solid #eee;
+  font-size: 11px;
+  color:#666;
+  font-weight: 700;
+}
+
+.tableRow{
+  display:grid;
+  grid-template-columns: 2fr 2.2fr 1.6fr 1.6fr 1.2fr;
+  gap: 10px;
+  padding: 12px 14px;
+  border-bottom: 1px solid #f1f1f1;
+  font-size: 12px;
+  color:#222;
+  align-items:center;
+}
+.tableRow:last-child{ border-bottom:none; }
+
+.muted{ color:#666; }
+
+.actionsCol{
+  display:flex;
+  gap: 8px;
+  justify-content:flex-end;
+}
+
+.btnAccept, .btnReject{
+  padding: 6px 10px;
+  border-radius: 8px;
+  cursor:pointer;
+  font-size: 11px;
+  background:#fff;
+}
+
+.btnAccept{
+  border: 1px solid #8c5b6d;
+  color:#8c5b6d;
+}
+.btnAccept:hover{
+  background:#8c5b6d;
+  color:#fff;
+}
+
+.btnReject{
+  border: 1px solid #e2c9d2;
+  color:#8c5b6d;
+}
+.btnReject:hover{
+  background:#f5e8ee;
+}
+
+.emptyState{
+  padding: 18px 14px;
+  font-size: 12px;
+  color:#666;
+}
+
+/* ================= MODAL ================= */
+
+.modalOverlay{
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.35);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding: 18px;
+  z-index: 9999;
+}
+
+.modalCard{
+  width: min(420px, 100%);
+  background:#fff;
+  border-radius: 14px;
+  padding: 16px;
+  box-shadow: 0 18px 60px rgba(0,0,0,.25);
+}
+
+.modalTitle{
+  font-weight: 800;
+  font-size: 16px;
+  margin-bottom: 8px;
+}
+
+.modalMsg{
+  font-size: 13px;
+  color:#333;
+  margin-bottom: 14px;
+  line-height: 1.6;
+}
+
+.modalBtn{
+  width: 100%;
+  border: 0;
+  background: #8c5b6d;
+  color:#fff;
+  padding: 10px 12px;
+  border-radius: 10px;
+  cursor:pointer;
+}
+.modalBtn:hover{ opacity: .92; }
+
+/* ================= RESPONSIVE ================= */
+
+@media (max-width: 900px){
+  .cardsGrid{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .tableHead, .tableRow{
+    grid-template-columns: 1.8fr 2fr 1.3fr 1.3fr 1.4fr;
+  }
+}
+
+@media (max-width: 560px){
+  .cardsGrid{ grid-template-columns: 1fr; }
+}
