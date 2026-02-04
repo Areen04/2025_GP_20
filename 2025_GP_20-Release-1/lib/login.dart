@@ -13,8 +13,7 @@ class LoginScreen extends StatefulWidget {
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen>
-    with TickerProviderStateMixin {
+class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin {
   final _auth = FirebaseAuth.instance;
   final _email = TextEditingController();
   final _password = TextEditingController();
@@ -69,33 +68,40 @@ class _LoginScreenState extends State<LoginScreen>
     super.dispose();
   }
 
-  // Rounded border helper
   OutlineInputBorder _border(Color color) => OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: BorderSide(color: color, width: 1.5),
-      );
+    borderRadius: BorderRadius.circular(8),
+    borderSide: BorderSide(color: color, width: 1.5),
+  );
 
   Future<void> _showErrorPopup(String message) async {
     await showDialog(
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        title: const Text("Login Failed",
-            style: TextStyle(color: Colors.black87)),
+        title: const Text("Login Failed", style: TextStyle(color: Colors.black87)),
         content: Text(message, style: const TextStyle(color: Colors.black54)),
         actions: [
           TextButton(
             style: TextButton.styleFrom(
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8)),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
             ),
             onPressed: () => Navigator.pop(context),
-            child: const Text("OK",
-                style: TextStyle(color: Color(0xFF9D5C7D))),
+            child: const Text("OK", style: TextStyle(color: Color(0xFF9D5C7D))),
           ),
         ],
       ),
     );
+  }
+
+  // ✅ helper: check if doctor is approved from Firestore doc
+  bool _isDoctorApproved(Map<String, dynamic> data) {
+    final status = (data['status'] ?? '').toString().toLowerCase().trim();
+    final isApproved = data['isApproved'] == true;
+
+    // accept either:
+    // - status == "approved"
+    // - isApproved == true
+    return status == 'approved' || isApproved;
   }
 
   Future<void> _login() async {
@@ -103,18 +109,21 @@ class _LoginScreenState extends State<LoginScreen>
     final password = _password.text.trim();
 
     if (email.isEmpty || password.isEmpty) {
-      return _showErrorPopup("Please fill in all fields.");
+      await _showErrorPopup("Please fill in all fields.");
+      return;
     }
 
     setState(() => _isLoading = true);
+
     try {
       final cred = await _auth.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
 
-      DocumentSnapshot? doc;
+      DocumentSnapshot<Map<String, dynamic>>? doc;
 
+      // 1) Try parents collection
       final parentDoc = await FirebaseFirestore.instance
           .collection('parents')
           .doc(cred.user!.uid)
@@ -123,30 +132,51 @@ class _LoginScreenState extends State<LoginScreen>
       if (parentDoc.exists) {
         doc = parentDoc;
       } else {
+        // 2) Fallback users collection
         final userDoc = await FirebaseFirestore.instance
             .collection('users')
             .doc(cred.user!.uid)
             .get();
+
         if (userDoc.exists) doc = userDoc;
       }
 
-      if (doc == null || !doc.exists) {
-        return _showErrorPopup("User not found. Please check your email.");
+      if (doc == null || !doc.exists || doc.data() == null) {
+        await _auth.signOut();
+        await _showErrorPopup("User not found. Please check your email.");
+        return;
       }
 
-      final role = doc['role'];
+      final data = doc.data()!;
+      final role = (data['role'] ?? '').toString().toLowerCase().trim();
 
+      // ✅ Doctor: only allow if approved
       if (role == 'doctor') {
+        final approved = _isDoctorApproved(data);
+
+        if (!approved) {
+          await _auth.signOut(); // مهم: لا نخليه يعتبر نفسه logged in
+          await _showErrorPopup(
+            "Your doctor account is not approved yet. Please wait for admin approval.",
+          );
+          return;
+        }
+
+        // approved ✅
+        if (!mounted) return;
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (_) => const QRScanPage()),
         );
-      } else {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const ParentDashboard()),
-        );
+        return;
       }
+
+      // Parent / other roles
+      if (!mounted) return;
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const ParentDashboard()),
+      );
     } on FirebaseAuthException catch (e) {
       String message;
       switch (e.code) {
@@ -162,7 +192,6 @@ class _LoginScreenState extends State<LoginScreen>
         case 'invalid-credential':
           message = "Email or password is incorrect.";
           break;
-
         default:
           message = e.message ?? "An unexpected error occurred.";
       }
@@ -182,8 +211,7 @@ class _LoginScreenState extends State<LoginScreen>
 
         return StatefulBuilder(
           builder: (context, setState) => AlertDialog(
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
             title: Text(
               emailSent ? "Email Sent" : "Reset Password",
               style: const TextStyle(
@@ -194,40 +222,38 @@ class _LoginScreenState extends State<LoginScreen>
             ),
             content: emailSent
                 ? Text(
-                    "A reset link has been sent to ${controller.text.trim()}.",
-                    style: const TextStyle(
-                      fontFamily: 'Inter',
-                      color: Colors.black87,
-                    ),
-                  )
+              "A reset link has been sent to ${controller.text.trim()}.",
+              style: const TextStyle(
+                fontFamily: 'Inter',
+                color: Colors.black87,
+              ),
+            )
                 : Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      TextField(
-                        controller: controller,
-                        decoration: InputDecoration(
-                          labelText: "Enter your email",
-                          prefixIcon: const Icon(Icons.email_outlined),
-                          border: _border(Colors.grey),
-                          enabledBorder: _border(Colors.grey),
-                          focusedBorder: _border(const Color(0xFF9D5C7D)),
-                        ),
-                      ),
-                      if (errorMessage != null) ...[
-                        const SizedBox(height: 8),
-                        Text(
-                          errorMessage!,
-                          style: const TextStyle(
-                              color: Colors.red, fontSize: 13),
-                        ),
-                      ],
-                    ],
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: controller,
+                  decoration: InputDecoration(
+                    labelText: "Enter your email",
+                    prefixIcon: const Icon(Icons.email_outlined),
+                    border: _border(Colors.grey),
+                    enabledBorder: _border(Colors.grey),
+                    focusedBorder: _border(const Color(0xFF9D5C7D)),
                   ),
+                ),
+                if (errorMessage != null) ...[
+                  const SizedBox(height: 8),
+                  Text(
+                    errorMessage!,
+                    style: const TextStyle(color: Colors.red, fontSize: 13),
+                  ),
+                ],
+              ],
+            ),
             actions: [
               TextButton(
                 style: TextButton.styleFrom(
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                 ),
                 onPressed: () => Navigator.pop(context),
                 child: Text(emailSent ? "OK" : "Cancel"),
@@ -238,24 +264,18 @@ class _LoginScreenState extends State<LoginScreen>
                     backgroundColor: Colors.white,
                     foregroundColor: const Color(0xFF9D5C7D),
                     side: const BorderSide(color: Color(0xFF9D5C7D)),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8)),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                   ),
                   onPressed: () async {
                     final email = controller.text.trim();
                     if (email.isEmpty) {
-                      setState(() {
-                        errorMessage = "Please enter your email first.";
-                      });
+                      setState(() => errorMessage = "Please enter your email first.");
                       return;
                     }
 
                     try {
-                      await FirebaseAuth.instance
-                          .sendPasswordResetEmail(email: email);
-                      setState(() {
-                        emailSent = true;
-                      });
+                      await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
+                      setState(() => emailSent = true);
                     } on FirebaseAuthException catch (e) {
                       setState(() {
                         errorMessage = e.code == 'user-not-found'
@@ -284,7 +304,6 @@ class _LoginScreenState extends State<LoginScreen>
         builder: (context, child) {
           return Stack(
             children: [
-              // Decorative waves
               Positioned(
                 top: -80 + _waveAnimation.value,
                 right: -60,
@@ -295,10 +314,7 @@ class _LoginScreenState extends State<LoginScreen>
                     height: screenWidth * 0.5,
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
-                        colors: [
-                          Color(0xFFF8E9F0),
-                          Color(0xFFE7BFD1),
-                        ],
+                        colors: [Color(0xFFF8E9F0), Color(0xFFE7BFD1)],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
@@ -324,10 +340,7 @@ class _LoginScreenState extends State<LoginScreen>
                     height: screenWidth * 0.5,
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
-                        colors: [
-                          Color(0xFFE7BFD1),
-                          Color(0xFFD39AB7),
-                        ],
+                        colors: [Color(0xFFE7BFD1), Color(0xFFD39AB7)],
                         begin: Alignment.bottomRight,
                         end: Alignment.topLeft,
                       ),
@@ -353,14 +366,16 @@ class _LoginScreenState extends State<LoginScreen>
                         position: _slideAnimation,
                         child: Column(
                           children: [
-                            const Text("Log In",
-                                style: TextStyle(
-                                    fontSize: 26,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black)),
+                            const Text(
+                              "Log In",
+                              style: TextStyle(
+                                fontSize: 26,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black,
+                              ),
+                            ),
                             const SizedBox(height: 30),
 
-                            // Email
                             TextField(
                               controller: _email,
                               decoration: InputDecoration(
@@ -372,7 +387,6 @@ class _LoginScreenState extends State<LoginScreen>
                             ),
                             const SizedBox(height: 15),
 
-                            // Password
                             TextField(
                               controller: _password,
                               obscureText: _obscure,
@@ -382,11 +396,8 @@ class _LoginScreenState extends State<LoginScreen>
                                 enabledBorder: _border(Colors.grey),
                                 focusedBorder: _border(const Color(0xFF9D5C7D)),
                                 suffixIcon: IconButton(
-                                  icon: Icon(_obscure
-                                      ? Icons.visibility_off
-                                      : Icons.visibility),
-                                  onPressed: () =>
-                                      setState(() => _obscure = !_obscure),
+                                  icon: Icon(_obscure ? Icons.visibility_off : Icons.visibility),
+                                  onPressed: () => setState(() => _obscure = !_obscure),
                                 ),
                               ),
                             ),
@@ -395,34 +406,33 @@ class _LoginScreenState extends State<LoginScreen>
                             _isLoading
                                 ? const CircularProgressIndicator()
                                 : SizedBox(
-                                    height: 56,
-                                    width: double.infinity,
-                                    child: ElevatedButton(
-                                      onPressed: _login,
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: const Color(0xFF9D5C7D),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(8),
-                                        ),
-                                      ),
-                                      child: const Text(
-                                        "Log In",
-                                        style: TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.w600,
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                    ),
+                              height: 56,
+                              width: double.infinity,
+                              child: ElevatedButton(
+                                onPressed: _login,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF9D5C7D),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
                                   ),
+                                ),
+                                child: const Text(
+                                  "Log In",
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ),
 
                             const SizedBox(height: 10),
 
                             TextButton(
                               onPressed: _forgotPassword,
                               style: TextButton.styleFrom(
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8)),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                               ),
                               child: const Text(
                                 "Forgot Password?",
@@ -438,16 +448,18 @@ class _LoginScreenState extends State<LoginScreen>
                                 GestureDetector(
                                   onTap: () => Navigator.push(
                                     context,
-                                    MaterialPageRoute(
-                                        builder: (_) => const ParentSignup()),
+                                    MaterialPageRoute(builder: (_) => const ParentSignup()),
                                   ),
-                                  child: const Text("Create New Account",
-                                      style: TextStyle(
-                                          color: Color(0xFF9D5C7D),
-                                          fontWeight: FontWeight.bold)),
+                                  child: const Text(
+                                    "Create New Account",
+                                    style: TextStyle(
+                                      color: Color(0xFF9D5C7D),
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
                                 ),
                               ],
-                            )
+                            ),
                           ],
                         ),
                       ),

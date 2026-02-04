@@ -11,37 +11,33 @@ dependencies:
   flutter:
     sdk: flutter
 
+  # QR
   qr_flutter: ^4.1.0
+
+  # Image & media
   flutter_image_compress: ^2.1.0
-
-
-  # 🎨 واجهات وأيقونات
-  cupertino_icons: ^1.0.8
-  flutter_svg: ^2.0.10+1
-
-  # 📸 مكتبات الكاميرا والصور
   image_picker: ^1.1.2
   mobile_scanner: ^6.0.11
   video_player: ^2.9.1
+  image: ^4.5.4
 
-  # 🔥 Firebase
+  # UI
+  cupertino_icons: ^1.0.8
+  flutter_svg: ^2.0.10+1
+  auto_size_text: ^3.0.0
+
+  # Firebase
   firebase_core: ^3.5.0
   firebase_auth: ^5.4.1
   cloud_firestore: ^5.6.12
   firebase_storage: ^12.3.4
 
-  # 🧠 تشغيل نموذج ONNX
+  # ONNX
   onnxruntime: ^1.4.1
 
-  # 🧩 تحليل الصور
-  image: ^4.5.4
-
-  # 💾 تخزين محلي
+  # Local storage
   shared_preferences: ^2.3.2
   flutter_cache_manager: ^3.4.1
-
-  # 🔤 تصغير حجم الخط تلقائي لاسم الطفل
-  auto_size_text: ^3.0.0   # ← هنا الإضافة المهمة
 
 dev_dependencies:
   flutter_test:
@@ -56,4 +52,3 @@ flutter:
     - lib/icons/
     - lib/models_RafiqSkinModel_idx.onnx
     - lib/labels.txt
-
