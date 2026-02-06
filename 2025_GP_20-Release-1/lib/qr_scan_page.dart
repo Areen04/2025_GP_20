@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'edit_profile.dart';
 import 'services/visit_token_service.dart';
 import 'doctor_visit_page.dart';
+import 'package:rafiq_gp/l10n/app_localizations.dart';
 
 class QRScanPage extends StatefulWidget {
   const QRScanPage({super.key});
@@ -27,7 +28,10 @@ bool _isProcessing = false;
   Future<void> _loadDoctorName() async {
     try {
       final user = FirebaseAuth.instance.currentUser;
-      if (user == null) return;
+      if (user == null) {
+        setState(() => _loading = false);
+        return;
+      }
 
       final doc = await FirebaseFirestore.instance
           .collection('users')
@@ -36,23 +40,24 @@ bool _isProcessing = false;
 
       if (doc.exists) {
         setState(() {
-          doctorName = doc['fullName'] ?? "Doctor";
+          doctorName = doc['fullName'];
           _loading = false;
         });
       } else {
         setState(() {
-          doctorName = "Doctor";
+          doctorName = null;
           _loading = false;
         });
       }
     } catch (e) {
       setState(() {
-        doctorName = "Doctor";
+        doctorName = null;
         _loading = false;
       });
     }
   }
 Future<void> _handleScannedQR(String token) async {
+  final l10n = AppLocalizations.of(context);
   if (_isProcessing) return;
   _isProcessing = true;
 
@@ -60,8 +65,8 @@ Future<void> _handleScannedQR(String token) async {
 
   if (childId == null) {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('QR code expired or invalid'),
+      SnackBar(
+        content: Text(l10n.qrInvalid),
       ),
     );
     _isProcessing = false;
@@ -79,6 +84,7 @@ Future<void> _handleScannedQR(String token) async {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final screenWidth = MediaQuery.of(context).size.width;
     double frameSize = screenWidth * 0.65;
 
@@ -131,7 +137,7 @@ Future<void> _handleScannedQR(String token) async {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          "Hello, Dr. ${doctorName ?? 'Doctor'}",
+                          l10n.helloDoctor(doctorName ?? l10n.doctorLabel),
                           style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
@@ -139,9 +145,9 @@ Future<void> _handleScannedQR(String token) async {
                           ),
                         ),
                         const SizedBox(height: 6),
-                        const Text(
-                          "Review and manage your patients’ health profiles.",
-                          style: TextStyle(
+                        Text(
+                          l10n.doctorGreeting,
+                          style: const TextStyle(
                             color: Color(0xFF6F6F6F),
                             fontSize: 13,
                             height: 1.3,
@@ -155,9 +161,9 @@ Future<void> _handleScannedQR(String token) async {
                   const SizedBox(height: 40),
 
                   // ✔️ Title
-                  const Text(
-                    "Scan Child's QR Code",
-                    style: TextStyle(
+                  Text(
+                    l10n.scanQrTitle,
+                    style: const TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.w700,
                       color: Colors.black,
@@ -166,11 +172,10 @@ Future<void> _handleScannedQR(String token) async {
                   ),
                   const SizedBox(height: 10),
 
-                  const Text(
-                    "Align the QR code within the frame below\n"
-                    "to begin the identification process.",
+                  Text(
+                    l10n.scanQrInstruction,
                     textAlign: TextAlign.center,
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: Color(0xFF6F6F6F),
                       fontSize: 13,
                       height: 1.4,

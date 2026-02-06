@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:rafiq_gp/l10n/app_localizations.dart';
 import 'parent_signup.dart';
 import 'login.dart';
 import 'doctor_pending_page.dart';
+import 'widgets/language_switcher.dart';
 
 class DoctorSignup extends StatefulWidget {
   const DoctorSignup({super.key});
@@ -106,13 +108,14 @@ class _DoctorSignupState extends State<DoctorSignup> {
   }
 
   Future<void> _showErrorPopup(String message) async {
+    final l10n = AppLocalizations.of(context);
     await showDialog(
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        title: const Text(
-          "Error",
-          style: TextStyle(color: Colors.black87),
+        title: Text(
+          l10n.errorTitle,
+          style: const TextStyle(color: Colors.black87),
         ),
         content: Text(
           message,
@@ -126,9 +129,9 @@ class _DoctorSignupState extends State<DoctorSignup> {
               ),
             ),
             onPressed: () => Navigator.pop(context),
-            child: const Text(
-              "OK",
-              style: TextStyle(color: Color(0xFF9D5C7D)),
+            child: Text(
+              l10n.ok,
+              style: const TextStyle(color: Color(0xFF9D5C7D)),
             ),
           ),
         ],
@@ -137,6 +140,7 @@ class _DoctorSignupState extends State<DoctorSignup> {
   }
 
   Future<void> _registerDoctor() async {
+    final l10n = AppLocalizations.of(context);
     _validateFields();
 
     if (_nameController.text.trim().isEmpty ||
@@ -145,23 +149,23 @@ class _DoctorSignupState extends State<DoctorSignup> {
         _confirmPasswordController.text.isEmpty ||
         _selectedDocType == null ||
         _docNumberController.text.trim().isEmpty) {
-      return _showErrorPopup("Please fill in all fields.");
+      return _showErrorPopup(l10n.pleaseFillAllFields);
     }
 
     if (!_isNameValid) {
-      return _showErrorPopup("Full name must be at least 2 characters.");
+      return _showErrorPopup(l10n.fullNameMin2Error);
     }
     if (!_isEmailValid) {
-      return _showErrorPopup("Please enter a valid email address.");
+      return _showErrorPopup(l10n.validEmailError);
     }
     if (!_isPasswordValid) {
-      return _showErrorPopup("Password must meet all requirements.");
+      return _showErrorPopup(l10n.passwordRequirementsError);
     }
     if (!_passwordsMatch) {
-      return _showErrorPopup("Passwords do not match.");
+      return _showErrorPopup(l10n.passwordsDoNotMatch);
     }
     if (!_isDocValid) {
-      return _showErrorPopup("Document number is invalid for selected type.");
+      return _showErrorPopup(l10n.documentNumberInvalid);
     }
 
     setState(() => _isLoading = true);
@@ -187,7 +191,7 @@ class _DoctorSignupState extends State<DoctorSignup> {
         MaterialPageRoute(builder: (_) => const DoctorPendingPage()),
       );
     } on FirebaseAuthException catch (e) {
-      await _showErrorPopup(e.message ?? "An error occurred.");
+      await _showErrorPopup(e.message ?? l10n.errorOccurred);
     } catch (e) {
       await _showErrorPopup(e.toString());
     } finally {
@@ -215,7 +219,8 @@ class _DoctorSignupState extends State<DoctorSignup> {
     return Colors.grey;
   }
 
-  Widget _pendingReviewBox() {
+  Widget _pendingReviewBox(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(14),
@@ -226,16 +231,13 @@ class _DoctorSignupState extends State<DoctorSignup> {
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: const [
-          Icon(Icons.info_outline, color: Color(0xFF9D5C7D), size: 20),
-          SizedBox(width: 10),
+        children: [
+          const Icon(Icons.info_outline, color: Color(0xFF9D5C7D), size: 20),
+          const SizedBox(width: 10),
           Expanded(
             child: Text(
-              'Your account status will be "Pending Review" upon submission. '
-                  'You will not be able to log in until your credentials have been '
-                  'verified and approved by our administration. '
-                  'This process typically takes 1–2 business days.',
-              style: TextStyle(
+              l10n.pendingReviewInfo,
+              style: const TextStyle(
                 color: Colors.black87,
                 fontSize: 13.5,
                 height: 1.35,
@@ -259,6 +261,7 @@ class _DoctorSignupState extends State<DoctorSignup> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -268,8 +271,13 @@ class _DoctorSignupState extends State<DoctorSignup> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Text(
-                  "Create Account",
+                Align(
+                  alignment: AlignmentDirectional.topEnd,
+                  child: const LanguageSwitcher(),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  l10n.createAccountTitle,
                   style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 25),
@@ -293,7 +301,7 @@ class _DoctorSignupState extends State<DoctorSignup> {
                             borderRadius: BorderRadius.circular(8),
                           ),
                         ),
-                        child: const Text("Parent"),
+                        child: Text(l10n.parentTab),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -307,12 +315,12 @@ class _DoctorSignupState extends State<DoctorSignup> {
                             borderRadius: BorderRadius.circular(8),
                           ),
                         ),
-                        child: const FittedBox(
+                        child: FittedBox(
                           fit: BoxFit.scaleDown,
                           child: Text(
-                            "Healthcare Provider",
+                            l10n.healthcareProviderTab,
                             textAlign: TextAlign.center,
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
                               color: Colors.white,
@@ -330,14 +338,14 @@ class _DoctorSignupState extends State<DoctorSignup> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _fieldLabel("Full Name"),
+                    _fieldLabel(l10n.fullNameLabel),
                     const SizedBox(height: 6),
                     TextField(
                       controller: _nameController,
                       focusNode: _nameFocus,
                       onChanged: (_) => _validateFields(),
                       decoration: InputDecoration(
-                        hintText: 'Enter Full Name',
+                        hintText: l10n.enterFullNameHint,
                         border: _border(Colors.grey),
                         enabledBorder:
                         _border(_getColor(_isNameValid, _nameController, _nameFocus)),
@@ -353,14 +361,14 @@ class _DoctorSignupState extends State<DoctorSignup> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _fieldLabel("Email"),
+                    _fieldLabel(l10n.emailLabel),
                     const SizedBox(height: 6),
                     TextField(
                       controller: _emailController,
                       focusNode: _emailFocus,
                       onChanged: (_) => _validateFields(),
                       decoration: InputDecoration(
-                        hintText: 'example@gmail.com',
+                        hintText: l10n.emailExampleHint,
                         border: _border(Colors.grey),
                         enabledBorder:
                         _border(_getColor(_isEmailValid, _emailController, _emailFocus)),
@@ -376,7 +384,7 @@ class _DoctorSignupState extends State<DoctorSignup> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _fieldLabel("Password"),
+                    _fieldLabel(l10n.passwordLabel),
                     const SizedBox(height: 6),
                     TextField(
                       controller: _passwordController,
@@ -384,7 +392,7 @@ class _DoctorSignupState extends State<DoctorSignup> {
                       obscureText: _obscurePassword,
                       onChanged: (_) => _validateFields(),
                       decoration: InputDecoration(
-                        hintText: 'Enter password',
+                        hintText: l10n.passwordHint,
                         border: _border(Colors.grey),
                         enabledBorder: _border(
                             _getColor(_isPasswordValid, _passwordController, _passwordFocus)),
@@ -408,7 +416,7 @@ class _DoctorSignupState extends State<DoctorSignup> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _fieldLabel("Confirm Password"),
+                    _fieldLabel(l10n.confirmPasswordLabel),
                     const SizedBox(height: 6),
                     TextField(
                       controller: _confirmPasswordController,
@@ -416,7 +424,7 @@ class _DoctorSignupState extends State<DoctorSignup> {
                       obscureText: _obscureConfirmPassword,
                       onChanged: (_) => _validateFields(),
                       decoration: InputDecoration(
-                        hintText: 'Re-enter password',
+                        hintText: l10n.reenterPasswordHint,
                         border: _border(Colors.grey),
                         enabledBorder: _border(
                             _getColor(_passwordsMatch, _confirmPasswordController, _confirmPasswordFocus)),
@@ -438,14 +446,14 @@ class _DoctorSignupState extends State<DoctorSignup> {
 
                 // Password hints
                 Align(
-                  alignment: Alignment.centerLeft,
+                  alignment: AlignmentDirectional.centerStart,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildHint("• At least 8 characters", _passwordHasLength),
-                      _buildHint("• One uppercase letter", _passwordHasUpper),
-                      _buildHint("• One lowercase letter", _passwordHasLower),
-                      _buildHint("• One number", _passwordHasNumber),
+                      _buildHint(l10n.passwordReqAtLeast8, _passwordHasLength),
+                      _buildHint(l10n.passwordReqUppercase, _passwordHasUpper),
+                      _buildHint(l10n.passwordReqLowercase, _passwordHasLower),
+                      _buildHint(l10n.passwordReqNumber, _passwordHasNumber),
                     ],
                   ),
                 ),
@@ -455,9 +463,9 @@ class _DoctorSignupState extends State<DoctorSignup> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      "Document Type",
-                      style: TextStyle(
+                    Text(
+                      l10n.documentTypeLabel,
+                      style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                         color: Colors.black87,
@@ -486,18 +494,18 @@ class _DoctorSignupState extends State<DoctorSignup> {
                             borderSide: BorderSide(color: _getDocTypeColor(), width: 1.5),
                           ),
                         ),
-                        hintText: "Select document type",
+                        hintText: l10n.selectDocumentTypeHint,
                         onSelected: (value) {
                           setState(() {
                             _selectedDocType = value;
                             _validateFields();
                           });
                         },
-                        dropdownMenuEntries: const [
-                          DropdownMenuEntry(value: "National ID", label: "National ID"),
-                          DropdownMenuEntry(value: "Iqama", label: "Iqama"),
-                          DropdownMenuEntry(value: "Passport", label: "Passport"),
-                          DropdownMenuEntry(value: "Medical License", label: "Medical License"),
+                        dropdownMenuEntries: [
+                          DropdownMenuEntry(value: "National ID", label: l10n.nationalId),
+                          DropdownMenuEntry(value: "Iqama", label: l10n.iqama),
+                          DropdownMenuEntry(value: "Passport", label: l10n.passport),
+                          DropdownMenuEntry(value: "Medical License", label: l10n.medicalLicense),
                         ],
                       ),
                     ),
@@ -510,14 +518,14 @@ class _DoctorSignupState extends State<DoctorSignup> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _fieldLabel("Document Number"),
+                    _fieldLabel(l10n.documentNumberLabel),
                     const SizedBox(height: 6),
                     TextField(
                       controller: _docNumberController,
                       focusNode: _docNumberFocus,
                       onChanged: (_) => _validateFields(),
                       decoration: InputDecoration(
-                        hintText: 'Enter your document number',
+                        hintText: l10n.enterDocumentNumberHint,
                         border: _border(Colors.grey),
                         enabledBorder:
                         _border(_getColor(_isDocValid, _docNumberController, _docNumberFocus)),
@@ -530,7 +538,7 @@ class _DoctorSignupState extends State<DoctorSignup> {
 
                 // Pending Review box under doc number
                 const SizedBox(height: 14),
-                _pendingReviewBox(),
+                _pendingReviewBox(context),
 
                 const SizedBox(height: 25),
 
@@ -547,11 +555,11 @@ class _DoctorSignupState extends State<DoctorSignup> {
                         borderRadius: BorderRadius.circular(8),
                       ),
                     ),
-                    child: const FittedBox(
+                    child: FittedBox(
                       fit: BoxFit.scaleDown,
                       child: Text(
-                        "Submit for Review",
-                        style: TextStyle(
+                        l10n.submitForReview,
+                        style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
                           color: Colors.white,
@@ -566,7 +574,7 @@ class _DoctorSignupState extends State<DoctorSignup> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text("Already have an account? "),
+                    Text(l10n.alreadyHaveAccount),
                     GestureDetector(
                       onTap: () {
                         Navigator.pushReplacement(
@@ -574,9 +582,9 @@ class _DoctorSignupState extends State<DoctorSignup> {
                           MaterialPageRoute(builder: (context) => const LoginScreen()),
                         );
                       },
-                      child: const Text(
-                        "Login",
-                        style: TextStyle(
+                      child: Text(
+                        l10n.loginLink,
+                        style: const TextStyle(
                           color: Color(0xFF9D5C7D),
                           fontWeight: FontWeight.bold,
                         ),

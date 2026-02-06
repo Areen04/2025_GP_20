@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:rafiq_gp/l10n/app_localizations.dart';
 import 'doctor_signup.dart';
 import 'parent_dashboard.dart';
 import 'login.dart';
+import 'widgets/language_switcher.dart';
 
 class ParentSignup extends StatefulWidget {
   const ParentSignup({super.key});
@@ -79,15 +81,16 @@ void dispose() {
   }
 
   Future<void> _showErrorPopup(String message) async {
+  final l10n = AppLocalizations.of(context);
   await showDialog(
     context: context,
     builder: (context) => AlertDialog(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(8), // same radius
       ),
-      title: const Text(
-        "Error", 
-        style: TextStyle(color: Colors.black87), // same title color
+      title: Text(
+        l10n.errorTitle,
+        style: const TextStyle(color: Colors.black87), // same title color
       ),
       content: Text(
         message, 
@@ -101,9 +104,9 @@ void dispose() {
             ),
           ),
           onPressed: () => Navigator.pop(context),
-          child: const Text(
-            "OK",
-            style: TextStyle(color: Color(0xFF9D5C7D)), // same purple color
+          child: Text(
+            l10n.ok,
+            style: const TextStyle(color: Color(0xFF9D5C7D)), // same purple color
           ),
         ),
       ],
@@ -112,6 +115,7 @@ void dispose() {
 }
 
   Future<void> _createAccount() async {
+  final l10n = AppLocalizations.of(context);
   _validateFields();
 
   // NEW: Check if ANY field is empty
@@ -119,13 +123,13 @@ void dispose() {
       _emailController.text.trim().isEmpty ||
       _passwordController.text.isEmpty ||
       _confirmPasswordController.text.isEmpty) {
-    return _showErrorPopup("Please fill in all fields.");
+    return _showErrorPopup(l10n.pleaseFillAllFields);
   }
 
-  if (!_isNameValid) return _showErrorPopup("Full name must be at least 2 characters.");
-  if (!_isEmailValid) return _showErrorPopup("Please enter a valid email address.");
-  if (!_isPasswordValid) return _showErrorPopup("Password must meet all requirements.");
-  if (!_passwordsMatch) return _showErrorPopup("Passwords do not match.");
+  if (!_isNameValid) return _showErrorPopup(l10n.fullNameMin2Error);
+  if (!_isEmailValid) return _showErrorPopup(l10n.validEmailError);
+  if (!_isPasswordValid) return _showErrorPopup(l10n.passwordRequirementsError);
+  if (!_passwordsMatch) return _showErrorPopup(l10n.passwordsDoNotMatch);
 
   setState(() => _isLoading = true);
 
@@ -155,7 +159,7 @@ void dispose() {
       MaterialPageRoute(builder: (context) => const ParentDashboard()),
     );
   } on FirebaseAuthException catch (e) {
-    await _showErrorPopup(e.message ?? "Error occurred.");
+    await _showErrorPopup(e.message ?? l10n.errorOccurred);
   } finally {
     setState(() => _isLoading = false);
   }
@@ -176,6 +180,7 @@ Color _getColor(bool valid, TextEditingController controller, FocusNode focusNod
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -185,8 +190,13 @@ Color _getColor(bool valid, TextEditingController controller, FocusNode focusNod
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Text(
-                  "Create Account",
+                Align(
+                  alignment: AlignmentDirectional.topEnd,
+                  child: const LanguageSwitcher(),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  l10n.createAccountTitle,
                   style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 25),
@@ -203,7 +213,7 @@ Color _getColor(bool valid, TextEditingController controller, FocusNode focusNod
           ),
           // keep natural height
         ),
-        child: const Text("Parent"),
+        child: Text(l10n.parentTab),
       ),
     ),
     const SizedBox(width: 12),
@@ -225,7 +235,7 @@ Color _getColor(bool valid, TextEditingController controller, FocusNode focusNod
         child: FittedBox(
           fit: BoxFit.scaleDown,
           child: Text(
-            "Healthcare Provider",
+            l10n.healthcareProviderTab,
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 14,
@@ -245,7 +255,7 @@ Color _getColor(bool valid, TextEditingController controller, FocusNode focusNod
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "Full Name",
+                      l10n.fullNameLabel,
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
@@ -258,7 +268,7 @@ Color _getColor(bool valid, TextEditingController controller, FocusNode focusNod
                       focusNode: _nameFocus,
                       onChanged: (_) => _validateFields(),
                       decoration: InputDecoration(
-                        hintText: 'Enter Full Name',
+                        hintText: l10n.enterFullNameHint,
                         border: _border(Colors.grey),
                         enabledBorder: _border(_getColor(_isNameValid, _nameController, _nameFocus)),
                         focusedBorder: _border(_getColor(_isNameValid, _nameController, _nameFocus)),
@@ -273,7 +283,7 @@ Color _getColor(bool valid, TextEditingController controller, FocusNode focusNod
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "Email",
+                      l10n.emailLabel,
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
@@ -286,7 +296,7 @@ Color _getColor(bool valid, TextEditingController controller, FocusNode focusNod
                       focusNode: _emailFocus,
                       onChanged: (_) => _validateFields(),
                       decoration: InputDecoration(
-                        hintText: 'example@gmail.com',
+                        hintText: l10n.emailExampleHint,
                         border: _border(Colors.grey),
                         enabledBorder:
                         _border(_getColor(_isEmailValid, _emailController, _emailFocus)),
@@ -302,7 +312,7 @@ Color _getColor(bool valid, TextEditingController controller, FocusNode focusNod
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "Password",
+                      l10n.passwordLabel,
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
@@ -316,7 +326,7 @@ Color _getColor(bool valid, TextEditingController controller, FocusNode focusNod
                       obscureText: _obscurePassword,
                       onChanged: (_) => _validateFields(),
                       decoration: InputDecoration(
-                        hintText: 'Enter password',   // ← الـ Placeholder
+                        hintText: l10n.passwordHint,   // ← الـ Placeholder
                         border: _border(Colors.grey),
                         enabledBorder:
                         _border(_getColor(_isPasswordValid, _passwordController, _passwordFocus)),
@@ -341,7 +351,7 @@ Color _getColor(bool valid, TextEditingController controller, FocusNode focusNod
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "Confirm password",
+                      l10n.confirmPasswordLabel,
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
@@ -355,7 +365,7 @@ Color _getColor(bool valid, TextEditingController controller, FocusNode focusNod
                       obscureText: _obscureConfirmPassword,
                       onChanged: (_) => _validateFields(),
                       decoration: InputDecoration(
-                        hintText: 'Re-enter password',   // ← Placeholder
+                        hintText: l10n.reenterPasswordHint,   // ← Placeholder
                         border: _border(Colors.grey),
                         enabledBorder: _border(
                             _getColor(_passwordsMatch, _confirmPasswordController, _confirmPasswordFocus)),
@@ -379,14 +389,14 @@ Color _getColor(bool valid, TextEditingController controller, FocusNode focusNod
 
                 // Password Hints
                 Align(
-                  alignment: Alignment.centerLeft,
+                  alignment: AlignmentDirectional.centerStart,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildHint("• At least 8 characters", _passwordHasLength),
-                      _buildHint("• One uppercase letter", _passwordHasUpper),
-                      _buildHint("• One lowercase letter", _passwordHasLower),
-                      _buildHint("• One number", _passwordHasNumber),
+                      _buildHint(l10n.passwordReqAtLeast8, _passwordHasLength),
+                      _buildHint(l10n.passwordReqUppercase, _passwordHasUpper),
+                      _buildHint(l10n.passwordReqLowercase, _passwordHasLower),
+                      _buildHint(l10n.passwordReqNumber, _passwordHasNumber),
                     ],
                   ),
                 ),
@@ -407,9 +417,9 @@ Color _getColor(bool valid, TextEditingController controller, FocusNode focusNod
                 borderRadius: BorderRadius.circular(8),
               ),
             ),
-            child: const Text(
-              "Create Account",
-              style: TextStyle(
+            child: Text(
+              l10n.createAccountButton,
+              style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
                 color: Colors.white,
@@ -423,7 +433,7 @@ Color _getColor(bool valid, TextEditingController controller, FocusNode focusNod
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text("Already have an account? "),
+                    Text(l10n.alreadyHaveAccount),
                     GestureDetector(
                       onTap: () {
                         Navigator.pushReplacement(
@@ -432,9 +442,9 @@ Color _getColor(bool valid, TextEditingController controller, FocusNode focusNod
                               builder: (context) => const LoginScreen()),
                         );
                       },
-                      child: const Text(
-                        "Login",
-                        style: TextStyle(
+                      child: Text(
+                        l10n.loginLink,
+                        style: const TextStyle(
                           color: Color(0xFF9D5C7D),
                           fontWeight: FontWeight.bold,
                         ),

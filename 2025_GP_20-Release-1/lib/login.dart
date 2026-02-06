@@ -2,9 +2,11 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:rafiq_gp/l10n/app_localizations.dart';
 import 'parent_signup.dart';
 import 'parent_dashboard.dart';
 import 'qr_scan_page.dart';
+import 'widgets/language_switcher.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -74,11 +76,15 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
   );
 
   Future<void> _showErrorPopup(String message) async {
+    final l10n = AppLocalizations.of(context);
     await showDialog(
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        title: const Text("Login Failed", style: TextStyle(color: Colors.black87)),
+        title: Text(
+          l10n.loginFailed,
+          style: const TextStyle(color: Colors.black87),
+        ),
         content: Text(message, style: const TextStyle(color: Colors.black54)),
         actions: [
           TextButton(
@@ -86,7 +92,10 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
             ),
             onPressed: () => Navigator.pop(context),
-            child: const Text("OK", style: TextStyle(color: Color(0xFF9D5C7D))),
+            child: Text(
+              l10n.ok,
+              style: const TextStyle(color: Color(0xFF9D5C7D)),
+            ),
           ),
         ],
       ),
@@ -105,11 +114,12 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
   }
 
   Future<void> _login() async {
+    final l10n = AppLocalizations.of(context);
     final email = _email.text.trim();
     final password = _password.text.trim();
 
     if (email.isEmpty || password.isEmpty) {
-      await _showErrorPopup("Please fill in all fields.");
+      await _showErrorPopup(l10n.pleaseFillAllFields);
       return;
     }
 
@@ -143,7 +153,7 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
 
       if (doc == null || !doc.exists || doc.data() == null) {
         await _auth.signOut();
-        await _showErrorPopup("User not found. Please check your email.");
+        await _showErrorPopup(l10n.userNotFoundCheckEmail);
         return;
       }
 
@@ -157,7 +167,7 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
         if (!approved) {
           await _auth.signOut(); // مهم: لا نخليه يعتبر نفسه logged in
           await _showErrorPopup(
-            "Your doctor account is not approved yet. Please wait for admin approval.",
+            l10n.doctorNotApprovedMessage,
           );
           return;
         }
@@ -181,19 +191,19 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
       String message;
       switch (e.code) {
         case 'invalid-email':
-          message = "Invalid email format.";
+          message = l10n.invalidEmailFormat;
           break;
         case 'user-not-found':
-          message = "No user found with this email.";
+          message = l10n.noUserFoundWithEmail;
           break;
         case 'wrong-password':
-          message = "Incorrect password. Please try again.";
+          message = l10n.incorrectPassword;
           break;
         case 'invalid-credential':
-          message = "Email or password is incorrect.";
+          message = l10n.emailOrPasswordIncorrect;
           break;
         default:
-          message = e.message ?? "An unexpected error occurred.";
+          message = e.message ?? l10n.unexpectedError;
       }
       await _showErrorPopup(message);
     } finally {
@@ -202,6 +212,7 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
   }
 
   void _forgotPassword() {
+    final l10n = AppLocalizations.of(context);
     showDialog(
       context: context,
       builder: (context) {
@@ -213,7 +224,7 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
           builder: (context, setState) => AlertDialog(
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
             title: Text(
-              emailSent ? "Email Sent" : "Reset Password",
+              emailSent ? l10n.emailSentTitle : l10n.resetPasswordTitle,
               style: const TextStyle(
                 fontFamily: 'Inter',
                 fontWeight: FontWeight.bold,
@@ -222,7 +233,7 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
             ),
             content: emailSent
                 ? Text(
-              "A reset link has been sent to ${controller.text.trim()}.",
+              l10n.resetLinkSentTo(controller.text.trim()),
               style: const TextStyle(
                 fontFamily: 'Inter',
                 color: Colors.black87,
@@ -234,7 +245,7 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                 TextField(
                   controller: controller,
                   decoration: InputDecoration(
-                    labelText: "Enter your email",
+                    labelText: l10n.enterYourEmail,
                     prefixIcon: const Icon(Icons.email_outlined),
                     border: _border(Colors.grey),
                     enabledBorder: _border(Colors.grey),
@@ -256,7 +267,7 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                 ),
                 onPressed: () => Navigator.pop(context),
-                child: Text(emailSent ? "OK" : "Cancel"),
+                child: Text(emailSent ? l10n.ok : l10n.cancel),
               ),
               if (!emailSent)
                 ElevatedButton(
@@ -269,7 +280,7 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                   onPressed: () async {
                     final email = controller.text.trim();
                     if (email.isEmpty) {
-                      setState(() => errorMessage = "Please enter your email first.");
+                      setState(() => errorMessage = l10n.pleaseEnterEmailFirst);
                       return;
                     }
 
@@ -279,12 +290,12 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                     } on FirebaseAuthException catch (e) {
                       setState(() {
                         errorMessage = e.code == 'user-not-found'
-                            ? "No user found with that email."
-                            : "Something went wrong. Try again.";
+                            ? l10n.noUserFoundWithThatEmail
+                            : l10n.somethingWentWrongTryAgain;
                       });
                     }
                   },
-                  child: const Text("Send"),
+                  child: Text(l10n.send),
                 ),
             ],
           ),
@@ -295,6 +306,7 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
@@ -366,8 +378,13 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                         position: _slideAnimation,
                         child: Column(
                           children: [
-                            const Text(
-                              "Log In",
+                            Align(
+                              alignment: AlignmentDirectional.topEnd,
+                              child: const LanguageSwitcher(),
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              l10n.loginTitle,
                               style: TextStyle(
                                 fontSize: 26,
                                 fontWeight: FontWeight.bold,
@@ -379,7 +396,7 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                             TextField(
                               controller: _email,
                               decoration: InputDecoration(
-                                labelText: "Email",
+                                labelText: l10n.emailLabel,
                                 border: _border(Colors.grey),
                                 enabledBorder: _border(Colors.grey),
                                 focusedBorder: _border(const Color(0xFF9D5C7D)),
@@ -391,7 +408,7 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                               controller: _password,
                               obscureText: _obscure,
                               decoration: InputDecoration(
-                                labelText: "Password",
+                                labelText: l10n.passwordLabel,
                                 border: _border(Colors.grey),
                                 enabledBorder: _border(Colors.grey),
                                 focusedBorder: _border(const Color(0xFF9D5C7D)),
@@ -416,8 +433,8 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                 ),
-                                child: const Text(
-                                  "Log In",
+                                child: Text(
+                                  l10n.loginButton,
                                   style: TextStyle(
                                     fontSize: 18,
                                     fontWeight: FontWeight.w600,
@@ -434,9 +451,9 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                               style: TextButton.styleFrom(
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                               ),
-                              child: const Text(
-                                "Forgot Password?",
-                                style: TextStyle(color: Color(0xFF9D5C7D)),
+                              child: Text(
+                                l10n.forgotPassword,
+                                style: const TextStyle(color: Color(0xFF9D5C7D)),
                               ),
                             ),
                             const SizedBox(height: 10),
@@ -444,15 +461,15 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                const Text("Don't have an account? "),
+                                Text(l10n.dontHaveAccount),
                                 GestureDetector(
                                   onTap: () => Navigator.push(
                                     context,
                                     MaterialPageRoute(builder: (_) => const ParentSignup()),
                                   ),
-                                  child: const Text(
-                                    "Create New Account",
-                                    style: TextStyle(
+                                  child: Text(
+                                    l10n.createNewAccount,
+                                    style: const TextStyle(
                                       color: Color(0xFF9D5C7D),
                                       fontWeight: FontWeight.bold,
                                     ),

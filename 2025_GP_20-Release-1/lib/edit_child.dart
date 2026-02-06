@@ -6,6 +6,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'parent_dashboard.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
+import 'package:rafiq_gp/l10n/app_localizations.dart';
 
 class EditChild extends StatefulWidget {
   final String childId;
@@ -36,6 +37,27 @@ class _EditChildState extends State<EditChild> {
   bool _hasInteracted = false;
   bool _isSaving = false;
 
+  void _showSnackBar(String message, {bool isError = false}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          message,
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        backgroundColor:
+            isError ? Colors.redAccent : const Color(0xFF9D5C7D),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -52,7 +74,10 @@ class _EditChildState extends State<EditChild> {
   Future<void> _loadChildData() async {
     try {
       final uid = FirebaseAuth.instance.currentUser?.uid;
-      if (uid == null) return;
+      if (uid == null) {
+        setState(() => _isLoading = false);
+        return;
+      }
 
       final doc = await FirebaseFirestore.instance
           .collection('parents')
@@ -79,6 +104,7 @@ class _EditChildState extends State<EditChild> {
         Navigator.pop(context);
       }
     } catch (e) {
+      setState(() => _isLoading = false);
       Navigator.pop(context);
     }
   }
@@ -136,6 +162,7 @@ class _EditChildState extends State<EditChild> {
   }
 
   void _showImagePickerOptions() {
+    final l10n = AppLocalizations.of(context);
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -147,7 +174,7 @@ class _EditChildState extends State<EditChild> {
           children: [
             ListTile(
               leading: const Icon(Icons.photo, color: Color(0xFF9D5C7D)),
-              title: const Text("Choose from Gallery"),
+              title: Text(l10n.chooseFromGallery),
               onTap: () {
                 Navigator.pop(context);
                 _pickImage(ImageSource.gallery);
@@ -155,7 +182,7 @@ class _EditChildState extends State<EditChild> {
             ),
             ListTile(
               leading: const Icon(Icons.camera_alt, color: Color(0xFF9D5C7D)),
-              title: const Text("Take a Photo"),
+              title: Text(l10n.takePhoto),
               onTap: () {
                 Navigator.pop(context);
                 _pickImage(ImageSource.camera);
@@ -229,14 +256,20 @@ class _EditChildState extends State<EditChild> {
             .update({'imageUrl': newUrl});
       }
 
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const ParentDashboard()),
-      );
+      if (mounted) {
+        _showSnackBar(AppLocalizations.of(context).childUpdatedSuccess);
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const ParentDashboard()),
+        );
+      }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error: $e")),
-      );
+      if (mounted) {
+        _showSnackBar(
+          AppLocalizations.of(context).errorSavingChild(e.toString()),
+          isError: true,
+        );
+      }
     } finally {
       if (mounted) {
         setState(() => _isSaving = false);
@@ -246,6 +279,7 @@ class _EditChildState extends State<EditChild> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     if (_isLoading) {
       return const Scaffold(
         backgroundColor: Colors.white,
@@ -264,9 +298,9 @@ class _EditChildState extends State<EditChild> {
           elevation: 0,
           surfaceTintColor: Colors.white,
           centerTitle: true,
-          title: const Text(
-            "Edit Child",
-            style: TextStyle(
+          title: Text(
+            l10n.editChildTitle,
+            style: const TextStyle(
               fontFamily: 'Inter',
               fontWeight: FontWeight.w600,
               fontSize: 20,
@@ -357,9 +391,9 @@ class _EditChildState extends State<EditChild> {
                             ],
                           ),
                           const SizedBox(height: 10),
-                          const Text(
-                            "Upload Photo",
-                            style: TextStyle(color: Colors.grey, fontSize: 14),
+                          Text(
+                            l10n.uploadPhoto,
+                            style: const TextStyle(color: Colors.grey, fontSize: 14),
                           ),
                         ],
                       ),
@@ -370,9 +404,9 @@ class _EditChildState extends State<EditChild> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          "Child's Full Name",
-                          style: TextStyle(
+                        Text(
+                          l10n.childFullNameLabel,
+                          style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
                           ),
@@ -402,7 +436,7 @@ class _EditChildState extends State<EditChild> {
                             });
                           },
                           decoration: InputDecoration(
-                            hintText: "Enter child's full name",
+                            hintText: l10n.enterChildFullNameHint,
                             hintStyle: const TextStyle(color: Colors.black26),
                             border: _border(Colors.grey),
                             enabledBorder: _border(
@@ -430,9 +464,9 @@ class _EditChildState extends State<EditChild> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          "Gender",
-                          style: TextStyle(
+                        Text(
+                          l10n.genderLabel,
+                          style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
                           ),
@@ -447,7 +481,7 @@ class _EditChildState extends State<EditChild> {
                           },
                           child: DropdownMenu<String>(
                             width: MediaQuery.of(context).size.width - 48,
-                            hintText: "Select gender",
+                            hintText: l10n.selectGenderHint,
                             textStyle: const TextStyle(
                               color: Colors.black87,
                               fontSize: 14,
@@ -505,9 +539,9 @@ class _EditChildState extends State<EditChild> {
                                         _image != null;
                               });
                             },
-                            dropdownMenuEntries: const [
-                              DropdownMenuEntry(value: "Male", label: "Male"),
-                              DropdownMenuEntry(value: "Female", label: "Female"),
+                            dropdownMenuEntries: [
+                              DropdownMenuEntry(value: "Male", label: l10n.maleLabel),
+                              DropdownMenuEntry(value: "Female", label: l10n.femaleLabel),
                             ],
                           ),
                         ),
@@ -534,7 +568,7 @@ class _EditChildState extends State<EditChild> {
                           ),
                         ),
                         child: Text(
-                          "Save Changes",
+                          l10n.saveChanges,
                           style: TextStyle(
                             fontSize: 17,
                             fontWeight: FontWeight.w600,

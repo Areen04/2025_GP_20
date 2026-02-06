@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:rafiq_gp/l10n/app_localizations.dart';
 import 'login.dart';
+import 'widgets/language_switcher.dart';
 
 class EditProfile extends StatefulWidget {
   const EditProfile({super.key});
@@ -39,7 +41,10 @@ class _EditProfileState extends State<EditProfile> {
 
 Future<void> _loadProfile() async {
   final user = _auth.currentUser;
-  if (user == null) return;
+  if (user == null) {
+    setState(() => _isLoading = false);
+    return;
+  }
 
   try {
     // 1) Try parents collection
@@ -64,13 +69,20 @@ Future<void> _loadProfile() async {
       }
     }
   } catch (e) {
-    _showSnackBar("Error loading profile: $e", isError: true);
+    if (mounted) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        final l10n = AppLocalizations.of(context);
+        _showSnackBar(l10n.errorLoadingProfile(e.toString()), isError: true);
+      });
+    }
+  } finally {
+    if (mounted) {
+      setState(() {
+        _isLoading = false;
+        _isNameValid = _nameController.text.trim().length >= 2;
+      });
+    }
   }
-
-  setState(() {
-    _isLoading = false;
-    _isNameValid = _nameController.text.trim().length >= 2;
-  });
 }
 
   OutlineInputBorder _border(Color color) => OutlineInputBorder(
@@ -103,13 +115,14 @@ Future<void> _loadProfile() async {
   }
 
   Future<void> _updateProfile() async {
+    final l10n = AppLocalizations.of(context);
     final user = _auth.currentUser;
     if (user == null) return;
 
     final newName = _nameController.text.trim();
 
     if (newName.isEmpty) {
-      _showSnackBar("Name cannot be empty", isError: true);
+      _showSnackBar(l10n.nameCannotBeEmpty, isError: true);
       return;
     }
 
@@ -130,18 +143,19 @@ Future<void> _loadProfile() async {
         'updatedAt': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
 
-      _showSnackBar("Profile updated successfully");
+      _showSnackBar(l10n.profileUpdated);
 
       _originalName = newName;
       _hasChanges = false;
     } catch (e) {
-      _showSnackBar("Error updating profile: $e", isError: true);
+      _showSnackBar(l10n.errorUpdatingProfile(e.toString()), isError: true);
     }
 
     setState(() => _isSaving = false);
   }
 
   Future<void> _showResetPasswordDialog() async {
+  final l10n = AppLocalizations.of(context);
   final email = _auth.currentUser?.email ?? "";
 
   showDialog(
@@ -149,16 +163,16 @@ Future<void> _loadProfile() async {
     builder: (context) {
       return AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        title: const Text(
-          "Reset Password",
-          style: TextStyle(
+        title: Text(
+          l10n.resetPasswordTitle,
+          style: const TextStyle(
             fontFamily: 'Inter',
             fontWeight: FontWeight.bold,
             color: Color(0xFF9D5C7D),
           ),
         ),
         content: Text(
-          "A password reset link will be sent to:\n$email\nPress Send to continue.",
+          l10n.resetPasswordMessage(email),
           style: const TextStyle(
             fontFamily: 'Inter',
             color: Colors.black87,
@@ -172,7 +186,7 @@ Future<void> _loadProfile() async {
                   borderRadius: BorderRadius.circular(8)),
             ),
             onPressed: () => Navigator.pop(context),
-            child: const Text("Cancel"),
+            child: Text(l10n.cancel),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
@@ -187,12 +201,12 @@ Future<void> _loadProfile() async {
                 await _auth.sendPasswordResetEmail(email: email);
                 if (!mounted) return;
                 Navigator.pop(context);
-                _showSnackBar("Password reset link sent to $email");
+                _showSnackBar(l10n.passwordResetLinkSentTo(email));
               } catch (e) {
-                _showSnackBar("Error: $e", isError: true);
+                _showSnackBar(l10n.errorPrefix(e.toString()), isError: true);
               }
             },
-            child: const Text("Send"),
+            child: Text(l10n.send),
           ),
         ],
       );
@@ -200,11 +214,12 @@ Future<void> _loadProfile() async {
   );
 }
 
- Future<void> _confirmAction({
+Future<void> _confirmAction({
   required String title,
   required String message,
   required Future<void> Function() onConfirm,
 }) async {
+  final l10n = AppLocalizations.of(context);
   showDialog(
     context: context,
     builder: (context) {
@@ -232,7 +247,7 @@ Future<void> _loadProfile() async {
                   borderRadius: BorderRadius.circular(8)),
             ),
             onPressed: () => Navigator.pop(context),
-            child: const Text("Cancel"),
+            child: Text(l10n.cancel),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
@@ -246,7 +261,7 @@ Future<void> _loadProfile() async {
               Navigator.pop(context);
               await onConfirm();
             },
-            child: const Text("Yes"),
+            child: Text(l10n.yes),
           ),
         ],
       );
@@ -255,9 +270,10 @@ Future<void> _loadProfile() async {
 }
 
   Future<void> _deleteAccount() async {
+    final l10n = AppLocalizations.of(context);
     await _confirmAction(
-      title: "Delete Account",
-      message: "Are you sure you want to delete your account permanently?",
+      title: l10n.confirmDeleteTitle,
+      message: l10n.confirmDeleteMessage,
       onConfirm: () async {
         final user = _auth.currentUser;
         if (user == null) return;
@@ -274,16 +290,17 @@ Future<void> _loadProfile() async {
             (route) => false,
           );
         } catch (e) {
-          _showSnackBar("Error deleting account: $e", isError: true);
+          _showSnackBar(l10n.errorDeletingAccount(e.toString()), isError: true);
         }
       },
     );
   }
 
   Future<void> _logout() async {
+    final l10n = AppLocalizations.of(context);
     await _confirmAction(
-      title: "Log out",
-      message: "Are you sure you want to log out?",
+      title: l10n.confirmLogoutTitle,
+      message: l10n.confirmLogoutMessage,
       onConfirm: () async {
         await _auth.signOut();
         if (!mounted) return;
@@ -317,6 +334,7 @@ Future<void> _loadProfile() async {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     if (_isLoading) {
       return const Scaffold(
         backgroundColor: Colors.white,
@@ -337,9 +355,9 @@ Future<void> _loadProfile() async {
           surfaceTintColor: Colors.white,
           centerTitle: true,
 
-          title: const Text(
-            "Settings",
-            style: TextStyle(
+          title: Text(
+            l10n.settingsTitle,
+            style: const TextStyle(
               fontFamily: 'Inter',
               fontWeight: FontWeight.w600,
               fontSize: 20,
@@ -358,11 +376,11 @@ Future<void> _loadProfile() async {
           actions: [
             GestureDetector(
               onTap: _logout,
-              child: const Padding(
-                padding: EdgeInsets.only(right: 18),
+              child: Padding(
+                padding: const EdgeInsetsDirectional.only(start: 18, end: 18),
                 child: Text(
-                  "Log out",
-                  style: TextStyle(
+                  l10n.logOut,
+                  style: const TextStyle(
                     color: Colors.redAccent,
                     fontWeight: FontWeight.w600,
                     fontSize: 16,
@@ -389,11 +407,16 @@ Future<void> _loadProfile() async {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 6),
+              Align(
+                alignment: AlignmentDirectional.centerStart,
+                child: LanguageSwitcher(compact: true),
+              ),
+              const SizedBox(height: 16),
 
               // ---- LABEL ----
-              const Text(
-                "Full Name",
-                style: TextStyle(
+              Text(
+                l10n.fullNameLabel,
+                style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
                 ),
@@ -417,7 +440,7 @@ Future<void> _loadProfile() async {
                   });
                 },
                 decoration: InputDecoration(
-                  hintText: "Enter your full name",
+                  hintText: l10n.enterYourFullNameHint,
                   hintStyle: const TextStyle(color: Colors.black26),
                   border: _border(Colors.grey),
                   enabledBorder: _border(_getColor(
@@ -456,7 +479,7 @@ Future<void> _loadProfile() async {
                           ),
                         ),
                         child: Text(
-                          "Save Changes",
+                          l10n.saveChanges,
                           style: TextStyle(
                             fontSize: 17,
                             fontWeight: FontWeight.w600,
@@ -470,9 +493,9 @@ Future<void> _loadProfile() async {
 
               const SizedBox(height: 30),
 
-              const Text(
-                "Account Actions",
-                style: TextStyle(
+              Text(
+                l10n.accountActions,
+                style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
                   color: Colors.black87,
@@ -493,13 +516,13 @@ Future<void> _loadProfile() async {
                     GestureDetector(
                       onTap: _showResetPasswordDialog,
                       child: Row(
-                        children: const [
-                          Icon(Icons.lock_outline,
+                        children: [
+                          const Icon(Icons.lock_outline,
                               size: 20, color: Color(0xFF9D5C7D)),
-                          SizedBox(width: 8),
+                          const SizedBox(width: 8),
                           Text(
-                            "Change Password",
-                            style: TextStyle(
+                            l10n.changePassword,
+                            style: const TextStyle(
                               color: Color(0xFF9D5C7D),
                               fontWeight: FontWeight.w500,
                             ),
@@ -512,9 +535,9 @@ Future<void> _loadProfile() async {
 
                     GestureDetector(
                       onTap: _deleteAccount,
-                      child: const Text(
-                        "Delete Account",
-                        style: TextStyle(
+                      child: Text(
+                        l10n.deleteAccount,
+                        style: const TextStyle(
                           color: Colors.redAccent,
                           fontWeight: FontWeight.w500,
                         ),

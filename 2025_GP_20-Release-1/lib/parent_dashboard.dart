@@ -5,6 +5,7 @@ import './ChildDashboard.dart';
 import 'add_child.dart';
 import 'edit_profile.dart';
 import 'edit_child.dart';
+import 'package:rafiq_gp/l10n/app_localizations.dart';
 
 class ParentDashboard extends StatefulWidget {
   const ParentDashboard({super.key});
@@ -25,7 +26,10 @@ class _ParentDashboardState extends State<ParentDashboard> {
 
   Future<void> _loadParentData() async {
     final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return;
+    if (user == null) {
+      setState(() => _loading = false);
+      return;
+    }
 
     try {
       final doc = await FirebaseFirestore.instance
@@ -53,6 +57,7 @@ class _ParentDashboardState extends State<ParentDashboard> {
   }
 
   Future<void> _deleteChild(String childId) async {
+    final l10n = AppLocalizations.of(context);
     try {
       final uid = FirebaseAuth.instance.currentUser!.uid;
       await FirebaseFirestore.instance
@@ -64,9 +69,9 @@ class _ParentDashboardState extends State<ParentDashboard> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text(
-            "Child deleted successfully",
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
+          content: Text(
+            l10n.childDeletedSuccess,
+            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
           ),
           backgroundColor: const Color(0xFF9D5C7D),
           behavior: SnackBarBehavior.floating,
@@ -81,7 +86,7 @@ class _ParentDashboardState extends State<ParentDashboard> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            "Error deleting child: $e",
+            l10n.errorDeletingChild(e.toString()),
             style: const TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.w500,
@@ -102,13 +107,14 @@ class _ParentDashboardState extends State<ParentDashboard> {
   required String message,
   required Future<void> Function() onConfirm,
 }) async {
+  final l10n = AppLocalizations.of(context);
   showDialog(
     context: context,
     builder: (context) => AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-      title: const Text(
-        "Delete Child",
-        style: TextStyle(
+      title: Text(
+        l10n.deleteChildTitle,
+        style: const TextStyle(
           fontFamily: 'Inter',
           fontWeight: FontWeight.w600,
           color: Color(0xFF9D5C7D), // purple title
@@ -129,9 +135,9 @@ class _ParentDashboardState extends State<ParentDashboard> {
                 borderRadius: BorderRadius.circular(8)),
           ),
           onPressed: () => Navigator.pop(context),
-          child: const Text(
-            "Cancel",
-            style: TextStyle(color: Color(0xFF9D5C7D)), // purple text
+          child: Text(
+            l10n.cancel,
+            style: const TextStyle(color: Color(0xFF9D5C7D)), // purple text
           ),
         ),
         // Yes button → white background, purple text & border
@@ -147,7 +153,7 @@ class _ParentDashboardState extends State<ParentDashboard> {
             Navigator.pop(context);
             await onConfirm();
           },
-          child: const Text("Yes"),
+          child: Text(l10n.yes),
         ),
       ],
     ),
@@ -156,6 +162,7 @@ class _ParentDashboardState extends State<ParentDashboard> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final uid = FirebaseAuth.instance.currentUser?.uid;
 
     return Scaffold(
@@ -204,7 +211,7 @@ class _ParentDashboardState extends State<ParentDashboard> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            "Hello, ${parentName ?? 'Parent'}",
+                            l10n.helloParent(parentName ?? l10n.parentTab),
                             style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
@@ -212,9 +219,9 @@ class _ParentDashboardState extends State<ParentDashboard> {
                             ),
                           ),
                           const SizedBox(height: 6),
-                          const Text(
-                            "Manage your children's health journey.",
-                            style: TextStyle(
+                          Text(
+                            l10n.parentGreeting,
+                            style: const TextStyle(
                               color: Color(0xFF6F6F6F),
                               fontSize: 13,
                               height: 1.3,
@@ -243,11 +250,11 @@ class _ParentDashboardState extends State<ParentDashboard> {
                         }
 
                         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                          return const Padding(
-                            padding: EdgeInsets.all(20),
+                          return Padding(
+                            padding: const EdgeInsets.all(20),
                             child: Text(
-                              "There's no children yet.",
-                              style: TextStyle(color: Colors.black54),
+                              l10n.noChildrenYet,
+                              style: const TextStyle(color: Colors.black54),
                             ),
                           );
                         }
@@ -319,7 +326,7 @@ class _ParentDashboardState extends State<ParentDashboard> {
                                       ),
                                       onPressed: () {
                                         _showConfirmDeleteChild(
-                                          message: "Are you sure you want to delete this child?",
+                                          message: l10n.deleteChildConfirm,
                                           onConfirm: () async {
                                             await _deleteChild(child.id);
                                           },
@@ -358,9 +365,9 @@ class _ParentDashboardState extends State<ParentDashboard> {
                 borderRadius: BorderRadius.circular(8),
               ),
             ),
-            child: const Text(
-              "Add New Child",
-              style: TextStyle(
+            child: Text(
+              l10n.addNewChild,
+              style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
                 color: Colors.white,
