@@ -5,6 +5,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'parent_dashboard.dart';
+import 'package:rafiq_gp/l10n/app_localizations.dart';
 
 class AddChild extends StatefulWidget {
   const AddChild({super.key});
@@ -89,21 +90,17 @@ class _AddChildState extends State<AddChild> {
     required bool touched,
     required FocusNode focusNode,
   }) {
-    // Selected → green
-    if (value != null) return Colors.grey;
+    // Before selection: always grey
+    if (value == null) return Colors.grey;
 
-    // Focused → purple
+    // Selected: purple when focused, grey otherwise (same feel as text fields)
     if (focusNode.hasFocus) return const Color(0xFF9D5C7D);
-
-    // If touched but no selection → grey
-    if (touched) return Colors.grey;
-
-    // Default
     return Colors.grey;
   }
 
   // ---------------  Bottom Sheet to choose image source ---------------
   Future<void> _showImagePickerOptions() async {
+    final l10n = AppLocalizations.of(context);
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -115,7 +112,7 @@ class _AddChildState extends State<AddChild> {
           children: [
             ListTile(
               leading: const Icon(Icons.photo, color: Color(0xFF9D5C7D)),
-              title: const Text("Choose from Gallery"),
+              title: Text(l10n.chooseFromGallery),
               onTap: () {
                 Navigator.pop(context);
                 _pickImage(ImageSource.gallery);
@@ -123,7 +120,7 @@ class _AddChildState extends State<AddChild> {
             ),
             ListTile(
               leading: const Icon(Icons.camera_alt, color: Color(0xFF9D5C7D)),
-              title: const Text("Take a Photo"),
+              title: Text(l10n.takePhoto),
               onTap: () {
                 Navigator.pop(context);
                 _pickImage(ImageSource.camera);
@@ -146,13 +143,14 @@ class _AddChildState extends State<AddChild> {
 
   // ------------------------ SAVE CHILD ------------------------
   Future<void> _addChild() async {
+    final l10n = AppLocalizations.of(context);
     final name = _nameController.text.trim();
 
     if (name.length < 2) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text(
-            "Full name must be at least 2 characters.",
+          content: Text(
+            l10n.fullNameMin2Error,
             style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
           ),
           backgroundColor: const Color(0xFF9D5C7D),
@@ -173,7 +171,7 @@ class _AddChildState extends State<AddChild> {
         _selectedGender == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text("Please fill all required fields.",
+          content: Text(l10n.fillAllRequiredFields,
               style:
               TextStyle(color: Colors.white, fontWeight: FontWeight.w500)),
           backgroundColor: const Color(0xFF9D5C7D),
@@ -191,8 +189,8 @@ class _AddChildState extends State<AddChild> {
     if (!_isValidDate()) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text(
-            "Date of birth cannot be in the future.",
+          content: Text(
+            l10n.dobFutureError,
             style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
           ),
           backgroundColor: const Color(0xFF9D5C7D),
@@ -253,8 +251,8 @@ class _AddChildState extends State<AddChild> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text(
-            "Child added successfully!",
+          content: Text(
+            l10n.childAddedSuccess,
             style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
           ),
           backgroundColor: const Color(0xFF9D5C7D),
@@ -272,7 +270,7 @@ class _AddChildState extends State<AddChild> {
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error: $e")),
+        SnackBar(content: Text(l10n.errorSavingChild(e.toString()))),
       );
     } finally {
       setState(() => _isSaving = false);
@@ -282,6 +280,7 @@ class _AddChildState extends State<AddChild> {
   // ------------------------------ UI ------------------------------
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: PreferredSize(
@@ -291,9 +290,9 @@ class _AddChildState extends State<AddChild> {
           elevation: 0,
           surfaceTintColor: Colors.white,
           centerTitle: true,
-          title: const Text(
-            "Add Child",
-            style: TextStyle(
+          title: Text(
+            l10n.addChildTitle,
+            style: const TextStyle(
               fontFamily: 'Inter',
               fontWeight: FontWeight.w600,
               fontSize: 20,
@@ -371,11 +370,14 @@ class _AddChildState extends State<AddChild> {
               ),
 
               const SizedBox(height: 8),
-              const Text("Upload Photo", style: TextStyle(color: Colors.black54)),
+              Text(
+                l10n.uploadPhoto,
+                style: const TextStyle(color: Colors.grey, fontSize: 14),
+              ),
               const SizedBox(height: 30),
 
               // ------------------ Name ------------------
-              _buildRequiredLabel("Child's Full Name"),
+              _buildRequiredLabel(l10n.childFullNameLabel),
               Focus(
                 onFocusChange: (hasFocus) {
                   if (!hasFocus) {
@@ -395,8 +397,8 @@ class _AddChildState extends State<AddChild> {
                     });
                   },
                   decoration: InputDecoration(
-                    hintText: "Enter child's full name",
-                    hintStyle: const TextStyle(color: Colors.black38),
+                    hintText: l10n.enterChildFullNameHint,
+                    hintStyle: const TextStyle(color: Colors.black54),
                     border: _border(Colors.grey),
                     enabledBorder: _border(_getNameColor()),
                     focusedBorder: _border(_getNameColor()),
@@ -407,7 +409,7 @@ class _AddChildState extends State<AddChild> {
               const SizedBox(height: 20),
 
               // ------------------ DOB ------------------
-              _buildRequiredLabel("Date of Birth"),
+              _buildRequiredLabel(l10n.dateOfBirthLabel),
               Row(
                 children: [
                   // Day
@@ -421,9 +423,9 @@ class _AddChildState extends State<AddChild> {
                         setState(() {});
                       },
                       child: DropdownMenu<String>(
-                        hintText: "Day",
+                        hintText: l10n.dayLabel,
                         textStyle: const TextStyle(
-                            color: Colors.black87, fontSize: 14),
+                            color: Colors.black87, fontSize: 16),
                         menuStyle: const MenuStyle(
                           backgroundColor:
                           MaterialStatePropertyAll(Color(0xFFFFF7FB)),
@@ -443,7 +445,7 @@ class _AddChildState extends State<AddChild> {
                           ),
                         ),
                         inputDecorationTheme: InputDecorationTheme(
-                          hintStyle: const TextStyle(color: Colors.black38),
+                          hintStyle: const TextStyle(color: Colors.black54),
                           contentPadding: const EdgeInsets.symmetric(
                               horizontal: 2, vertical: 10),
                           filled: true,
@@ -483,10 +485,10 @@ class _AddChildState extends State<AddChild> {
                         setState(() {});
                       },
                       child: DropdownMenu<String>(
-                        hintText: "Month",
+                        hintText: l10n.monthLabel,
                         textStyle: const TextStyle(
                           color: Colors.black87,
-                          fontSize: 14,
+                          fontSize: 16,
                           overflow: TextOverflow.visible,
                         ),
                         menuStyle: const MenuStyle(
@@ -508,7 +510,7 @@ class _AddChildState extends State<AddChild> {
                           ),
                         ),
                         inputDecorationTheme: InputDecorationTheme(
-                          hintStyle: const TextStyle(color: Colors.black38),
+                          hintStyle: const TextStyle(color: Colors.black54),
                           contentPadding: const EdgeInsets.symmetric(
                               horizontal: 2, vertical: 10),
                           filled: true,
@@ -547,9 +549,9 @@ class _AddChildState extends State<AddChild> {
                         setState(() {});
                       },
                       child: DropdownMenu<String>(
-                        hintText: "Year",
+                        hintText: l10n.yearLabel,
                         textStyle: const TextStyle(
-                            color: Colors.black87, fontSize: 14),
+                            color: Colors.black87, fontSize: 16),
                         menuStyle: const MenuStyle(
                           backgroundColor:
                           MaterialStatePropertyAll(Color(0xFFFFF7FB)),
@@ -569,7 +571,7 @@ class _AddChildState extends State<AddChild> {
                           ),
                         ),
                         inputDecorationTheme: InputDecorationTheme(
-                          hintStyle: const TextStyle(color: Colors.black38),
+                          hintStyle: const TextStyle(color: Colors.black54),
                           contentPadding: const EdgeInsets.symmetric(
                               horizontal: 2, vertical: 10),
                           filled: true,
@@ -603,7 +605,7 @@ class _AddChildState extends State<AddChild> {
               const SizedBox(height: 20),
 
               // ------------------ Gender ------------------
-              _buildRequiredLabel("Gender"),
+              _buildRequiredLabel(l10n.genderLabel),
               Focus(
                 focusNode: _genderFocus,
                 onFocusChange: (hasFocus) {
@@ -612,7 +614,11 @@ class _AddChildState extends State<AddChild> {
                 },
                 child: DropdownMenu<String>(
                   width: MediaQuery.of(context).size.width - 48,
-                  hintText: "Select gender",
+                  hintText: l10n.selectGenderHint,
+                  textStyle: const TextStyle(
+                    color: Colors.black87,
+                    fontSize: 16,
+                  ),
                   menuStyle: const MenuStyle(
                     backgroundColor:
                     MaterialStatePropertyAll(Color(0xFFFFF7FB)),
@@ -631,6 +637,7 @@ class _AddChildState extends State<AddChild> {
                   inputDecorationTheme: InputDecorationTheme(
                     filled: true,
                     fillColor: Colors.white,
+                    hintStyle: const TextStyle(color: Colors.black54),
                     contentPadding: const EdgeInsets.symmetric(
                         horizontal: 12, vertical: 10),
                     border: _border(_dropdownColor(
@@ -647,9 +654,9 @@ class _AddChildState extends State<AddChild> {
                   ),
                   onSelected: (value) =>
                       setState(() => _selectedGender = value),
-                  dropdownMenuEntries: const [
-                    DropdownMenuEntry(value: "Male", label: "Male"),
-                    DropdownMenuEntry(value: "Female", label: "Female"),
+                  dropdownMenuEntries: [
+                    DropdownMenuEntry(value: "Male", label: l10n.maleLabel),
+                    DropdownMenuEntry(value: "Female", label: l10n.femaleLabel),
                   ],
                 ),
               ),
@@ -672,9 +679,9 @@ class _AddChildState extends State<AddChild> {
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                  child: const Text(
-                    "Add Child",
-                    style: TextStyle(
+                  child: Text(
+                    l10n.addChildButton,
+                    style: const TextStyle(
                       fontSize: 17,
                       fontWeight: FontWeight.w600,
                       color: Colors.white,
@@ -708,7 +715,7 @@ class _AddChildState extends State<AddChild> {
   }
   Widget _buildRequiredLabel(String text) {
     return Align(
-      alignment: Alignment.centerLeft,
+      alignment: AlignmentDirectional.centerStart,
       child: Padding(
         padding: const EdgeInsets.only(bottom: 8),
         child: Row(
@@ -718,7 +725,7 @@ class _AddChildState extends State<AddChild> {
               text,
               style: const TextStyle(
                 fontSize: 16,
-                fontWeight: FontWeight.w500,
+                fontWeight: FontWeight.w600,
                 color: Colors.black87,
               ),
             ),
@@ -757,4 +764,3 @@ class _AddChildState extends State<AddChild> {
     );
   }
 }
-

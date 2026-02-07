@@ -3,17 +3,19 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'qr_scan_page.dart';
 import 'login.dart';
+import 'package:rafiq_gp/l10n/app_localizations.dart';
 
 class DoctorPendingPage extends StatelessWidget {
   const DoctorPendingPage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final uid = FirebaseAuth.instance.currentUser?.uid;
 
     if (uid == null) {
-      return const Scaffold(
-        body: Center(child: Text("Not logged in")),
+      return Scaffold(
+        body: Center(child: Text(l10n.notLoggedIn)),
       );
     }
 
@@ -54,18 +56,18 @@ class DoctorPendingPage extends StatelessWidget {
                     color: Color(0xFF9D5C7D),
                   ),
                   const SizedBox(height: 16),
-                  const Text(
-                    "Pending Approval",
-                    style: TextStyle(
+                  Text(
+                    l10n.pendingApprovalTitle,
+                    style: const TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   const SizedBox(height: 10),
-                  const Text(
-                    "Your registration request has been sent to the admin.\nPlease wait until it is reviewed.",
+                  Text(
+                    l10n.pendingApprovalMessage,
                     textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.black54),
+                    style: const TextStyle(color: Colors.black54),
                   ),
                   const SizedBox(height: 24),
 
@@ -91,9 +93,9 @@ class DoctorPendingPage extends StatelessWidget {
                               (_) => false,
                         );
                       },
-                      child: const Text(
-                        "Logout",
-                        style: TextStyle(
+                      child: Text(
+                        l10n.logout,
+                        style: const TextStyle(
                           color: Color(0xFF9D5C7D),
                           fontWeight: FontWeight.w600,
                           fontSize: 16,

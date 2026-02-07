@@ -39,7 +39,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get createNewAccount => 'Create New Account';
 
   @override
-  String get loginFailed => 'Login Failed';
+  String get loginFailed => 'Log In Failed';
 
   @override
   String get errorTitle => 'Error';
@@ -148,7 +148,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get alreadyHaveAccount => 'Already have an account? ';
 
   @override
-  String get loginLink => 'Login';
+  String get loginLink => 'Log In';
 
   @override
   String get fullNameMin2Error => 'Full name must be at least 2 characters.';
@@ -205,7 +205,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsTitle => 'Settings';
 
   @override
-  String get logOut => 'Log out';
+  String get logOut => 'Log Out';
 
   @override
   String get enterYourFullNameHint => 'Enter your full name';
@@ -256,7 +256,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Are you sure you want to delete your account permanently?';
 
   @override
-  String get confirmLogoutTitle => 'Log out';
+  String get confirmLogoutTitle => 'Log Out';
 
   @override
   String get confirmLogoutMessage => 'Are you sure you want to log out?';
@@ -383,7 +383,23 @@ class AppLocalizationsEn extends AppLocalizations {
   String get childUpdatedSuccess => 'Child information updated successfully';
 
   @override
+  String get childAddedSuccess => 'Child added successfully';
+
+  @override
   String errorSavingChild(Object error) {
     return 'Error saving child: $error';
   }
+
+  @override
+  String get notLoggedIn => 'Not logged in';
+
+  @override
+  String get pendingApprovalTitle => 'Pending Approval';
+
+  @override
+  String get pendingApprovalMessage =>
+      'Your registration request has been sent to the admin.\nPlease wait until it is reviewed.';
+
+  @override
+  String get logout => 'Log Out';
 }

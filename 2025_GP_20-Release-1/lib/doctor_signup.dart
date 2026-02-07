@@ -476,23 +476,39 @@ class _DoctorSignupState extends State<DoctorSignup> {
                       focusNode: _docTypeFocus,
                       child: DropdownMenu<String>(
                         width: MediaQuery.of(context).size.width - 48,
+                        textStyle: const TextStyle(
+                          color: Colors.black87,
+                          fontSize: 16,
+                        ),
+                        menuStyle: const MenuStyle(
+                          backgroundColor:
+                              MaterialStatePropertyAll(Color(0xFFFFF7FB)),
+                          surfaceTintColor:
+                              MaterialStatePropertyAll(Colors.white),
+                          elevation: MaterialStatePropertyAll(3),
+                          padding: MaterialStatePropertyAll(EdgeInsets.zero),
+                          maximumSize:
+                              MaterialStatePropertyAll(Size.fromHeight(120)),
+                          shape: MaterialStatePropertyAll(
+                            RoundedRectangleBorder(
+                              borderRadius: BorderRadius.all(Radius.circular(8)),
+                            ),
+                          ),
+                        ),
                         inputDecorationTheme: InputDecorationTheme(
                           filled: true,
                           fillColor: Colors.white,
-                          contentPadding:
-                          const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide(color: _getDocTypeColor(), width: 1.5),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 10,
                           ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide(color: _getDocTypeColor(), width: 1.5),
+                          border: _border(
+                            _getDocTypeColor(),
                           ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide(color: _getDocTypeColor(), width: 1.5),
+                          enabledBorder: _border(
+                            _getDocTypeColor(),
                           ),
+                          focusedBorder: _border(const Color(0xFF9D5C7D)),
                         ),
                         hintText: l10n.selectDocumentTypeHint,
                         onSelected: (value) {

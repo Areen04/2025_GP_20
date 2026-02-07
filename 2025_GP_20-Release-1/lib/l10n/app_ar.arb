@@ -122,5 +122,10 @@
   "scanQrInstruction": "وجّه الكاميرا نحو الرمز داخل الإطار أدناه\\nلبدء عملية التعريف.",
   "qrInvalid": "رمز الاستجابة غير صالح أو منتهي",
   "childUpdatedSuccess": "تم تحديث بيانات الطفل بنجاح",
-  "errorSavingChild": "خطأ في حفظ بيانات الطفل: {error}"
+  "childAddedSuccess": "تمت إضافة الطفل بنجاح",
+  "errorSavingChild": "خطأ في حفظ بيانات الطفل: {error}",
+  "notLoggedIn": "غير مسجل الدخول",
+  "pendingApprovalTitle": "بانتظار الموافقة",
+  "pendingApprovalMessage": "تم إرسال طلب التسجيل إلى الإدارة.\nيرجى الانتظار حتى تتم مراجعته.",
+  "logout": "تسجيل الخروج"
 }

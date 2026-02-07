@@ -441,7 +441,7 @@ Future<void> _confirmAction({
                 },
                 decoration: InputDecoration(
                   hintText: l10n.enterYourFullNameHint,
-                  hintStyle: const TextStyle(color: Colors.black26),
+                  hintStyle: const TextStyle(color: Colors.black54),
                   border: _border(Colors.grey),
                   enabledBorder: _border(_getColor(
                     _isNameValid,

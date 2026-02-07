@@ -381,7 +381,23 @@ class AppLocalizationsAr extends AppLocalizations {
   String get childUpdatedSuccess => 'تم تحديث بيانات الطفل بنجاح';
 
   @override
+  String get childAddedSuccess => 'تمت إضافة الطفل بنجاح';
+
+  @override
   String errorSavingChild(Object error) {
     return 'خطأ في حفظ بيانات الطفل: $error';
   }
+
+  @override
+  String get notLoggedIn => 'غير مسجل الدخول';
+
+  @override
+  String get pendingApprovalTitle => 'بانتظار الموافقة';
+
+  @override
+  String get pendingApprovalMessage =>
+      'تم إرسال طلب التسجيل إلى الإدارة.\nيرجى الانتظار حتى تتم مراجعته.';
+
+  @override
+  String get logout => 'تسجيل الخروج';
 }

@@ -437,7 +437,7 @@ class _EditChildState extends State<EditChild> {
                           },
                           decoration: InputDecoration(
                             hintText: l10n.enterChildFullNameHint,
-                            hintStyle: const TextStyle(color: Colors.black26),
+                            hintStyle: const TextStyle(color: Colors.black54),
                             border: _border(Colors.grey),
                             enabledBorder: _border(
                               _getColor(
@@ -484,7 +484,7 @@ class _EditChildState extends State<EditChild> {
                             hintText: l10n.selectGenderHint,
                             textStyle: const TextStyle(
                               color: Colors.black87,
-                              fontSize: 14,
+                              fontSize: 16,
                             ),
                             menuStyle: const MenuStyle(
                               backgroundColor:

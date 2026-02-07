@@ -161,7 +161,7 @@ abstract class AppLocalizations {
   /// No description provided for @loginFailed.
   ///
   /// In en, this message translates to:
-  /// **'Login Failed'**
+  /// **'Log In Failed'**
   String get loginFailed;
 
   /// No description provided for @errorTitle.
@@ -371,7 +371,7 @@ abstract class AppLocalizations {
   /// No description provided for @loginLink.
   ///
   /// In en, this message translates to:
-  /// **'Login'**
+  /// **'Log In'**
   String get loginLink;
 
   /// No description provided for @fullNameMin2Error.
@@ -479,7 +479,7 @@ abstract class AppLocalizations {
   /// No description provided for @logOut.
   ///
   /// In en, this message translates to:
-  /// **'Log out'**
+  /// **'Log Out'**
   String get logOut;
 
   /// No description provided for @enterYourFullNameHint.
@@ -563,7 +563,7 @@ abstract class AppLocalizations {
   /// No description provided for @confirmLogoutTitle.
   ///
   /// In en, this message translates to:
-  /// **'Log out'**
+  /// **'Log Out'**
   String get confirmLogoutTitle;
 
   /// No description provided for @confirmLogoutMessage.
@@ -788,11 +788,41 @@ abstract class AppLocalizations {
   /// **'Child information updated successfully'**
   String get childUpdatedSuccess;
 
+  /// No description provided for @childAddedSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Child added successfully'**
+  String get childAddedSuccess;
+
   /// No description provided for @errorSavingChild.
   ///
   /// In en, this message translates to:
   /// **'Error saving child: {error}'**
   String errorSavingChild(Object error);
+
+  /// No description provided for @notLoggedIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Not logged in'**
+  String get notLoggedIn;
+
+  /// No description provided for @pendingApprovalTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending Approval'**
+  String get pendingApprovalTitle;
+
+  /// No description provided for @pendingApprovalMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Your registration request has been sent to the admin.\nPlease wait until it is reviewed.'**
+  String get pendingApprovalMessage;
+
+  /// No description provided for @logout.
+  ///
+  /// In en, this message translates to:
+  /// **'Log Out'**
+  String get logout;
 }
 
 class _AppLocalizationsDelegate

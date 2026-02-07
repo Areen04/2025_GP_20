@@ -10,7 +10,7 @@
   "forgotPassword": "Forgot Password?",
   "dontHaveAccount": "Don't have an account? ",
   "createNewAccount": "Create New Account",
-  "loginFailed": "Login Failed",
+  "loginFailed": "Log In Failed",
   "errorTitle": "Error",
   "ok": "OK",
   "pleaseFillAllFields": "Please fill in all fields.",
@@ -46,7 +46,7 @@
   "passwordReqNumber": "• One number",
   "createAccountButton": "Create Account",
   "alreadyHaveAccount": "Already have an account? ",
-  "loginLink": "Login",
+  "loginLink": "Log In",
   "fullNameMin2Error": "Full name must be at least 2 characters.",
   "validEmailError": "Please enter a valid email address.",
   "passwordRequirementsError": "Password must meet all requirements.",
@@ -66,7 +66,7 @@
   "submitForReview": "Submit for Review",
 
   "settingsTitle": "Settings",
-  "logOut": "Log out",
+  "logOut": "Log Out",
   "enterYourFullNameHint": "Enter your full name",
   "saveChanges": "Save Changes",
   "accountActions": "Account Actions",
@@ -80,7 +80,7 @@
   "errorDeletingAccount": "Error deleting account: {error}",
   "confirmDeleteTitle": "Delete Account",
   "confirmDeleteMessage": "Are you sure you want to delete your account permanently?",
-  "confirmLogoutTitle": "Log out",
+  "confirmLogoutTitle": "Log Out",
   "confirmLogoutMessage": "Are you sure you want to log out?",
   "yes": "Yes",
   "passwordResetLinkSentTo": "Password reset link sent to {email}",
@@ -122,5 +122,10 @@
   "scanQrInstruction": "Align the QR code within the frame below\\nto begin the identification process.",
   "qrInvalid": "QR code expired or invalid",
   "childUpdatedSuccess": "Child information updated successfully",
-  "errorSavingChild": "Error saving child: {error}"
+  "childAddedSuccess": "Child added successfully",
+  "errorSavingChild": "Error saving child: {error}",
+  "notLoggedIn": "Not logged in",
+  "pendingApprovalTitle": "Pending Approval",
+  "pendingApprovalMessage": "Your registration request has been sent to the admin.\nPlease wait until it is reviewed.",
+  "logout": "Log Out"
 }
