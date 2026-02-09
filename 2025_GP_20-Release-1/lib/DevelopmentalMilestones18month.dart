@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:rafiq_gp/l10n/app_localizations.dart';
 import 'package:video_player/video_player.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'utils/i18n.dart';
 
 // ---------------------------------------------------------------
 // 🔗 Firebase Base URL
@@ -36,6 +36,8 @@ class DevelopmentalMilestones18month extends StatefulWidget {
 
 class _DevelopmentalMilestones18monthState
     extends State<DevelopmentalMilestones18month> {
+  AppLocalizations get l10n => AppLocalizations.of(context)!;
+
   int expandedIndex = 0;
   int completedCount = 0;
 
@@ -97,6 +99,7 @@ class _DevelopmentalMilestones18monthState
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     double progress = completedCount / totalMilestones;
 
     return Scaffold(
@@ -108,7 +111,7 @@ class _DevelopmentalMilestones18monthState
           surfaceTintColor: Colors.transparent,
           centerTitle: true,
           title: Text(
-            t(context, "Developmental Milestones", "مراحل النمو والتطور"),
+            l10n.ms_18month_developmental_milestones,
             style: const TextStyle(
               fontFamily: 'Inter',
               fontWeight: FontWeight.w600,
@@ -154,16 +157,12 @@ class _DevelopmentalMilestones18monthState
                     // 🧡 SOCIAL
                     // ---------------------------------------------------
                     _buildSection(
-                      title: t(context, "Social & Emotional", "الاجتماعي والعاطفي"),
+                      title: l10n.ms_18month_social_emotional,
                       index: 0,
                       milestones: [
                         _MilestoneCard(
                           title:
-                              t(
-                                context,
-                                "Moves away from you, but looks to make sure you are close by",
-                                "يبتعد عنك ثم ينظر ليتأكد أنك قريب",
-                              ),
+                              l10n.ms_18month_moves_away_from_you_but_looks_to_make_sure_you_are_close_by,
                           videoUrl: firebase('videos/18m_moves_away.mp4'),
                           thumbUrl: firebase('images/18m_moves_away_thumb.jpg'),
                           onChecked: updateProgress,
@@ -171,21 +170,21 @@ class _DevelopmentalMilestones18monthState
                           notifier: activeVideo,
                         ),
                         _MilestoneCard(
-                          title: t(context, "Points to show you something interesting", "يشير ليريك شيئًا ممتعًا"),
+                          title: l10n.ms_18month_points_to_show_you_something_interesting,
                           imageUrl: firebase('images/18m_points_interest.jpg'),
                           onChecked: updateProgress,
                           childId: widget.childId,
                           notifier: activeVideo,
                         ),
                         _MilestoneCard(
-                          title: t(context, "Puts hands out for you to wash them", "يمد يديه لتغسلهما"),
+                          title: l10n.ms_18month_puts_hands_out_for_you_to_wash_them,
                           imageUrl: firebase('images/18m_puts_hands.jpg'),
                           onChecked: updateProgress,
                           childId: widget.childId,
                           notifier: activeVideo,
                         ),
                         _MilestoneCard(
-                          title: t(context, "Looks at a few pages in a book with you", "ينظر إلى بعض صفحات كتاب معك"),
+                          title: l10n.ms_18month_looks_at_a_few_pages_in_a_book_with_you,
                           imageUrl: firebase('images/18m_looks_book.jpg'),
                           onChecked: updateProgress,
                           childId: widget.childId,
@@ -193,11 +192,7 @@ class _DevelopmentalMilestones18monthState
                         ),
                         _MilestoneCard(
                           title:
-                              t(
-                                context,
-                                "Helps you dress by pushing arm through sleeve or lifting up foot",
-                                "يساعدك في ارتدائه الملابس بدفع ذراعه خلال الكم أو برفع قدمه",
-                              ),
+                              l10n.ms_18month_helps_you_dress_by_pushing_arm_through_sleeve_or_lifting_up_,
                           videoUrl: firebase('videos/18m_helps_dress.mp4'),
                           thumbUrl:
                               firebase('images/18m_helps_dress_thumb.jpg'),
@@ -212,16 +207,12 @@ class _DevelopmentalMilestones18monthState
                     // 💬 SPEECH
                     // ---------------------------------------------------
                     _buildSection(
-                      title: t(context, "Speech & Language", "الكلام واللغة"),
+                      title: l10n.ms_18month_speech_language,
                       index: 1,
                       milestones: [
                         _MilestoneCard(
                           title:
-                              t(
-                                context,
-                                "Tries to say three or more words besides 'mama' or 'dada'",
-                                "يحاول قول ثلاث كلمات أو أكثر غير «ماما» أو «بابا»",
-                              ),
+                              l10n.ms_18month_tries_to_say_three_or_more_words_besides_mama_or_dada,
                           videoUrl: firebase('videos/18m_say_words.mp4'),
                           thumbUrl: firebase('images/18m_say_words_thumb.jpg'),
                           onChecked: updateProgress,
@@ -230,11 +221,7 @@ class _DevelopmentalMilestones18monthState
                         ),
                         _MilestoneCard(
                           title:
-                              t(
-                                context,
-                                "Follows one-step directions without gestures, like 'Give it to me'",
-                                "يتبع توجيهات من خطوة واحدة دون إشارات، مثل «أعطني إياه»",
-                              ),
+                              l10n.ms_18month_follows_one_step_directions_without_gestures_like_give_it_to,
                           videoUrl:
                               firebase('videos/18m_follows_direction.mp4'),
                           thumbUrl:
@@ -250,16 +237,12 @@ class _DevelopmentalMilestones18monthState
                     // 🧠 COGNITIVE
                     // ---------------------------------------------------
                     _buildSection(
-                      title: t(context, "Cognitive Development", "التطور المعرفي"),
+                      title: l10n.ms_18month_cognitive_development,
                       index: 2,
                       milestones: [
                         _MilestoneCard(
                           title:
-                              t(
-                                context,
-                                "Copies you doing chores, like sweeping with a broom",
-                                "يقلّد قيامك بالأعمال المنزلية، مثل الكنس بالمكنسة",
-                              ),
+                              l10n.ms_18month_copies_you_doing_chores_like_sweeping_with_a_broom,
                           videoUrl: firebase('videos/18m_copies_chores.mp4'),
                           thumbUrl:
                               firebase('images/18m_copies_chores_thumb.jpg'),
@@ -269,11 +252,7 @@ class _DevelopmentalMilestones18monthState
                         ),
                         _MilestoneCard(
                           title:
-                              t(
-                                context,
-                                "Plays with toys in a simple way, like pushing a toy car",
-                                "يلعب بالألعاب بطريقة بسيطة، مثل دفع سيارة لعبة",
-                              ),
+                              l10n.ms_18month_plays_with_toys_in_a_simple_way_like_pushing_a_toy_car,
                           imageUrl: firebase('images/18m_push_car.jpg'),
                           onChecked: updateProgress,
                           childId: widget.childId,
@@ -286,16 +265,12 @@ class _DevelopmentalMilestones18monthState
                     // 💪 MOVEMENT
                     // ---------------------------------------------------
                     _buildSection(
-                      title: t(context, "Movement & Physical Development", "التطور الحركي والبدني"),
+                      title: l10n.ms_18month_movement_physical_development,
                       index: 3,
                       milestones: [
                         _MilestoneCard(
                           title:
-                              t(
-                                context,
-                                "Walks without holding on to anyone or anything",
-                                "يمشي دون الاستناد إلى أحد أو شيء",
-                              ),
+                              l10n.ms_18month_walks_without_holding_on_to_anyone_or_anything,
                           videoUrl: firebase('videos/18m_walks.mp4'),
                           thumbUrl: firebase('images/18m_walks_thumb.jpg'),
                           onChecked: updateProgress,
@@ -303,7 +278,7 @@ class _DevelopmentalMilestones18monthState
                           notifier: activeVideo,
                         ),
                         _MilestoneCard(
-                          title: t(context, "Scribbles", "يخربش"),
+                          title: l10n.ms_18month_scribbles,
                           imageUrl: firebase('images/18m_scribbles.jpg'),
                           onChecked: updateProgress,
                           childId: widget.childId,
@@ -311,25 +286,21 @@ class _DevelopmentalMilestones18monthState
                         ),
                         _MilestoneCard(
                           title:
-                              t(
-                                context,
-                                "Drinks from a cup without a lid and may spill sometimes",
-                                "يشرب من كوب دون غطاء وقد يسكب أحيانًا",
-                              ),
+                              l10n.ms_18month_drinks_from_a_cup_without_a_lid_and_may_spill_sometimes,
                           imageUrl: firebase('images/18m_drinks_cup.jpg'),
                           onChecked: updateProgress,
                           childId: widget.childId,
                           notifier: activeVideo,
                         ),
                         _MilestoneCard(
-                          title: t(context, "Feeds herself with her fingers", "يأكل بأصابعه"),
+                          title: l10n.ms_18month_feeds_herself_with_her_fingers,
                           imageUrl: firebase('images/18m_feeds_fingers.jpg'),
                           onChecked: updateProgress,
                           childId: widget.childId,
                           notifier: activeVideo,
                         ),
                         _MilestoneCard(
-                          title: t(context, "Tries to use a spoon", "يحاول استخدام الملعقة"),
+                          title: l10n.ms_18month_tries_to_use_a_spoon,
                           imageUrl: firebase('images/18m_uses_spoon.jpg'),
                           onChecked: updateProgress,
                           childId: widget.childId,
@@ -337,11 +308,7 @@ class _DevelopmentalMilestones18monthState
                         ),
                         _MilestoneCard(
                           title:
-                              t(
-                                context,
-                                "Climbs on and off a couch or chair without help",
-                                "يصعد وينزل من الأريكة أو الكرسي دون مساعدة",
-                              ),
+                              l10n.ms_18month_climbs_on_and_off_a_couch_or_chair_without_help,
                           imageUrl: firebase('images/18m_climbs_chair.jpg'),
                           onChecked: updateProgress,
                           childId: widget.childId,
@@ -372,7 +339,7 @@ class _DevelopmentalMilestones18monthState
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              t(context, "Overall Progress", "التقدم العام"),
+              l10n.ms_18month_overall_progress,
               style: const TextStyle(
                   fontFamily: 'Inter',
                   fontWeight: FontWeight.w700,
@@ -380,11 +347,7 @@ class _DevelopmentalMilestones18monthState
             ),
 
                  Text(
-        t(
-          context,
-          "Only check milestones you're confident your child has achieved",
-          "حدّد فقط المعالم التي أنت متأكد أن طفلك حققها",
-        ),
+        l10n.ms_18month_only_check_milestones_you_re_confident_your_child_has_achiev,
         style: const TextStyle(
           fontFamily: 'Inter',
           color: Color(0xFF6F6F6F),
@@ -394,11 +357,7 @@ class _DevelopmentalMilestones18monthState
 
             const SizedBox(height: 6),
             Text(
-              t(
-                context,
-                "$completedCount of $totalMilestones milestones complete",
-                "$completedCount من أصل $totalMilestones مهارة مكتملة",
-              ),
+              l10n.ms_18month_completedcount_of_totalmilestones_milestones_complete(completedCount, totalMilestones),
               style: const TextStyle(
                 fontFamily: 'Inter',
                 color: Color(0xFF6F6F6F),
@@ -668,6 +627,7 @@ class _MilestoneCardState extends State<_MilestoneCard> {
   // ---------------------------------------------------------------
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(14),

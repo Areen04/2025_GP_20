@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:rafiq_gp/l10n/app_localizations.dart';
 import 'package:video_player/video_player.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'utils/i18n.dart';
 
 // 🔗 رابط الأساس Firebase
 const String baseFirebaseURL =
@@ -29,6 +29,8 @@ class DevelopmentalMilestones4year extends StatefulWidget {
 
 class _DevelopmentalMilestones4yearState
     extends State<DevelopmentalMilestones4year> {
+  AppLocalizations get l10n => AppLocalizations.of(context)!;
+
   int expandedIndex = 0;
   int completedCount = 0;
 
@@ -92,6 +94,7 @@ class _DevelopmentalMilestones4yearState
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     double progress = completedCount / totalMilestones;
 
     return Scaffold(
@@ -104,7 +107,7 @@ class _DevelopmentalMilestones4yearState
           scrolledUnderElevation: 0, // يمنع تغير اللون عند السكروول
           centerTitle: true,
           title: Text(
-            t(context, "Developmental Milestones", "مراحل النمو والتطور"),
+            l10n.ms_4year_developmental_milestones,
             style: const TextStyle(
               fontFamily: 'Inter',
               fontWeight: FontWeight.w600,
@@ -146,16 +149,12 @@ class _DevelopmentalMilestones4yearState
 
                     // SOCIAL
                     _buildSection(
-                      title: t(context, "Social & Emotional", "الاجتماعي والعاطفي"),
+                      title: l10n.ms_4year_social_emotional,
                       index: 0,
                       milestones: [
                         _MilestoneCard(
                           title:
-                              t(
-                                context,
-                                "Pretends to be something else during play (teacher, superhero, dog)",
-                                "يتظاهر بأنه شيء آخر أثناء اللعب (معلّم، بطل خارق، كلب)",
-                              ),
+                              l10n.ms_4year_pretends_to_be_something_else_during_play_teacher_superhero_,
                           videoUrl: firebase('videos/4y_pretends_play.mp4'),
                           thumbUrl: firebase('images/4y_pretends_play.jpg'),
                           onChecked: updateProgress,
@@ -164,11 +163,7 @@ class _DevelopmentalMilestones4yearState
                         ),
                         _MilestoneCard(
                           title:
-                              t(
-                                context,
-                                "Asks to go play with children if none are around",
-                                "يطلب الذهاب للعب مع الأطفال إذا لم يكن هناك أحد",
-                              ),
+                              l10n.ms_4year_asks_to_go_play_with_children_if_none_are_around,
                           videoUrl: firebase('videos/4y_asks_play.mp4'),
                           thumbUrl: firebase('images/4y_asks_play.jpg'),
                           onChecked: updateProgress,
@@ -177,11 +172,7 @@ class _DevelopmentalMilestones4yearState
                         ),
                         _MilestoneCard(
                           title:
-                              t(
-                                context,
-                                "Comforts others who are hurt or sad, like hugging a crying friend",
-                                "يواسي الآخرين عندما يكونون متألمين أو حزينين، مثل معانقة صديق يبكي",
-                              ),
+                              l10n.ms_4year_comforts_others_who_are_hurt_or_sad_like_hugging_a_crying_fr,
                           imageUrl: firebase('images/4y_comforts_others.jpg'),
                           onChecked: updateProgress,
                           childId: widget.childId,
@@ -189,11 +180,7 @@ class _DevelopmentalMilestones4yearState
                         ),
                         _MilestoneCard(
                           title:
-                              t(
-                                context,
-                                "Avoids danger, like not jumping from tall heights at the playground",
-                                "يتجنب الخطر، مثل عدم القفز من ارتفاعات عالية في الملعب",
-                              ),
+                              l10n.ms_4year_avoids_danger_like_not_jumping_from_tall_heights_at_the_play,
                           videoUrl: firebase('videos/4y_avoids_danger.mp4'),
                           thumbUrl: firebase('images/4y_avoids_danger.jpg'),
                           onChecked: updateProgress,
@@ -201,7 +188,7 @@ class _DevelopmentalMilestones4yearState
                           notifier: activeVideo,
                         ),
                         _MilestoneCard(
-                          title: t(context, "Likes to be a helper", "يحب أن يكون مساعدًا"),
+                          title: l10n.ms_4year_likes_to_be_a_helper,
                           videoUrl: firebase('videos/4y_likes_helper.mp4'),
                           thumbUrl: firebase('images/4y_likes_helper.jpg'),
                           onChecked: updateProgress,
@@ -210,11 +197,7 @@ class _DevelopmentalMilestones4yearState
                         ),
                         _MilestoneCard(
                           title:
-                              t(
-                                context,
-                                "Changes behavior based on where she is (library, playground, etc.)",
-                                "يغيّر سلوكه حسب المكان (المكتبة، الملعب، إلخ)",
-                              ),
+                              l10n.ms_4year_changes_behavior_based_on_where_she_is_library_playground_et,
                           videoUrl:
                               firebase('videos/4y_changes_behavior.mp4'),
                           thumbUrl:
@@ -228,11 +211,11 @@ class _DevelopmentalMilestones4yearState
 
                     // SPEECH
                     _buildSection(
-                      title: t(context, "Speech & Language", "الكلام واللغة"),
+                      title: l10n.ms_4year_speech_language,
                       index: 1,
                       milestones: [
                         _MilestoneCard(
-                          title: t(context, "Says sentences with four or more words", "يقول جُملاً من أربع كلمات أو أكثر"),
+                          title: l10n.ms_4year_says_sentences_with_four_or_more_words,
                           videoUrl: firebase('videos/4y_says_sentences.mp4'),
                           thumbUrl: firebase('images/4y_says_sentences.jpg'),
                           onChecked: updateProgress,
@@ -241,11 +224,7 @@ class _DevelopmentalMilestones4yearState
                         ),
                         _MilestoneCard(
                           title:
-                              t(
-                                context,
-                                "Says some words from a song, story, or nursery rhyme",
-                                "يقول بعض كلمات أغنية أو قصة أو أنشودة أطفال",
-                              ),
+                              l10n.ms_4year_says_some_words_from_a_song_story_or_nursery_rhyme,
                           videoUrl:
                               firebase('videos/4y_says_words_song.mp4'),
                           thumbUrl:
@@ -256,11 +235,7 @@ class _DevelopmentalMilestones4yearState
                         ),
                         _MilestoneCard(
                           title:
-                              t(
-                                context,
-                                "Talks about at least one thing that happened during her day",
-                                "يتحدث عن شيء واحد على الأقل حدث خلال يومه",
-                              ),
+                              l10n.ms_4year_talks_about_at_least_one_thing_that_happened_during_her_day,
                           videoUrl:
                               firebase('videos/4y_talks_about_day.mp4'),
                           thumbUrl:
@@ -271,11 +246,7 @@ class _DevelopmentalMilestones4yearState
                         ),
                         _MilestoneCard(
                           title:
-                              t(
-                                context,
-                                "Answers simple questions like 'What is a coat for?'",
-                                "يجيب عن أسئلة بسيطة مثل «لماذا نستخدم المعطف؟»",
-                              ),
+                              l10n.ms_4year_answers_simple_questions_like_what_is_a_coat_for,
                           videoUrl:
                               firebase('videos/4y_answers_questions.mp4'),
                           thumbUrl:
@@ -289,11 +260,11 @@ class _DevelopmentalMilestones4yearState
 
                     // COGNITIVE
                     _buildSection(
-                      title: t(context, "Cognitive Development", "التطور المعرفي"),
+                      title: l10n.ms_4year_cognitive_development,
                       index: 2,
                       milestones: [
                         _MilestoneCard(
-                          title: t(context, "Names a few colors of items", "يسمّي بعض ألوان الأشياء"),
+                          title: l10n.ms_4year_names_a_few_colors_of_items,
                           videoUrl: firebase('videos/4y_names_colors.mp4'),
                           thumbUrl: firebase('images/4y_names_colors.jpg'),
                           onChecked: updateProgress,
@@ -301,11 +272,7 @@ class _DevelopmentalMilestones4yearState
                           notifier: activeVideo,
                         ),
                         _MilestoneCard(
-                          title: t(
-                            context,
-                            "Tells what comes next in a well-known story",
-                            "يقول ما الذي سيحدث بعد ذلك في قصة معروفة",
-                          ),
+                          title: l10n.ms_4year_tells_what_comes_next_in_a_well_known_story,
                           videoUrl:
                               firebase('videos/4y_tells_next_story.mp4'),
                           thumbUrl:
@@ -315,7 +282,7 @@ class _DevelopmentalMilestones4yearState
                           notifier: activeVideo,
                         ),
                         _MilestoneCard(
-                          title: t(context, "Draws a person with three or more body parts", "يرسم شخصًا بثلاثة أجزاء جسم أو أكثر"),
+                          title: l10n.ms_4year_draws_a_person_with_three_or_more_body_parts,
                           imageUrl: firebase('images/4y_draws_person.jpg'),
                           onChecked: updateProgress,
                           childId: widget.childId,
@@ -326,25 +293,25 @@ class _DevelopmentalMilestones4yearState
 
                     // PHYSICAL
                     _buildSection(
-                      title: t(context, "Movement & Physical Development", "التطور الحركي والبدني"),
+                      title: l10n.ms_4year_movement_physical_development,
                       index: 3,
                       milestones: [
                         _MilestoneCard(
-                          title: t(context, "Catches a large ball most of the time", "يلتقط كرة كبيرة في معظم الأحيان"),
+                          title: l10n.ms_4year_catches_a_large_ball_most_of_the_time,
                           imageUrl: firebase('images/4y_catches_ball.jpg'),
                           onChecked: updateProgress,
                           childId: widget.childId,
                           notifier: activeVideo,
                         ),
                         _MilestoneCard(
-                          title: t(context, "Serves herself food or pours water", "يقدّم لنفسه الطعام أو يسكب الماء"),
+                          title: l10n.ms_4year_serves_herself_food_or_pours_water,
                           imageUrl: firebase('images/4y_serves_food.jpg'),
                           onChecked: updateProgress,
                           childId: widget.childId,
                           notifier: activeVideo,
                         ),
                         _MilestoneCard(
-                          title: t(context, "Unbuttons some buttons", "يفك بعض الأزرار"),
+                          title: l10n.ms_4year_unbuttons_some_buttons,
                           videoUrl:
                               firebase('videos/4y_unbuttons_buttons.mp4'),
                           thumbUrl:
@@ -355,11 +322,7 @@ class _DevelopmentalMilestones4yearState
                         ),
                         _MilestoneCard(
                           title:
-                              t(
-                                context,
-                                "Holds crayon or pencil between fingers and thumb (not a fist)",
-                                "يمسك القلم أو الشمع بين الأصابع والإبهام (وليس قبضة)",
-                              ),
+                              l10n.ms_4year_holds_crayon_or_pencil_between_fingers_and_thumb_not_a_fist,
                           imageUrl: firebase('images/4y_holds_pencil.jpg'),
                           onChecked: updateProgress,
                           childId: widget.childId,
@@ -386,18 +349,14 @@ class _DevelopmentalMilestones4yearState
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(t(context, "Overall Progress", "التقدم العام"),
+            Text(l10n.ms_4year_overall_progress,
                 style: const TextStyle(
                     fontFamily: 'Inter',
                     fontWeight: FontWeight.w700,
                     fontSize: 18)),
 
                          Text(
-        t(
-          context,
-          "Only check milestones you're confident your child has achieved",
-          "حدّد فقط المعالم التي أنت متأكد أن طفلك حققها",
-        ),
+        l10n.ms_4year_only_check_milestones_you_re_confident_your_child_has_achiev,
         style: const TextStyle(
           fontFamily: 'Inter',
           color: Color(0xFF6F6F6F),
@@ -407,11 +366,7 @@ class _DevelopmentalMilestones4yearState
 
             const SizedBox(height: 6),
             Text(
-              t(
-                context,
-                "$completedCount of $totalMilestones milestones complete",
-                "$completedCount من أصل $totalMilestones مهارة مكتملة",
-              ),
+              l10n.ms_4year_completedcount_of_totalmilestones_milestones_complete(completedCount, totalMilestones),
               style: const TextStyle(
                 fontFamily: 'Inter',
                 color: Color(0xFF6F6F6F),
@@ -667,6 +622,7 @@ class _MilestoneCardState extends State<_MilestoneCard> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(14),

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:rafiq_gp/l10n/app_localizations.dart';
 import 'services/skin_classifier.dart';
 import 'utils/skin_validator.dart';
 import 'package:auto_size_text/auto_size_text.dart';
@@ -90,6 +91,68 @@ Uint8List? _latestValidImage;
   ],
 };
 
+  final Map<String, List<String>> _diseaseTipsAr = {
+    'Atopic Dermatitis Eczema': [
+      "حافظ على نظافة الجلد وجفافه",
+      "تجنب حكّ المنطقة المصابة",
+      "استخدم منتجات لطيفة وخالية من العطور",
+      "استشر مختصًا صحيًا إذا استمرت الأعراض"
+    ],
+    'Bacterial Skin Infection': [
+      "حافظ على نظافة المنطقة المصابة",
+      "تجنب لمس الجلد أو حكه",
+      "لا تشارك الأدوات الشخصية",
+      "اطلب المشورة الطبية إذا ساءت الحالة"
+    ],
+    'Chickenpox': [
+      "تجنب حك الجلد",
+      "حافظ على النظافة",
+      "اشرب السوائل واسترح جيدًا",
+      "استشر الطبيب إذا أصبحت الأعراض شديدة"
+    ],
+    'Fungal Infections': [
+      "حافظ على المنطقة نظيفة وجافة",
+      "تجنب الملابس الضيقة أو الرطبة",
+      "حافظ على النظافة الشخصية",
+      "اطلب المشورة الطبية إذا لم تتحسن الحالة"
+    ],
+    'Hand Foot And Mouth Disease': [
+      "حافظ على النظافة",
+      "ارتح واشرب سوائل كافية",
+      "تجنب المخالطة القريبة للآخرين",
+      "استشر مقدم الرعاية الصحية إذا ساءت الأعراض"
+    ],
+    'Urticaria': [
+      "تجنب المحفزات المعروفة",
+      "أبقِ الجلد باردًا ونظيفًا",
+      "تجنب حك المنطقة المصابة",
+      "اطلب المساعدة الطبية إذا حدث تورم أو صعوبة تنفس"
+    ],
+    'Warts And Viral Infections': [
+      "تجنب لمس أو العبث بالمنطقة المصابة",
+      "حافظ على الجلد نظيفًا وجافًا",
+      "لا تشارك الأدوات الشخصية",
+      "استشر مختصًا صحيًا عند الحاجة"
+    ],
+    'Insect Bite': [
+      "حافظ على نظافة المنطقة",
+      "تجنب الحك",
+      "استخدم كمادة باردة عند الحاجة",
+      "اطلب المشورة الطبية إذا زاد التورم أو الاحمرار"
+    ],
+  };
+
+  final Map<String, String> _diseaseLabelsAr = {
+    'Atopic Dermatitis Eczema': 'التهاب الجلد التأتبي (الإكزيما)',
+    'Bacterial Skin Infection': 'عدوى جلدية بكتيرية',
+    'Chickenpox': 'جدري الماء',
+    'Fungal Infections': 'العدوى الفطرية',
+    'Hand Foot And Mouth Disease': 'مرض اليد والقدم والفم',
+    'Urticaria': 'الشرى (الأرتيكاريا)',
+    'Warts And Viral Infections': 'الثآليل والعدوى الفيروسية',
+    'Insect Bite': 'لدغة حشرة',
+  };
+
 
   @override
   void initState() {
@@ -103,8 +166,12 @@ Uint8List? _latestValidImage;
       await SkinClassifier.instance.init();
       setState(() => _modelReady = true);
     } catch (e) {
+      final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text("Failed to load model: $e")));
+          .showSnackBar(SnackBar(
+              content: Text(
+            l10n.aiSkinModelLoadFailed(e.toString()),
+          )));
     }
   }
 
@@ -157,6 +224,7 @@ if (_history.isNotEmpty) {
 
   Future<void> _pickImage() async {
     final picker = ImagePicker();
+    final l10n = AppLocalizations.of(context)!;
     final source = await showDialog<ImageSource>(
   context: context,
   builder: (context) {
@@ -168,10 +236,10 @@ if (_history.isNotEmpty) {
       insetPadding: const EdgeInsets.symmetric(horizontal: 40, vertical: 24),
       contentPadding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
 
-      title: const Padding(
+      title: Padding(
         padding: EdgeInsets.only(bottom: 4), // slightly tighter
         child: Text(
-          "Choose Image",
+          l10n.aiSkinChooseImageTitle,
           style: TextStyle(
             fontFamily: 'Inter',
             fontWeight: FontWeight.bold,
@@ -186,8 +254,8 @@ if (_history.isNotEmpty) {
           ListTile(
             contentPadding: EdgeInsets.zero,
             leading: const Icon(Icons.photo, color: Color(0xFF9D5C7D)),
-            title: const Text(
-              "From Gallery",
+            title: Text(
+              l10n.chooseFromGallery,
               style: TextStyle(
                 fontFamily: 'Inter',
                 color: Colors.black87,
@@ -199,8 +267,8 @@ if (_history.isNotEmpty) {
           ListTile(
             contentPadding: EdgeInsets.zero,
             leading: const Icon(Icons.camera_alt, color: Color(0xFF9D5C7D)),
-            title: const Text(
-              "Take a Photo",
+            title: Text(
+              l10n.takePhoto,
               style: TextStyle(
                 fontFamily: 'Inter',
                 color: Colors.black87,
@@ -221,9 +289,9 @@ if (_history.isNotEmpty) {
             ),
           ),
           onPressed: () => Navigator.pop(context),
-          child: const Text(
-            "Cancel",
-            style: TextStyle(
+          child: Text(
+            l10n.cancel,
+            style: const TextStyle(
               fontFamily: 'Inter',
               color: Colors.black87,
             ),
@@ -247,6 +315,7 @@ _showConfirmImageDialog();
   }
 
   void _showPopup({required String title, required String message}) {
+  final l10n = AppLocalizations.of(context)!;
   showDialog(
     context: context,
     builder: (context) => AlertDialog(
@@ -276,9 +345,9 @@ _showConfirmImageDialog();
             ),
           ),
           onPressed: () => Navigator.pop(context),
-          child: const Text(
-            "OK",
-            style: TextStyle(
+          child: Text(
+            l10n.ok,
+            style: const TextStyle(
               color: Color(0xFF9D5C7D),
               fontWeight: FontWeight.w600,
             ),
@@ -292,12 +361,13 @@ _showConfirmImageDialog();
   /// 🔹 التحليل مع فحص الجلد المصاب ونسبة اللون
   Future<void> _analyzeImage() async {
     if (_selectedImage == null || !_modelReady) return;
+    final l10n = AppLocalizations.of(context)!;
 
     // 1️⃣ فحص الإضاءة
     if (SkinValidator.isMostlyDark(_selectedImage!)) {
       _showPopup(
-        title: "Too Dark",
-        message: "The image is too dark. Please upload a clearer photo.",
+        title: l10n.aiSkinTooDarkTitle,
+        message: l10n.aiSkinTooDarkMessage,
       );
       return;
     }
@@ -306,9 +376,8 @@ _showConfirmImageDialog();
     final hasSkin = SkinValidator.containsInfectedSkin(_selectedImage!);
     if (!hasSkin) {
       _showPopup(
-        title: "Not Detected",
-        message:
-            "No infected skin area detected. Please re-upload a valid skin photo showing the affected area.",
+        title: l10n.aiSkinNotDetectedTitle,
+        message: l10n.aiSkinNotDetectedMessage,
       );
       setState(() => _prediction = "Not Detected");
       return;
@@ -319,9 +388,8 @@ _showConfirmImageDialog();
     print("🎨 Skin Color Ratio: ${(ratio * 100).toStringAsFixed(2)}%");
     if (ratio < 0.29) {
       _showPopup(
-        title: "Re-upload",
-        message:
-            "The skin area isn’t clear. Please re-upload the photo and make sure the affected skin is clear.",
+        title: l10n.aiSkinReuploadTitle,
+        message: l10n.aiSkinReuploadMessage,
       );
       setState(() => _prediction = "Re-upload");
       return;
@@ -353,7 +421,7 @@ _showConfirmImageDialog();
       await _saveHistoryToFirestore(entry);
     } catch (e) {
       ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text("Error: $e")));
+          .showSnackBar(SnackBar(content: Text(l10n.errorPrefix(e.toString()))));
     } finally {
       setState(() => _isLoading = false);
     }
@@ -368,7 +436,14 @@ _showConfirmImageDialog();
         .join(" ");
   }
 
-  List<String> _getTipsForDisease(String label) {
+  String _localizedLabel(BuildContext context, String label) {
+    if (Localizations.localeOf(context).languageCode == 'ar') {
+      return _diseaseLabelsAr[label] ?? label;
+    }
+    return label;
+  }
+
+  List<String> _getTipsForDisease(BuildContext context, String label) {
     final normalized =
         label.replaceAll("_", " ").replaceAll("-", " ").trim().toLowerCase();
     for (final entry in _diseaseTips.entries) {
@@ -377,13 +452,19 @@ _showConfirmImageDialog();
           .replaceAll("-", " ")
           .trim()
           .toLowerCase();
-      if (key == normalized) return entry.value;
+      if (key == normalized) {
+        if (Localizations.localeOf(context).languageCode == 'ar') {
+          return _diseaseTipsAr[entry.key] ?? entry.value;
+        }
+        return entry.value;
+      }
     }
     return [];
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
      appBar: PreferredSize(
   preferredSize: const Size.fromHeight(70),
@@ -393,7 +474,7 @@ _showConfirmImageDialog();
     surfaceTintColor: Colors.white,
     centerTitle: true,
     title: Text(
-      "AI Skin Analysis",
+      l10n.aiSkinTitle,
       style: const TextStyle(
         fontFamily: 'Inter',
         fontWeight: FontWeight.w600,
@@ -461,12 +542,12 @@ if (_selectedImage != null)
 else
   Column(
     mainAxisAlignment: MainAxisAlignment.center,
-    children: const [
+    children: [
       Icon(Icons.camera_alt_rounded,
           size: 50, color: Color(0xFF9D5C7D)),
       SizedBox(height: 12),
       Text(
-        "Click Here",
+        l10n.aiSkinClickHere,
         style: TextStyle(
           fontSize: 18,
           fontWeight: FontWeight.w700,
@@ -475,7 +556,7 @@ else
       ),
       SizedBox(height: 6),
       Text(
-        "Get an instant AI-powered skin analysis\nFocus the camera on the skin area",
+        l10n.aiSkinSubtitle,
         textAlign: TextAlign.center,
         style: TextStyle(
           fontSize: 13,
@@ -508,9 +589,9 @@ else
       ),
       padding: const EdgeInsets.symmetric(vertical: 12),
     ),
-    child: const Text(
-      "Re-upload",
-      style: TextStyle(
+    child: Text(
+      l10n.aiSkinReuploadButton,
+      style: const TextStyle(
         fontFamily: 'Inter',
         color: Colors.white,
         fontSize: 15,
@@ -520,12 +601,12 @@ else
   ),
 )
 
-                ],
-              ),
+            ],
+          ),
             ],
             const SizedBox(height: 30),
-            const Text("Latest Analysis",
-                style: TextStyle(
+            Text(l10n.aiSkinLatestAnalysis,
+                style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
                     color: Colors.black)),
@@ -562,7 +643,7 @@ else
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                _latestValidPrediction!,
+                _localizedLabel(context, _latestValidPrediction!),
                 style: const TextStyle(
                   fontWeight: FontWeight.w700,
                   fontSize: 16,
@@ -570,22 +651,22 @@ else
                 ),
               ),
               const SizedBox(height: 6),
-              const Text(
-                "Recommended care tips:",
-                style: TextStyle(
+              Text(
+                l10n.aiSkinRecommendedTips,
+                style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
                   color: Color(0xFF6F6F6F),
                 ),
               ),
               const SizedBox(height: 4),
-              ..._getTipsForDisease(_latestValidPrediction!).map(
+              ..._getTipsForDisease(context, _latestValidPrediction!).map(
                 (tip) => Row(
                   children: [
                     Container(
                       width: 18,
                       height: 18,
-                      margin: const EdgeInsets.only(right: 6),
+                      margin: const EdgeInsetsDirectional.only(end: 6),
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         border:
@@ -618,8 +699,8 @@ else
     ),
   ),
            const SizedBox(height: 30),
-            const Text("Analysis History",
-                style: TextStyle(
+            Text(l10n.aiSkinHistory,
+                style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
                     color: Colors.black)),
@@ -627,11 +708,11 @@ else
             SizedBox(
               height: 130,
               child: _history.isEmpty
-                  ? const Center(
+                  ? Center(
                       child: Text(
-                        "No previous analyses yet.",
+                        l10n.aiSkinNoHistory,
                         style:
-                            TextStyle(color: Colors.black54, fontSize: 13),
+                            const TextStyle(color: Colors.black54, fontSize: 13),
                       ),
                     )
                   : ListView.builder(
@@ -672,7 +753,7 @@ else
           padding: const EdgeInsets.all(6),
           color: Colors.black.withOpacity(0.35),
           child: Text(
-            "${item['label']}\n${date.toLocal().toString().split(' ')[0]}",
+            "${_localizedLabel(context, item['label'])}\n${date.toLocal().toString().split(' ')[0]}",
             style: const TextStyle(
               color: Colors.white,
               fontSize: 12,
@@ -693,6 +774,7 @@ else
     );
   }
   void _showConfirmImageDialog() {
+  final l10n = AppLocalizations.of(context)!;
   showDialog(
     context: context,
     barrierDismissible: false,
@@ -700,17 +782,17 @@ else
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(8),
       ),
-      title: const Text(
-        "Confirm Image",
-        style: TextStyle(
+      title: Text(
+        l10n.aiSkinConfirmImageTitle,
+        style: const TextStyle(
           fontFamily: 'Inter',
           fontWeight: FontWeight.bold,
           color: Color(0xFF9D5C7D),
         ),
       ),
-      content: const Text(
-        "Are you sure this image is clear and shows the affected skin area?",
-        style: TextStyle(
+      content: Text(
+        l10n.aiSkinConfirmImageMessage,
+        style: const TextStyle(
           fontSize: 15,
           color: Colors.black54,
         ),
@@ -721,7 +803,7 @@ else
             _tempImage = null;
             Navigator.pop(context);
           },
-          child: const Text("No"),
+          child: Text(l10n.no),
         ),
         ElevatedButton(
           style: ElevatedButton.styleFrom(
@@ -740,9 +822,9 @@ else
               _analyzeImage();
             });
           },
-          child: const Text(
-            "Yes",
-            style: TextStyle(color: Colors.white),
+          child: Text(
+            l10n.yes,
+            style: const TextStyle(color: Colors.white),
           ),
         ),
       ],

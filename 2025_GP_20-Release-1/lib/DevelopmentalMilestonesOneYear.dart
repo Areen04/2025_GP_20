@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:rafiq_gp/l10n/app_localizations.dart';
 import 'package:video_player/video_player.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'utils/i18n.dart';
 
 // -------------------------------------------------------------------------------------------------
 // 🔗 Firebase Base URL
@@ -37,6 +37,8 @@ class DevelopmentalMilestonesOneYear extends StatefulWidget {
 
 class _DevelopmentalMilestonesOneYearState
     extends State<DevelopmentalMilestonesOneYear> {
+  AppLocalizations get l10n => AppLocalizations.of(context)!;
+
   int expandedIndex = 0;
   int completedCount = 0;
   final int totalMilestones = 10;
@@ -96,6 +98,7 @@ class _DevelopmentalMilestonesOneYearState
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final progress = completedCount / totalMilestones;
 
     return Scaffold(
@@ -108,7 +111,7 @@ class _DevelopmentalMilestonesOneYearState
           surfaceTintColor: Colors.transparent,
           centerTitle: true,
           title: Text(
-            t(context, "Developmental Milestones", "مراحل النمو والتطور"),
+            l10n.ms_one_year_developmental_milestones,
             style: const TextStyle(
               fontFamily: 'Inter',
               fontWeight: FontWeight.w600,
@@ -153,11 +156,11 @@ class _DevelopmentalMilestonesOneYearState
                     // SOCIAL
                     // -------------------------------------------------------------------------------------------------
                     _buildSection(
-                      title: t(context, "Social & Emotional", "الاجتماعي والعاطفي"),
+                      title: l10n.ms_one_year_social_emotional,
                       index: 0,
                       milestones: [
                         _MilestoneCard(
-                          title: t(context, "Waves bye-bye", "يلوح مودّعًا"),
+                          title: l10n.ms_one_year_waves_bye_bye,
                           videoUrl: firebase('videos/1y_waves_bye.mp4'),
                           thumbUrl: firebase('images/1y_waves_bye_thumb.jpg'),
                           onChecked: updateProgress,
@@ -165,7 +168,7 @@ class _DevelopmentalMilestonesOneYearState
                           notifier: activeVideo,
                         ),
                         _MilestoneCard(
-                          title: t(context, "Plays pat-a-cake with you", "يلعب معك لعبة «بات‑أ‑كيك»"),
+                          title: l10n.ms_one_year_plays_pat_a_cake_with_you,
                           videoUrl: firebase('videos/1y_plays_patacake.mp4'),
                           thumbUrl:
                               firebase('images/1y_plays_patacake_thumb.jpg'),
@@ -180,11 +183,11 @@ class _DevelopmentalMilestonesOneYearState
                     // LANGUAGE
                     // -------------------------------------------------------------------------------------------------
                     _buildSection(
-                      title: t(context, "Language & Communication", "الكلام واللغة"),
+                      title: l10n.ms_one_year_language_communication,
                       index: 1,
                       milestones: [
                         _MilestoneCard(
-                          title: t(context, "Says mama or dada", "يقول ماما أو بابا"),
+                          title: l10n.ms_one_year_says_mama_or_dada,
                           videoUrl: firebase('videos/1y_says_mama_dada.mp4'),
                           thumbUrl:
                               firebase('images/1y_says_mama_dada_thumb.jpg'),
@@ -193,7 +196,7 @@ class _DevelopmentalMilestonesOneYearState
                           notifier: activeVideo,
                         ),
                         _MilestoneCard(
-                          title: t(context, "Understands “no”", "يفهم «لا»"),
+                          title: l10n.ms_one_year_understands_no,
                           videoUrl: firebase('videos/1y_understands_no.mp4'),
                           thumbUrl:
                               firebase('images/1y_understands_no_thumb.jpg'),
@@ -208,11 +211,11 @@ class _DevelopmentalMilestonesOneYearState
                     // COGNITIVE
                     // -------------------------------------------------------------------------------------------------
                     _buildSection(
-                      title: t(context, "Cognitive Development", "التطور المعرفي"),
+                      title: l10n.ms_one_year_cognitive_development,
                       index: 2,
                       milestones: [
                         _MilestoneCard(
-                          title: t(context, "Puts things in a container", "يضع الأشياء داخل وعاء"),
+                          title: l10n.ms_one_year_puts_things_in_a_container,
                           videoUrl:
                               firebase('videos/1y_puts_in_container.mp4'),
                           thumbUrl:
@@ -222,7 +225,7 @@ class _DevelopmentalMilestonesOneYearState
                           notifier: activeVideo,
                         ),
                         _MilestoneCard(
-                          title: t(context, "Looks for hidden toys", "يبحث عن الألعاب المخفية"),
+                          title: l10n.ms_one_year_looks_for_hidden_toys,
                           videoUrl:
                               firebase('videos/1y_looks_for_hidden_toy.mp4'),
                           thumbUrl: firebase(
@@ -238,18 +241,18 @@ class _DevelopmentalMilestonesOneYearState
                     // MOVEMENT
                     // -------------------------------------------------------------------------------------------------
                     _buildSection(
-                      title: t(context, "Movement & Physical Development", "التطور الحركي والبدني"),
+                      title: l10n.ms_one_year_movement_physical_development,
                       index: 3,
                       milestones: [
                         _MilestoneCard(
-                          title: t(context, "Pulls up to stand", "يسحب نفسه للوقوف"),
+                          title: l10n.ms_one_year_pulls_up_to_stand,
                           imageUrl: firebase('images/1y_pulls_to_stand.jpg'),
                           onChecked: updateProgress,
                           childId: widget.childId,
                           notifier: activeVideo,
                         ),
                         _MilestoneCard(
-                          title: t(context, "Walks holding furniture", "يمشي مستندًا إلى الأثاث"),
+                          title: l10n.ms_one_year_walks_holding_furniture,
                           videoUrl:
                               firebase('videos/1y_walks_with_support.mp4'),
                           thumbUrl: firebase(
@@ -259,7 +262,7 @@ class _DevelopmentalMilestonesOneYearState
                           notifier: activeVideo,
                         ),
                         _MilestoneCard(
-                          title: t(context, "Drinks from a cup", "يشرب من كوب"),
+                          title: l10n.ms_one_year_drinks_from_a_cup,
                           videoUrl: firebase('videos/1y_drinks_from_cup.mp4'),
                           thumbUrl:
                               firebase('images/1y_drinks_from_cup_thumb.jpg'),
@@ -268,7 +271,7 @@ class _DevelopmentalMilestonesOneYearState
                           notifier: activeVideo,
                         ),
                         _MilestoneCard(
-                          title: t(context, "Uses thumb + finger to pick things", "يلتقط الأشياء باستخدام الإبهام والسبابة"),
+                          title: l10n.ms_one_year_uses_thumb_finger_to_pick_things,
                           videoUrl: firebase('videos/1y_pincer_grasp.mp4'),
                           thumbUrl:
                               firebase('images/1y_pincer_grasp_thumb.jpg'),
@@ -301,7 +304,7 @@ class _DevelopmentalMilestonesOneYearState
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              t(context, "Overall Progress", "التقدم العام"),
+              l10n.ms_one_year_overall_progress,
               style: const TextStyle(
                 fontFamily: 'Inter',
                 fontWeight: FontWeight.w700,
@@ -311,11 +314,7 @@ class _DevelopmentalMilestonesOneYearState
 
 
                  Text(
-        t(
-          context,
-          "Only check milestones you're confident your child has achieved",
-          "حدّد فقط المعالم التي أنت متأكد أن طفلك حققها",
-        ),
+        l10n.ms_one_year_only_check_milestones_you_re_confident_your_child_has_achiev,
         style: const TextStyle(
           fontFamily: 'Inter',
           color: Color(0xFF6F6F6F),
@@ -325,11 +324,7 @@ class _DevelopmentalMilestonesOneYearState
 
             const SizedBox(height: 6),
             Text(
-              t(
-                context,
-                "$completedCount of $totalMilestones milestones complete",
-                "$completedCount من أصل $totalMilestones مهارة مكتملة",
-              ),
+              l10n.ms_one_year_completedcount_of_totalmilestones_milestones_complete(completedCount, totalMilestones),
               style: const TextStyle(
                 fontFamily: 'Inter',
                 color: Color(0xFF6F6F6F),
@@ -595,6 +590,7 @@ class _MilestoneCardState extends State<_MilestoneCard> {
   // ---------------------------------------------------------------
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(14),

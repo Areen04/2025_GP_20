@@ -3,10 +3,10 @@
 // 🔥 ———————————————————————————————————————————————
 
 import 'package:flutter/material.dart';
+import 'package:rafiq_gp/l10n/app_localizations.dart';
 import 'package:video_player/video_player.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'utils/i18n.dart';
 
 // 🔗 Firebase Base URL
 const String baseFirebaseURL =
@@ -36,6 +36,8 @@ class DevelopmentalMilestonesNineMonth extends StatefulWidget {
 
 class _DevelopmentalMilestonesNineMonthState
     extends State<DevelopmentalMilestonesNineMonth> {
+  AppLocalizations get l10n => AppLocalizations.of(context)!;
+
   int expandedIndex = 0;
   int completedCount = 0;
 
@@ -99,6 +101,7 @@ class _DevelopmentalMilestonesNineMonthState
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final progress = completedCount / totalMilestones;
 
     return Scaffold(
@@ -110,7 +113,7 @@ class _DevelopmentalMilestonesNineMonthState
           surfaceTintColor: Colors.transparent,
           centerTitle: true,
           title: Text(
-            t(context, "Developmental Milestones", "مراحل النمو والتطور"),
+            l10n.ms_nine_month_developmental_milestones,
             style: const TextStyle(
               fontFamily: 'Inter',
               fontWeight: FontWeight.w600,
@@ -148,15 +151,11 @@ class _DevelopmentalMilestonesNineMonthState
 
                     // ⭐ SOCIAL
                     _buildSection(
-                      title: t(context, "Social & Emotional", "الاجتماعي والعاطفي"),
+                      title: l10n.ms_nine_month_social_emotional,
                       index: 0,
                       milestones: [
                         _MilestoneCard(
-                          title: t(
-                            context,
-                            "Is shy, clingy, or fearful around strangers",
-                            "يكون خجولًا أو متشبثًا أو خائفًا حول الغرباء",
-                          ),
+                          title: l10n.ms_nine_month_is_shy_clingy_or_fearful_around_strangers,
                           videoUrl: firebase('videos/9m_shy_strangers.mp4'),
                           thumbUrl: firebase('images/9m_shy_strangers_thumb.jpg'),
                           childId: widget.childId,
@@ -165,22 +164,14 @@ class _DevelopmentalMilestonesNineMonthState
                         ),
                         _MilestoneCard(
                           title:
-                              t(
-                                context,
-                                "Shows facial expressions like happy, sad, angry, and surprised",
-                                "يُظهر تعابير الوجه مثل السعادة والحزن والغضب والدهشة",
-                              ),
+                              l10n.ms_nine_month_shows_facial_expressions_like_happy_sad_angry_and_surprised,
                           imageUrl: firebase('images/9m_facial_expressions.jpg'),
                           childId: widget.childId,
                           notifier: activeVideo,
                           onChecked: updateProgress,
                         ),
                         _MilestoneCard(
-                          title: t(
-                            context,
-                            "Looks when you call her name",
-                            "ينظر عندما تناديه باسمه",
-                          ),
+                          title: l10n.ms_nine_month_looks_when_you_call_her_name,
                           videoUrl: firebase('videos/9m_responds_name.mp4'),
                           thumbUrl: firebase('images/9m_responds_name_thumb.jpg'),
                           childId: widget.childId,
@@ -192,15 +183,11 @@ class _DevelopmentalMilestonesNineMonthState
 
                     // ⭐ LANGUAGE
                     _buildSection(
-                      title: t(context, "Language & Communication", "الكلام واللغة"),
+                      title: l10n.ms_nine_month_language_communication,
                       index: 1,
                       milestones: [
                         _MilestoneCard(
-                          title: t(
-                            context,
-                            "Makes sounds like 'mamama' or 'babababa'",
-                            "يصدر أصواتًا مثل «ماماما» أو «بابابابا»",
-                          ),
+                          title: l10n.ms_nine_month_makes_sounds_like_mamama_or_babababa,
                           videoUrl: firebase('videos/9m_babbling.mp4'),
                           thumbUrl: firebase('images/9m_babbling_thumb.jpg'),
                           childId: widget.childId,
@@ -212,15 +199,11 @@ class _DevelopmentalMilestonesNineMonthState
 
                     // ⭐ COGNITIVE
                     _buildSection(
-                      title: t(context, "Cognitive Development", "التطور المعرفي"),
+                      title: l10n.ms_nine_month_cognitive_development,
                       index: 2,
                       milestones: [
                         _MilestoneCard(
-                          title: t(
-                            context,
-                            "Looks for objects when dropped out of sight",
-                            "يبحث عن الأشياء عند إسقاطها خارج مجال الرؤية",
-                          ),
+                          title: l10n.ms_nine_month_looks_for_objects_when_dropped_out_of_sight,
                           videoUrl: firebase('videos/9m_object_search.mp4'),
                           thumbUrl: firebase('images/9m_object_search_thumb.jpg'),
                           childId: widget.childId,
@@ -232,15 +215,11 @@ class _DevelopmentalMilestonesNineMonthState
 
                     // ⭐ MOVEMENT
                     _buildSection(
-                      title: t(context, "Movement & Physical Development", "التطور الحركي والبدني"),
+                      title: l10n.ms_nine_month_movement_physical_development,
                       index: 3,
                       milestones: [
                         _MilestoneCard(
-                          title: t(
-                            context,
-                            "Gets to a sitting position by herself",
-                            "يصل إلى وضعية الجلوس بنفسه",
-                          ),
+                          title: l10n.ms_nine_month_gets_to_a_sitting_position_by_herself,
                           videoUrl: firebase('videos/9m_gets_sitting.mp4'),
                           thumbUrl: firebase('images/9m_gets_sitting_thumb.jpg'),
                           childId: widget.childId,
@@ -248,11 +227,7 @@ class _DevelopmentalMilestonesNineMonthState
                           onChecked: updateProgress,
                         ),
                         _MilestoneCard(
-                          title: t(
-                            context,
-                            "Sits without support",
-                            "يجلس دون دعم",
-                          ),
+                          title: l10n.ms_nine_month_sits_without_support,
                           imageUrl: firebase('images/9m_sits_unsupported.jpg'),
                           childId: widget.childId,
                           notifier: activeVideo,
@@ -281,7 +256,7 @@ class _DevelopmentalMilestonesNineMonthState
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              t(context, "Overall Progress", "التقدم العام"),
+              l10n.ms_nine_month_overall_progress,
               style: const TextStyle(
                   fontFamily: 'Inter',
                   fontWeight: FontWeight.w700,
@@ -289,11 +264,7 @@ class _DevelopmentalMilestonesNineMonthState
             ),
 
                  Text(
-        t(
-          context,
-          "Only check milestones you're confident your child has achieved",
-          "حدّد فقط المعالم التي أنت متأكد أن طفلك حققها",
-        ),
+        l10n.ms_nine_month_only_check_milestones_you_re_confident_your_child_has_achiev,
         style: const TextStyle(
           fontFamily: 'Inter',
           color: Color(0xFF6F6F6F),
@@ -303,11 +274,7 @@ class _DevelopmentalMilestonesNineMonthState
 
             const SizedBox(height: 6),
             Text(
-              t(
-                context,
-                "$completedCount of $totalMilestones milestones complete",
-                "$completedCount من أصل $totalMilestones مهارة مكتملة",
-              ),
+              l10n.ms_nine_month_completedcount_of_totalmilestones_milestones_complete(completedCount, totalMilestones),
               style: const TextStyle(
                 fontFamily: 'Inter',
                 color: Colors.black54,
@@ -573,6 +540,7 @@ class _MilestoneCardState extends State<_MilestoneCard> {
   // ---------------------------------------------------------------
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(14),

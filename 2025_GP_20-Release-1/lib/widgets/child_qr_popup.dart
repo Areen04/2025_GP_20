@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:rafiq_gp/l10n/app_localizations.dart';
 import '../services/visit_token_service.dart';
 
 class ChildQRPopup extends StatefulWidget {
@@ -34,6 +35,7 @@ class _ChildQRPopupState extends State<ChildQRPopup> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       title: Text(
@@ -85,10 +87,10 @@ class _ChildQRPopupState extends State<ChildQRPopup> {
                   return Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Text(
-                        "Show this QR code to your healthcare provider",
+                      Text(
+                        l10n.childQrPopupInstruction,
                         textAlign: TextAlign.center,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontFamily: 'Inter',
                           fontSize: 13,
                           color: Colors.black54,
@@ -117,7 +119,7 @@ class _ChildQRPopupState extends State<ChildQRPopup> {
             ),
           ),
           onPressed: () => Navigator.pop(context),
-          child: const Text("Close"),
+          child: Text(l10n.close),
         ),
       ],
     );
