@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'utils/i18n.dart';
 
 // 🔗 Firebase Base URL
 const String baseFirebaseURL =
@@ -104,9 +105,9 @@ class _DevelopmentalMilestonesFourMonthState
           elevation: 0,
           surfaceTintColor: Colors.transparent,
           centerTitle: true,
-          title: const Text(
-            "Developmental Milestones",
-            style: TextStyle(
+          title: Text(
+            t(context, "Developmental Milestones", "مراحل النمو والتطور"),
+            style: const TextStyle(
               fontFamily: 'Inter',
               fontWeight: FontWeight.w600,
               fontSize: 20,
@@ -145,11 +146,15 @@ class _DevelopmentalMilestonesFourMonthState
 
                     // ⭐ SOCIAL
                     _buildSection(
-                      title: "Social & Emotional",
+                      title: t(context, "Social & Emotional", "الاجتماعي والعاطفي"),
                       index: 0,
                       milestones: [
                         _MilestoneCard(
-                          title: "Smiles on his own to get your attention",
+                          title: t(
+                            context,
+                            "Smiles on his own to get your attention",
+                            "يبتسم من تلقاء نفسه لجذب انتباهك",
+                          ),
                           videoUrl: firebase('videos/4m_smiles_attention.mp4'),
                           thumbUrl: firebase('images/4m_smiles_attention_thumb.jpg'),
                           childId: widget.childId,
@@ -158,7 +163,11 @@ class _DevelopmentalMilestonesFourMonthState
                         ),
                         _MilestoneCard(
                           title:
-                              "Chuckles (not a full laugh) when you try to make her laugh",
+                              t(
+                                context,
+                                "Chuckles (not a full laugh) when you try to make her laugh",
+                                "يضحك ضحكة خفيفة (ليست ضحكة كاملة) عندما تحاول إضحاكه",
+                              ),
                           videoUrl: firebase('videos/4m_chuckles.mp4'),
                           thumbUrl: firebase('images/4m_chuckles_thumb.jpg'),
                           childId: widget.childId,
@@ -167,7 +176,11 @@ class _DevelopmentalMilestonesFourMonthState
                         ),
                         _MilestoneCard(
                           title:
-                              "Looks at you, moves, or makes sounds to get your attention",
+                              t(
+                                context,
+                                "Looks at you, moves, or makes sounds to get your attention",
+                                "ينظر إليك أو يتحرك أو يصدر أصواتًا لجذب انتباهك",
+                              ),
                           videoUrl:
                               firebase('videos/4m_looks_moves_attention.mp4'),
                           thumbUrl: firebase(
@@ -181,11 +194,15 @@ class _DevelopmentalMilestonesFourMonthState
 
                     // ⭐ SPEECH
                     _buildSection(
-                      title: "Speech & Language",
+                      title: t(context, "Speech & Language", "الكلام واللغة"),
                       index: 1,
                       milestones: [
                         _MilestoneCard(
-                          title: "Makes sounds like 'ooo', 'aahh' (cooing)",
+                          title: t(
+                            context,
+                            "Makes sounds like 'ooo', 'aahh' (cooing)",
+                            "يصدر أصواتًا مثل «أوو» و«آاه» (مناغاة)",
+                          ),
                           videoUrl: firebase('videos/4m_cooing.mp4'),
                           thumbUrl: firebase('images/4m_cooing_thumb.jpg'),
                           childId: widget.childId,
@@ -193,7 +210,11 @@ class _DevelopmentalMilestonesFourMonthState
                           notifier: activeVideo,
                         ),
                         _MilestoneCard(
-                          title: "Makes sounds back when you talk to her",
+                          title: t(
+                            context,
+                            "Makes sounds back when you talk to her",
+                            "يرد بأصوات عندما تتحدث إليه",
+                          ),
                           videoUrl: firebase('videos/4m_talk_back.mp4'),
                           thumbUrl: firebase('images/4m_talk_back_thumb.jpg'),
                           childId: widget.childId,
@@ -201,7 +222,11 @@ class _DevelopmentalMilestonesFourMonthState
                           notifier: activeVideo,
                         ),
                         _MilestoneCard(
-                          title: "Turns head towards sound of your voice",
+                          title: t(
+                            context,
+                            "Turns head towards sound of your voice",
+                            "يدير رأسه باتجاه صوتك",
+                          ),
                           videoUrl: firebase('videos/4m_turns_head.mp4'),
                           thumbUrl: firebase('images/4m_turns_head_thumb.jpg'),
                           childId: widget.childId,
@@ -213,19 +238,27 @@ class _DevelopmentalMilestonesFourMonthState
 
                     // ⭐ COGNITIVE
                     _buildSection(
-                      title: "Cognitive Development",
+                      title: t(context, "Cognitive Development", "التطور المعرفي"),
                       index: 2,
                       milestones: [
                         _MilestoneCard(
                           title:
-                              "If hungry, opens mouth when she sees breast or bottle",
+                              t(
+                                context,
+                                "If hungry, opens mouth when she sees breast or bottle",
+                                "إذا كان جائعًا، يفتح فمه عند رؤية الثدي أو الزجاجة",
+                              ),
                           imageUrl: firebase('images/4m_open_mouth_hungry.jpg'),
                           childId: widget.childId,
                           onChecked: updateProgress,
                           notifier: activeVideo,
                         ),
                         _MilestoneCard(
-                          title: "Looks at hands with interest",
+                          title: t(
+                            context,
+                            "Looks at hands with interest",
+                            "ينظر إلى يديه باهتمام",
+                          ),
                           videoUrl: firebase('videos/4m_looks_hands.mp4'),
                           thumbUrl: firebase('images/4m_looks_hands_thumb.jpg'),
                           childId: widget.childId,
@@ -237,11 +270,19 @@ class _DevelopmentalMilestonesFourMonthState
 
                     // ⭐ MOVEMENT
                     _buildSection(
-                      title: "Movement & Physical Development",
+                      title: t(
+                        context,
+                        "Movement & Physical Development",
+                        "التطور الحركي والبدني",
+                      ),
                       index: 3,
                       milestones: [
                         _MilestoneCard(
-                          title: "Holds head steady without support",
+                          title: t(
+                            context,
+                            "Holds head steady without support",
+                            "يثبت رأسه دون دعم",
+                          ),
                           videoUrl: firebase('videos/4m_hold_head.mp4'),
                           thumbUrl: firebase('images/4m_hold_head_thumb.jpg'),
                           childId: widget.childId,
@@ -249,7 +290,11 @@ class _DevelopmentalMilestonesFourMonthState
                           notifier: activeVideo,
                         ),
                         _MilestoneCard(
-                          title: "Holds a toy when you put it in her hand",
+                          title: t(
+                            context,
+                            "Holds a toy when you put it in her hand",
+                            "يمسك لعبة عندما تضعها في يده",
+                          ),
                           videoUrl: firebase('videos/4m_hold_toy.mp4'),
                           thumbUrl: firebase('images/4m_hold_toy_thumb.jpg'),
                           childId: widget.childId,
@@ -257,7 +302,11 @@ class _DevelopmentalMilestonesFourMonthState
                           notifier: activeVideo,
                         ),
                         _MilestoneCard(
-                          title: "Uses arm to swing at toys",
+                          title: t(
+                            context,
+                            "Uses arm to swing at toys",
+                            "يستخدم ذراعه للتلويح بالألعاب",
+                          ),
                           videoUrl: firebase('videos/4m_swing_toys.mp4'),
                           thumbUrl: firebase('images/4m_swing_toys_thumb.jpg'),
                           childId: widget.childId,
@@ -265,7 +314,11 @@ class _DevelopmentalMilestonesFourMonthState
                           notifier: activeVideo,
                         ),
                         _MilestoneCard(
-                          title: "Brings hands to mouth",
+                          title: t(
+                            context,
+                            "Brings hands to mouth",
+                            "يقرّب يديه إلى فمه",
+                          ),
                           videoUrl: firebase('videos/4m_hands_to_mouth.mp4'),
                           thumbUrl: firebase('images/4m_hands_to_mouth_thumb.jpg'),
                           childId: widget.childId,
@@ -274,7 +327,11 @@ class _DevelopmentalMilestonesFourMonthState
                         ),
                         _MilestoneCard(
                           title:
-                              "Pushes up onto elbows/forearms when on tummy",
+                              t(
+                                context,
+                                "Pushes up onto elbows/forearms when on tummy",
+                                "يدفع نفسه مستندًا على المرفقين/الساعدين عند الاستلقاء على البطن",
+                              ),
                           imageUrl: firebase('images/4m_push_elbows.jpg'),
                           childId: widget.childId,
                           onChecked: updateProgress,
@@ -302,18 +359,22 @@ class _DevelopmentalMilestonesFourMonthState
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              "Overall Progress",
-              style: TextStyle(
+            Text(
+              t(context, "Overall Progress", "التقدم العام"),
+              style: const TextStyle(
                   fontFamily: 'Inter',
                   fontWeight: FontWeight.w700,
                   fontSize: 18),
             ),
 
 
-                 const Text(
-        "Only check milestones you're confident your child has achieved",
-        style: TextStyle(
+                 Text(
+        t(
+          context,
+          "Only check milestones you're confident your child has achieved",
+          "حدّد فقط المعالم التي أنت متأكد أن طفلك حققها",
+        ),
+        style: const TextStyle(
           fontFamily: 'Inter',
           color: Color(0xFF6F6F6F),
           fontSize: 13,
@@ -322,7 +383,11 @@ class _DevelopmentalMilestonesFourMonthState
 
             const SizedBox(height: 6),
             Text(
-              "$completedCount of $totalMilestones milestones complete",
+              t(
+                context,
+                "$completedCount of $totalMilestones milestones complete",
+                "$completedCount من أصل $totalMilestones مهارة مكتملة",
+              ),
               style: const TextStyle(
                 fontFamily: 'Inter',
                 color: Color(0xFF6F6F6F),

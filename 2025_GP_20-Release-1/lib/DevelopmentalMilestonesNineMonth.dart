@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'utils/i18n.dart';
 
 // 🔗 Firebase Base URL
 const String baseFirebaseURL =
@@ -108,9 +109,9 @@ class _DevelopmentalMilestonesNineMonthState
           elevation: 0,
           surfaceTintColor: Colors.transparent,
           centerTitle: true,
-          title: const Text(
-            "Developmental Milestones",
-            style: TextStyle(
+          title: Text(
+            t(context, "Developmental Milestones", "مراحل النمو والتطور"),
+            style: const TextStyle(
               fontFamily: 'Inter',
               fontWeight: FontWeight.w600,
               fontSize: 20,
@@ -147,11 +148,15 @@ class _DevelopmentalMilestonesNineMonthState
 
                     // ⭐ SOCIAL
                     _buildSection(
-                      title: "Social & Emotional",
+                      title: t(context, "Social & Emotional", "الاجتماعي والعاطفي"),
                       index: 0,
                       milestones: [
                         _MilestoneCard(
-                          title: "Is shy, clingy, or fearful around strangers",
+                          title: t(
+                            context,
+                            "Is shy, clingy, or fearful around strangers",
+                            "يكون خجولًا أو متشبثًا أو خائفًا حول الغرباء",
+                          ),
                           videoUrl: firebase('videos/9m_shy_strangers.mp4'),
                           thumbUrl: firebase('images/9m_shy_strangers_thumb.jpg'),
                           childId: widget.childId,
@@ -160,14 +165,22 @@ class _DevelopmentalMilestonesNineMonthState
                         ),
                         _MilestoneCard(
                           title:
-                              "Shows facial expressions like happy, sad, angry, and surprised",
+                              t(
+                                context,
+                                "Shows facial expressions like happy, sad, angry, and surprised",
+                                "يُظهر تعابير الوجه مثل السعادة والحزن والغضب والدهشة",
+                              ),
                           imageUrl: firebase('images/9m_facial_expressions.jpg'),
                           childId: widget.childId,
                           notifier: activeVideo,
                           onChecked: updateProgress,
                         ),
                         _MilestoneCard(
-                          title: "Looks when you call her name",
+                          title: t(
+                            context,
+                            "Looks when you call her name",
+                            "ينظر عندما تناديه باسمه",
+                          ),
                           videoUrl: firebase('videos/9m_responds_name.mp4'),
                           thumbUrl: firebase('images/9m_responds_name_thumb.jpg'),
                           childId: widget.childId,
@@ -179,11 +192,15 @@ class _DevelopmentalMilestonesNineMonthState
 
                     // ⭐ LANGUAGE
                     _buildSection(
-                      title: "Language & Communication",
+                      title: t(context, "Language & Communication", "الكلام واللغة"),
                       index: 1,
                       milestones: [
                         _MilestoneCard(
-                          title: "Makes sounds like 'mamama' or 'babababa'",
+                          title: t(
+                            context,
+                            "Makes sounds like 'mamama' or 'babababa'",
+                            "يصدر أصواتًا مثل «ماماما» أو «بابابابا»",
+                          ),
                           videoUrl: firebase('videos/9m_babbling.mp4'),
                           thumbUrl: firebase('images/9m_babbling_thumb.jpg'),
                           childId: widget.childId,
@@ -195,11 +212,15 @@ class _DevelopmentalMilestonesNineMonthState
 
                     // ⭐ COGNITIVE
                     _buildSection(
-                      title: "Cognitive Development",
+                      title: t(context, "Cognitive Development", "التطور المعرفي"),
                       index: 2,
                       milestones: [
                         _MilestoneCard(
-                          title: "Looks for objects when dropped out of sight",
+                          title: t(
+                            context,
+                            "Looks for objects when dropped out of sight",
+                            "يبحث عن الأشياء عند إسقاطها خارج مجال الرؤية",
+                          ),
                           videoUrl: firebase('videos/9m_object_search.mp4'),
                           thumbUrl: firebase('images/9m_object_search_thumb.jpg'),
                           childId: widget.childId,
@@ -211,11 +232,15 @@ class _DevelopmentalMilestonesNineMonthState
 
                     // ⭐ MOVEMENT
                     _buildSection(
-                      title: "Movement & Physical Development",
+                      title: t(context, "Movement & Physical Development", "التطور الحركي والبدني"),
                       index: 3,
                       milestones: [
                         _MilestoneCard(
-                          title: "Gets to a sitting position by herself",
+                          title: t(
+                            context,
+                            "Gets to a sitting position by herself",
+                            "يصل إلى وضعية الجلوس بنفسه",
+                          ),
                           videoUrl: firebase('videos/9m_gets_sitting.mp4'),
                           thumbUrl: firebase('images/9m_gets_sitting_thumb.jpg'),
                           childId: widget.childId,
@@ -223,7 +248,11 @@ class _DevelopmentalMilestonesNineMonthState
                           onChecked: updateProgress,
                         ),
                         _MilestoneCard(
-                          title: "Sits without support",
+                          title: t(
+                            context,
+                            "Sits without support",
+                            "يجلس دون دعم",
+                          ),
                           imageUrl: firebase('images/9m_sits_unsupported.jpg'),
                           childId: widget.childId,
                           notifier: activeVideo,
@@ -251,17 +280,21 @@ class _DevelopmentalMilestonesNineMonthState
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              "Overall Progress",
-              style: TextStyle(
+            Text(
+              t(context, "Overall Progress", "التقدم العام"),
+              style: const TextStyle(
                   fontFamily: 'Inter',
                   fontWeight: FontWeight.w700,
                   fontSize: 18),
             ),
 
-                 const Text(
-        "Only check milestones you're confident your child has achieved",
-        style: TextStyle(
+                 Text(
+        t(
+          context,
+          "Only check milestones you're confident your child has achieved",
+          "حدّد فقط المعالم التي أنت متأكد أن طفلك حققها",
+        ),
+        style: const TextStyle(
           fontFamily: 'Inter',
           color: Color(0xFF6F6F6F),
           fontSize: 13,
@@ -270,7 +303,11 @@ class _DevelopmentalMilestonesNineMonthState
 
             const SizedBox(height: 6),
             Text(
-              "$completedCount of $totalMilestones milestones complete",
+              t(
+                context,
+                "$completedCount of $totalMilestones milestones complete",
+                "$completedCount من أصل $totalMilestones مهارة مكتملة",
+              ),
               style: const TextStyle(
                 fontFamily: 'Inter',
                 color: Colors.black54,

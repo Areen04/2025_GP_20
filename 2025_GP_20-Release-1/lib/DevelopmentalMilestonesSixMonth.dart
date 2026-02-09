@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'utils/i18n.dart';
 
 // 🔗 Firebase Base URL
 const String baseFirebaseURL =
@@ -104,9 +105,9 @@ class _DevelopmentalMilestonesSixMonthState
           elevation: 0,
           surfaceTintColor: Colors.transparent,
           centerTitle: true,
-          title: const Text(
-            "Developmental Milestones",
-            style: TextStyle(
+          title: Text(
+            t(context, "Developmental Milestones", "مراحل النمو والتطور"),
+            style: const TextStyle(
               fontFamily: 'Inter',
               fontWeight: FontWeight.w600,
               fontSize: 20,
@@ -145,25 +146,25 @@ class _DevelopmentalMilestonesSixMonthState
                     // SOCIAL & EMOTIONAL
                     // ------------------------------------------------------------
                     _buildSection(
-                      title: "Social & Emotional",
+                      title: t(context, "Social & Emotional", "الاجتماعي والعاطفي"),
                       index: 0,
                       milestones: [
                         _MilestoneCard(
-                          title: "Knows familiar people",
+                          title: t(context, "Knows familiar people", "يتعرف على الأشخاص المألوفين"),
                           imageUrl: firebase('images/6m_knows_people.jpg'),
                           childId: widget.childId,
                           onChecked: updateProgress,
                           notifier: activeVideo,
                         ),
                         _MilestoneCard(
-                          title: "Likes to look at herself in a mirror",
+                          title: t(context, "Likes to look at herself in a mirror", "يحب النظر إلى نفسه في المرآة"),
                           imageUrl: firebase('images/6m_look_mirror.jpg'),
                           childId: widget.childId,
                           onChecked: updateProgress,
                           notifier: activeVideo,
                         ),
                         _MilestoneCard(
-                          title: "Laughs",
+                          title: t(context, "Laughs", "يضحك"),
                           videoUrl: firebase('videos/6m_laughs.mp4'),
                           thumbUrl: firebase('images/6m_laughs_thumb.jpg'),
                           childId: widget.childId,
@@ -177,11 +178,11 @@ class _DevelopmentalMilestonesSixMonthState
                     // SPEECH & LANGUAGE
                     // ------------------------------------------------------------
                     _buildSection(
-                      title: "Speech & Language",
+                      title: t(context, "Speech & Language", "الكلام واللغة"),
                       index: 1,
                       milestones: [
                         _MilestoneCard(
-                          title: "Takes turns making sounds with you",
+                          title: t(context, "Takes turns making sounds with you", "يتبادل إصدار الأصوات معك"),
                           videoUrl: firebase('videos/6m_takes_turns.mp4'),
                           thumbUrl: firebase('images/6m_takes_turns_thumb.jpg'),
                           childId: widget.childId,
@@ -189,7 +190,7 @@ class _DevelopmentalMilestonesSixMonthState
                           notifier: activeVideo,
                         ),
                         _MilestoneCard(
-                          title: "Blows “raspberries”",
+                          title: t(context, "Blows “raspberries”", "يُصدر أصوات الفقاعات بالشفاه"),
                           videoUrl: firebase('videos/6m_raspberries.mp4'),
                           thumbUrl: firebase('images/6m_raspberries_thumb.jpg'),
                           childId: widget.childId,
@@ -197,7 +198,7 @@ class _DevelopmentalMilestonesSixMonthState
                           notifier: activeVideo,
                         ),
                         _MilestoneCard(
-                          title: "Makes squealing noises",
+                          title: t(context, "Makes squealing noises", "يصدر أصواتًا عالية حادة"),
                           videoUrl: firebase('videos/6m_squealing.mp4'),
                           thumbUrl: firebase('images/6m_squealing_thumb.jpg'),
                           childId: widget.childId,
@@ -211,25 +212,25 @@ class _DevelopmentalMilestonesSixMonthState
                     // COGNITIVE
                     // ------------------------------------------------------------
                     _buildSection(
-                      title: "Cognitive Development",
+                      title: t(context, "Cognitive Development", "التطور المعرفي"),
                       index: 2,
                       milestones: [
                         _MilestoneCard(
-                          title: "Puts things in her mouth to explore them",
+                          title: t(context, "Puts things in her mouth to explore them", "يضع الأشياء في فمه لاستكشافها"),
                           imageUrl: firebase('images/6m_puts_in_mouth.jpg'),
                           childId: widget.childId,
                           onChecked: updateProgress,
                           notifier: activeVideo,
                         ),
                         _MilestoneCard(
-                          title: "Reaches to grab a toy she wants",
+                          title: t(context, "Reaches to grab a toy she wants", "يمد يده ليمسك لعبة يريدها"),
                           imageUrl: firebase('images/6m_reaches_toy.jpg'),
                           childId: widget.childId,
                           onChecked: updateProgress,
                           notifier: activeVideo,
                         ),
                         _MilestoneCard(
-                          title: "Closes lips to show she doesn’t want more food",
+                          title: t(context, "Closes lips to show she doesn’t want more food", "يغلق شفتيه ليُظهر أنه لا يريد المزيد من الطعام"),
                           videoUrl: firebase('videos/6m_closes_lips.mp4'),
                           thumbUrl: firebase('images/6m_closes_lips_thumb.jpg'),
                           childId: widget.childId,
@@ -243,11 +244,11 @@ class _DevelopmentalMilestonesSixMonthState
                     // MOVEMENT
                     // ------------------------------------------------------------
                     _buildSection(
-                      title: "Movement & Physical Development",
+                      title: t(context, "Movement & Physical Development", "التطور الحركي والبدني"),
                       index: 3,
                       milestones: [
                         _MilestoneCard(
-                          title: "Rolls from tummy to back",
+                          title: t(context, "Rolls from tummy to back", "يتدحرج من البطن إلى الظهر"),
                           videoUrl: firebase('videos/6m_rolls_tummy_back.mp4'),
                           thumbUrl: firebase('images/6m_rolls_tummy_back_thumb.jpg'),
                           childId: widget.childId,
@@ -255,14 +256,14 @@ class _DevelopmentalMilestonesSixMonthState
                           notifier: activeVideo,
                         ),
                         _MilestoneCard(
-                          title: "Pushes up with straight arms when on tummy",
+                          title: t(context, "Pushes up with straight arms when on tummy", "يدفع نفسه بذراعين مستقيمتين عند الاستلقاء على البطن"),
                           imageUrl: firebase('images/6m_pushes_arms.jpg'),
                           childId: widget.childId,
                           onChecked: updateProgress,
                           notifier: activeVideo,
                         ),
                         _MilestoneCard(
-                          title: "Leans on hands to support herself when sitting",
+                          title: t(context, "Leans on hands to support herself when sitting", "يسند نفسه على يديه عند الجلوس"),
                           imageUrl: firebase('images/6m_leans_hands.jpg'),
                           childId: widget.childId,
                           onChecked: updateProgress,
@@ -290,9 +291,9 @@ class _DevelopmentalMilestonesSixMonthState
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              "Overall Progress",
-              style: TextStyle(
+            Text(
+              t(context, "Overall Progress", "التقدم العام"),
+              style: const TextStyle(
                 fontFamily: 'Inter',
                 fontWeight: FontWeight.w700,
                 fontSize: 18,
@@ -300,9 +301,13 @@ class _DevelopmentalMilestonesSixMonthState
             ),
 
 
-                 const Text(
-        "Only check milestones you're confident your child has achieved",
-        style: TextStyle(
+                 Text(
+        t(
+          context,
+          "Only check milestones you're confident your child has achieved",
+          "حدّد فقط المعالم التي أنت متأكد أن طفلك حققها",
+        ),
+        style: const TextStyle(
           fontFamily: 'Inter',
           color: Color(0xFF6F6F6F),
           fontSize: 13,
@@ -311,7 +316,11 @@ class _DevelopmentalMilestonesSixMonthState
 
             const SizedBox(height: 6),
             Text(
-              "$completedCount of $totalMilestones milestones complete",
+              t(
+                context,
+                "$completedCount of $totalMilestones milestones complete",
+                "$completedCount من أصل $totalMilestones مهارة مكتملة",
+              ),
               style: const TextStyle(
                 fontFamily: 'Inter',
                 fontSize: 13,

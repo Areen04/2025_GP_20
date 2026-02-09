@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'utils/i18n.dart';
 
 // 🔗 رابط Firebase
 const String baseFirebaseURL =
@@ -101,9 +102,9 @@ class _DevelopmentalMilestones5yearState
           surfaceTintColor: Colors.transparent,
           scrolledUnderElevation: 0,
           centerTitle: true,
-          title: const Text(
-            "Developmental Milestones",
-            style: TextStyle(
+          title: Text(
+            t(context, "Developmental Milestones", "مراحل النمو والتطور"),
+            style: const TextStyle(
               fontFamily: 'Inter',
               fontWeight: FontWeight.w600,
               fontSize: 20,
@@ -144,25 +145,29 @@ class _DevelopmentalMilestones5yearState
                     // ------------------ SECTIONS ------------------
 
                     _buildSection(
-                      title: "Social & Emotional",
+                      title: t(context, "Social & Emotional", "الاجتماعي والعاطفي"),
                       index: 0,
                       milestones: [
                         _MilestoneCard(
-                          title: "Follows rules or takes turns when playing games with other children",
+                          title: t(
+                            context,
+                            "Follows rules or takes turns when playing games with other children",
+                            "يتبع القواعد أو يتناوب الدور عند لعب الألعاب مع الأطفال الآخرين",
+                          ),
                           imageUrl: firebase('images/5y_follows_rules.jpg'),
                           onChecked: updateProgress,
                           childId: widget.childId,
                           notifier: activeVideo,
                         ),
                         _MilestoneCard(
-                          title: "Does simple chores at home",
+                          title: t(context, "Does simple chores at home", "يقوم بأعمال منزلية بسيطة"),
                           imageUrl: firebase('images/5y_does_chores.jpg'),
                           onChecked: updateProgress,
                           childId: widget.childId,
                           notifier: activeVideo,
                         ),
                         _MilestoneCard(
-                          title: "Sings, dances, or acts for you",
+                          title: t(context, "Sings, dances, or acts for you", "يغني أو يرقص أو يمثل لك"),
                           videoUrl: firebase('videos/5y_sings_dances.mp4'),
                           thumbUrl: firebase('images/5y_sings_dances.jpg'),
                           onChecked: updateProgress,
@@ -173,11 +178,11 @@ class _DevelopmentalMilestones5yearState
                     ),
 
                     _buildSection(
-                      title: "Speech & Language",
+                      title: t(context, "Speech & Language", "الكلام واللغة"),
                       index: 1,
                       milestones: [
                         _MilestoneCard(
-                          title: "Tells a story she heard or made up",
+                          title: t(context, "Tells a story she heard or made up", "يروي قصة سمعها أو اخترعها"),
                           videoUrl: firebase('videos/5y_tells_story.mp4'),
                           thumbUrl: firebase('images/5y_tells_story.jpg'),
                           onChecked: updateProgress,
@@ -185,7 +190,7 @@ class _DevelopmentalMilestones5yearState
                           notifier: activeVideo,
                         ),
                         _MilestoneCard(
-                          title: "Answers simple questions about a story",
+                          title: t(context, "Answers simple questions about a story", "يجيب عن أسئلة بسيطة حول قصة"),
                           videoUrl: firebase('videos/5y_answers_questions.mp4'),
                           thumbUrl: firebase('images/5y_answers_questions.jpg'),
                           onChecked: updateProgress,
@@ -193,7 +198,7 @@ class _DevelopmentalMilestones5yearState
                           notifier: activeVideo,
                         ),
                         _MilestoneCard(
-                          title: "Keeps a conversation going",
+                          title: t(context, "Keeps a conversation going", "يحافظ على استمرار المحادثة"),
                           videoUrl: firebase('videos/5y_keeps_conversation.mp4'),
                           thumbUrl: firebase('images/5y_keeps_conversation.jpg'),
                           onChecked: updateProgress,
@@ -201,7 +206,7 @@ class _DevelopmentalMilestones5yearState
                           notifier: activeVideo,
                         ),
                         _MilestoneCard(
-                          title: "Recognizes simple rhymes",
+                          title: t(context, "Recognizes simple rhymes", "يتعرف على القوافي البسيطة"),
                           videoUrl: firebase('videos/5y_recognizes_rhymes.mp4'),
                           thumbUrl: firebase('images/5y_recognizes_rhymes.jpg'),
                           onChecked: updateProgress,
@@ -212,11 +217,11 @@ class _DevelopmentalMilestones5yearState
                     ),
 
                     _buildSection(
-                      title: "Cognitive Development",
+                      title: t(context, "Cognitive Development", "التطور المعرفي"),
                       index: 2,
                       milestones: [
                         _MilestoneCard(
-                          title: "Counts to 10",
+                          title: t(context, "Counts to 10", "يعد حتى 10"),
                           videoUrl: firebase('videos/5y_counts_to10.mp4'),
                           thumbUrl: firebase('images/5y_counts_to10.jpg'),
                           onChecked: updateProgress,
@@ -224,7 +229,7 @@ class _DevelopmentalMilestones5yearState
                           notifier: activeVideo,
                         ),
                         _MilestoneCard(
-                          title: "Names some numbers between 1–5",
+                          title: t(context, "Names some numbers between 1–5", "يسمّي بعض الأرقام بين 1 و5"),
                           videoUrl: firebase('videos/5y_names_numbers.mp4'),
                           thumbUrl: firebase('images/5y_names_numbers.jpg'),
                           onChecked: updateProgress,
@@ -232,7 +237,7 @@ class _DevelopmentalMilestones5yearState
                           notifier: activeVideo,
                         ),
                         _MilestoneCard(
-                          title: "Uses time words like yesterday / morning",
+                          title: t(context, "Uses time words like yesterday / morning", "يستخدم كلمات الزمن مثل أمس / صباحًا"),
                           videoUrl: firebase('videos/5y_uses_words_time.mp4'),
                           thumbUrl: firebase('images/5y_uses_words_time.jpg'),
                           onChecked: updateProgress,
@@ -240,7 +245,7 @@ class _DevelopmentalMilestones5yearState
                           notifier: activeVideo,
                         ),
                         _MilestoneCard(
-                          title: "Pays attention for 5–10 minutes",
+                          title: t(context, "Pays attention for 5–10 minutes", "ينتبه لمدة 5–10 دقائق"),
                           videoUrl: firebase('videos/5y_pays_attention.mp4'),
                           thumbUrl: firebase('images/5y_pays_attention.jpg'),
                           onChecked: updateProgress,
@@ -248,7 +253,7 @@ class _DevelopmentalMilestones5yearState
                           notifier: activeVideo,
                         ),
                         _MilestoneCard(
-                          title: "Writes some letters in her name",
+                          title: t(context, "Writes some letters in her name", "يكتب بعض أحرف اسمه"),
                           videoUrl: firebase('videos/5y_writes_letters.mp4'),
                           thumbUrl: firebase('images/5y_writes_letters.jpg'),
                           onChecked: updateProgress,
@@ -256,7 +261,7 @@ class _DevelopmentalMilestones5yearState
                           notifier: activeVideo,
                         ),
                         _MilestoneCard(
-                          title: "Names some letters",
+                          title: t(context, "Names some letters", "يسمّي بعض الحروف"),
                           videoUrl: firebase('videos/5y_names_letters.mp4'),
                           thumbUrl: firebase('images/5y_names_letters.jpg'),
                           onChecked: updateProgress,
@@ -267,11 +272,11 @@ class _DevelopmentalMilestones5yearState
                     ),
 
                     _buildSection(
-                      title: "Movement & Physical Development",
+                      title: t(context, "Movement & Physical Development", "التطور الحركي والبدني"),
                       index: 3,
                       milestones: [
                         _MilestoneCard(
-                          title: "Buttons some buttons",
+                          title: t(context, "Buttons some buttons", "يربط بعض الأزرار"),
                           videoUrl: firebase('videos/5y_buttons_buttons.mp4'),
                           thumbUrl: firebase('images/5y_buttons_buttons.jpg'),
                           onChecked: updateProgress,
@@ -279,7 +284,7 @@ class _DevelopmentalMilestones5yearState
                           notifier: activeVideo,
                         ),
                         _MilestoneCard(
-                          title: "Hops on one foot",
+                          title: t(context, "Hops on one foot", "يقفز على قدم واحدة"),
                           imageUrl: firebase('images/5y_hops_one_foot.jpg'),
                           onChecked: updateProgress,
                           childId: widget.childId,
@@ -306,17 +311,21 @@ class _DevelopmentalMilestones5yearState
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text("Overall Progress",
-                style: TextStyle(
+            Text(t(context, "Overall Progress", "التقدم العام"),
+                style: const TextStyle(
                     fontFamily: 'Inter',
                     fontWeight: FontWeight.w700,
                     fontSize: 18)),
 
 
 
-                         const Text(
-        "Only check milestones you're confident your child has achieved",
-        style: TextStyle(
+                         Text(
+        t(
+          context,
+          "Only check milestones you're confident your child has achieved",
+          "حدّد فقط المعالم التي أنت متأكد أن طفلك حققها",
+        ),
+        style: const TextStyle(
           fontFamily: 'Inter',
           color: Color(0xFF6F6F6F),
           fontSize: 13,
@@ -325,7 +334,11 @@ class _DevelopmentalMilestones5yearState
 
             const SizedBox(height: 6),
             Text(
-              "$completedCount of $totalMilestones milestones complete",
+              t(
+                context,
+                "$completedCount of $totalMilestones milestones complete",
+                "$completedCount من أصل $totalMilestones مهارة مكتملة",
+              ),
               style: const TextStyle(
                 fontFamily: 'Inter',
                 color: Color(0xFF6F6F6F),
