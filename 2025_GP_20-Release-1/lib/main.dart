@@ -6,6 +6,8 @@ import 'firebase_options.dart'; // ✅ إعدادات Firebase من FlutterFire 
 import 'splash_screen.dart'; // ✅ استيراد الصفحة الرئيسية مؤقتاً
 import 'utils/locale_controller.dart';
 
+
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
@@ -45,7 +47,8 @@ class RafiqApp extends StatelessWidget {
             ),
             useMaterial3: true,
           ),
-          home: const SplashScreen(), // ✅ مؤقتًا بدل SplashScreen
+          home: const SplashScreen(),
+          // ✅ مؤقتًا بدل SplashScreen
         );
       },
     );
