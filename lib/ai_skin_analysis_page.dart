@@ -7,7 +7,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:rafiq_gp/l10n/app_localizations.dart';
 import 'services/skin_classifier.dart';
 import 'utils/skin_validator.dart';
-import 'package:auto_size_text/auto_size_text.dart';
 
 class AiSkinAnalysisPage extends StatefulWidget {
   final String childId;

@@ -111,14 +111,13 @@ class _RemindersPageState extends State<RemindersPage> {
         final hasPending = keys.any((k) => !taken.containsKey(k));
         if (!hasPending) return;
 
-        final dueDate =
-            birthDate!.add(Duration(days: sectionMonth * 30));
+        final dueDate = birthDate!.add(Duration(days: sectionMonth * 30));
         final dueDay = DateTime(dueDate.year, dueDate.month, dueDate.day);
         final daysUntil = dueDay.difference(today).inDays;
         if (daysUntil < 0 || daysUntil > 7) return;
 
         final label = _vaccineSectionLabels[sectionMonth] ??
-            "${sectionMonth}-month vaccination";
+            "$sectionMonth-month vaccination";
         final text = daysUntil == 0
             ? "$childName: $label is due today."
             : daysUntil == 1

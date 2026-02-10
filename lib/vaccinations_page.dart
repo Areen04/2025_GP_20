@@ -552,11 +552,11 @@ class _VaccinationsPageState extends State<VaccinationsPage> {
         earliestDate: schedDate, sectionMonth: sectionMonth);
     final expired = isExpired(key);
     final late = isLate(key, schedDate);
-    final displayStatus = (!widget.canConfirm &&
-            getOpenSectionMonth() == sectionMonth &&
-            status == VaccineStatus.overdue)
-        ? VaccineStatus.upcoming
-        : status;
+    final displayStatus =
+        (getOpenSectionMonth() == sectionMonth &&
+                status == VaccineStatus.overdue)
+            ? VaccineStatus.upcoming
+            : status;
 
     if (shouldShowInSection(
         isCurrent: getOpenSectionMonth() == sectionMonth,
