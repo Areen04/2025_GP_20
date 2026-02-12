@@ -171,21 +171,38 @@ class _RemindersPageState extends State<RemindersPage> {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        centerTitle: true,
-        title: const Text(
-          "Reminders",
-          style: TextStyle(
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(70),
+        child: AppBar(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          surfaceTintColor: Colors.white,
+          scrolledUnderElevation: 0,
+          centerTitle: true,
+          title: const Text(
+            "Reminders",
+            style: TextStyle(
               fontFamily: 'Inter',
               fontWeight: FontWeight.w600,
-              color: Colors.black87),
-        ),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded,
-              color: Color(0xFF9D5C7D)),
-          onPressed: () => Navigator.pop(context),
+              fontSize: 20,
+              color: Colors.black87,
+            ),
+          ),
+          leading: IconButton(
+            icon: const Icon(
+              Icons.arrow_back_ios_new_rounded,
+              color: Color(0xFF9D5C7D),
+              size: 23,
+            ),
+            onPressed: () => Navigator.pop(context),
+          ),
+          bottom: PreferredSize(
+            preferredSize: const Size.fromHeight(1),
+            child: Container(
+              height: 1,
+              color: const Color(0xFFE0E0E0),
+            ),
+          ),
         ),
       ),
       body: StreamBuilder<QuerySnapshot>(

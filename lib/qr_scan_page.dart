@@ -73,12 +73,15 @@ Future<void> _handleScannedQR(String token) async {
     return;
   }
 
-  Navigator.push(
-  context,
-  MaterialPageRoute(
-    builder: (_) => DoctorVisitPage(childId: childId),
-  ),
-);
+  await Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => DoctorVisitPage(childId: childId),
+    ),
+  );
+
+  // Allow scanning again after returning.
+  _isProcessing = false;
 
 }
 

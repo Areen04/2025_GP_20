@@ -50,6 +50,7 @@ class _ChildDashboardState extends State<ChildDashboard> {
   String? updatedImageUrl;
   bool _loading = true;
   final List<GlobalKey> _ageKeys = List.generate(12, (_) => GlobalKey());
+  static const double _sectionGap = 24;
 
   DateTime? _birthDate;
   Map<String, dynamic> _takenVaccines = {};
@@ -321,11 +322,18 @@ class _ChildDashboardState extends State<ChildDashboard> {
   Widget _vaccinationTimelineCard() {
     return Container(
       padding: const EdgeInsets.all(20),
-      margin: const EdgeInsets.only(bottom: 25),
+      margin: EdgeInsets.zero,
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE6E6E6), width: 1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey.shade300, width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -441,6 +449,8 @@ class _ChildDashboardState extends State<ChildDashboard> {
         child: AppBar(
           backgroundColor: Colors.white,
           elevation: 0,
+          surfaceTintColor: Colors.white,
+          scrolledUnderElevation: 0,
           centerTitle: true,
           title: Text(widget.childName,
               style: const TextStyle(
@@ -466,13 +476,14 @@ class _ChildDashboardState extends State<ChildDashboard> {
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                       color: const Color(0xFFF8F5F6),
-                      borderRadius: BorderRadius.circular(12)),
+                      borderRadius: BorderRadius.circular(8)),
                   child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Row(children: [
                           CircleAvatar(
                               radius: 30,
+                              backgroundColor: const Color(0xFFF4E9EF),
                               backgroundImage: (updatedImageUrl != null &&
                                       updatedImageUrl!.isNotEmpty)
                                   ? NetworkImage(updatedImageUrl!)
@@ -492,23 +503,42 @@ class _ChildDashboardState extends State<ChildDashboard> {
                                         color: Color(0xFF6F6F6F))),
                               ]),
                         ]),
-                        IconButton(
-                            icon: const Icon(Icons.qr_code_2_outlined,
-                                color: Color(0xFF9D5C7D)),
-                            onPressed: () => showDialog(
-                                context: context,
-                                builder: (_) => ChildQRPopup(
-                                    childId: widget.childId,
-                                    childName: widget.childName))),
+                        GestureDetector(
+                          onTap: () => showDialog(
+                              context: context,
+                              builder: (_) => ChildQRPopup(
+                                  childId: widget.childId,
+                                  childName: widget.childName)),
+                          child: Container(
+                            width: 38,
+                            height: 38,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: const Icon(
+                              Icons.qr_code_2_outlined,
+                              color: Color(0xFF9D5C7D),
+                              size: 22,
+                            ),
+                          ),
+                        ),
                       ]),
                 ),
-                const SizedBox(height: 35),
+                const SizedBox(height: _sectionGap),
                 Container(
                   padding: const EdgeInsets.all(18),
                   decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: const Color(0xFFE6E6E6))),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.grey.shade300),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.03),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
+                      ]),
                   child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -559,11 +589,33 @@ class _ChildDashboardState extends State<ChildDashboard> {
                                                         FontWeight.w600))))
                                         .toList())),
                             const SizedBox(height: 14),
-                            LinearProgressIndicator(
-                                value: (selectedIndex + 1) / ages.length,
-                                backgroundColor: const Color(0xFFF2F2F2),
-                                color: const Color(0xFF9D5C7D),
-                                minHeight: 8),
+                            Stack(
+                              children: [
+                                Container(
+                                  height: 8,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFF2F2F2),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                                FractionallySizedBox(
+                                  widthFactor:
+                                      (selectedIndex + 1) / ages.length,
+                                  child: Container(
+                                    height: 8,
+                                    decoration: BoxDecoration(
+                                      gradient: const LinearGradient(
+                                        colors: [
+                                          Color(0xFF9D5C7D),
+                                          Color(0xFFC9A2B8),
+                                        ],
+                                      ),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ])),
                           _arrowButton(Icons.arrow_forward_ios_rounded, () {
                             if (viewIndex < ages.length - 1) {
@@ -577,8 +629,9 @@ class _ChildDashboardState extends State<ChildDashboard> {
                         ]),
                       ]),
                 ),
-                const SizedBox(height: 35),
+                const SizedBox(height: _sectionGap),
                 _vaccinationTimelineCard(),
+                const SizedBox(height: _sectionGap),
                 GridView.count(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
@@ -727,11 +780,18 @@ class _DashboardCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: EdgeInsets.all(padding),
+        padding: EdgeInsets.symmetric(horizontal: padding, vertical: padding + 6),
         decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFFE6E6E6))),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: Colors.grey.shade300),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.03),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ]),
         child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
           SvgPicture.asset(iconPath,
               colorFilter:
@@ -745,12 +805,17 @@ class _DashboardCard extends StatelessWidget {
               style: TextStyle(
                   color: const Color(0xFF9D5C7D),
                   fontSize: fontSizeTitle,
-                  fontWeight: FontWeight.w600)),
+                  fontWeight: FontWeight.w600,
+                  fontFamily: 'Inter',
+                  height: 1.2)),
           const SizedBox(height: 6),
           Text(subtitle,
               textAlign: TextAlign.center,
               style: TextStyle(
-                  color: const Color(0xFF6F6F6F), fontSize: fontSizeSubtitle)),
+                  color: const Color(0xFF6F6F6F),
+                  fontSize: fontSizeSubtitle,
+                  fontFamily: 'Inter',
+                  height: 1.3)),
         ]),
       ),
     );

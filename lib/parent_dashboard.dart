@@ -174,6 +174,8 @@ class _ParentDashboardState extends State<ParentDashboard> {
         automaticallyImplyLeading: false,
         leading: IconButton(
           icon: const Icon(Icons.settings_outlined, color: Color(0xFF9D5C7D)),
+          iconSize: 24,
+          padding: const EdgeInsets.all(8),
           onPressed: () async {
             await Navigator.push(
               context,
@@ -185,6 +187,8 @@ class _ParentDashboardState extends State<ParentDashboard> {
         actions: [
           IconButton(
             icon: const Icon(Icons.notifications_none, color: Color(0xFF9D5C7D)),
+            iconSize: 24,
+            padding: const EdgeInsets.all(8),
             onPressed: () {
               Navigator.push(
                 context,

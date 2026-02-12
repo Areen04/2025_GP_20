@@ -30,6 +30,8 @@ class _VaccinationsPageState extends State<VaccinationsPage> {
   Map<String, dynamic> _takenVaccines = {};
   bool _isLoading = true;
   String? _resolvedParentId;
+  String? _expandedSectionTitle;
+  bool _didInitExpanded = false;
 
   // 1️⃣ جدول اللقاحات الشامل (MOH Saudi Schedule)
   final Map<String, int> vaccineScheduleMonth = {
@@ -253,6 +255,31 @@ class _VaccinationsPageState extends State<VaccinationsPage> {
     return sectionMonths.first;
   }
 
+  String _sectionTitleForMonth(int month) {
+    switch (month) {
+      case 0:
+        return "At Birth";
+      case 2:
+        return "2 Months";
+      case 4:
+        return "4 Months";
+      case 6:
+        return "6 Months";
+      case 9:
+        return "9 Months";
+      case 12:
+        return "12 Months";
+      case 18:
+        return "18 Months";
+      case 24:
+        return "24 Months";
+      case 60:
+        return "School Age";
+      default:
+        return "At Birth";
+    }
+  }
+
   // --------------------------------------------------------------------------
   // 4) VACCINE STATUS ENGINE (النسخة الذكية المحدثة - الخطوة 2)
   // --------------------------------------------------------------------------
@@ -429,23 +456,49 @@ class _VaccinationsPageState extends State<VaccinationsPage> {
       );
     }
     final currentSection = getOpenSectionMonth();
+    if (!_didInitExpanded) {
+      _expandedSectionTitle = _sectionTitleForMonth(currentSection);
+      _didInitExpanded = true;
+    }
 
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        centerTitle: true,
-        title: const Text("Vaccinations",
-            style:
-                TextStyle(color: Colors.black87, fontWeight: FontWeight.w600)),
-        leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new_rounded,
-                color: Color(0xFF9D5C7D)),
-            onPressed: () => Navigator.pop(context)),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(70),
+        child: AppBar(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          surfaceTintColor: Colors.white,
+          scrolledUnderElevation: 0,
+          centerTitle: true,
+          title: const Text(
+            "Vaccinations",
+            style: TextStyle(
+              fontFamily: 'Inter',
+              fontWeight: FontWeight.w600,
+              fontSize: 20,
+              color: Colors.black87,
+            ),
+          ),
+          leading: IconButton(
+            icon: const Icon(
+              Icons.arrow_back_ios_new_rounded,
+              color: Color(0xFF9D5C7D),
+              size: 23,
+            ),
+            onPressed: () => Navigator.pop(context),
+          ),
+          bottom: PreferredSize(
+            preferredSize: const Size.fromHeight(1),
+            child: Container(
+              height: 1,
+              color: const Color(0xFFE0E0E0),
+            ),
+          ),
+        ),
       ),
       body: ListView(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 25),
         children: [
           _visitSection(
               title: "At Birth",
@@ -622,18 +675,53 @@ class _VaccinationsPageState extends State<VaccinationsPage> {
     if (vaccines.where((v) => v is! SizedBox).isEmpty && !isExpanded) {
       return const SizedBox.shrink();
     }
+    final isOpen = _expandedSectionTitle == title;
     return Container(
       margin: const EdgeInsets.only(bottom: 15),
       decoration: BoxDecoration(
-          color: const Color(0xFFF8F5F6),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.grey.shade200)),
-      child: ExpansionTile(
-          initiallyExpanded: isExpanded,
-          title: Text(title,
-              style:
-                  const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
-          children: vaccines),
+        color: const Color(0xFFF8F5F6),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Theme(
+        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+        child: ExpansionTile(
+          key: ValueKey("$title-$isOpen"),
+          initiallyExpanded: isOpen,
+          onExpansionChanged: (open) {
+            setState(() {
+              if (open) {
+                _expandedSectionTitle = title;
+              } else if (_expandedSectionTitle == title) {
+                _expandedSectionTitle = null;
+              }
+            });
+          },
+          tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+          iconColor: const Color(0xFF9D5C7D),
+          collapsedIconColor: const Color(0xFF9D5C7D),
+          trailing: AnimatedRotation(
+            turns: isOpen ? 0.5 : 0.0,
+            duration: const Duration(milliseconds: 250),
+            child: const Icon(
+              Icons.keyboard_arrow_down_rounded,
+              size: 32,
+              color: Color(0xFF9D5C7D),
+            ),
+          ),
+          title: Text(
+            title,
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+              fontFamily: 'Inter',
+              color: Colors.black87,
+            ),
+          ),
+          children: vaccines,
+        ),
+      ),
     );
   }
 
