@@ -676,8 +676,7 @@ class _ConditionTileChevronRight extends StatelessWidget {
                     ),
                   ),
                 ),
-                const Icon(Icons.description_outlined, color: _pink),
-                const SizedBox(width: 8),
+
                 InkWell(
                   onTap: onToggle,
                   borderRadius: BorderRadius.circular(20),

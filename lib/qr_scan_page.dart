@@ -109,12 +109,7 @@ Future<void> _handleScannedQR(String token) async {
             _loadDoctorName();
           },
         ),
-        actions: const [
-          IconButton(
-            icon: Icon(Icons.notifications_none, color: Color(0xFF9D5C7D)),
-            onPressed: null,
-          ),
-        ],
+
       ),
 
       body: _loading
