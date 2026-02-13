@@ -20,6 +20,8 @@ import 'DevelopmentalMilestones5year.dart';
 import 'activity_library_page.dart';
 import 'vaccinations_page.dart';
 import 'widgets/child_qr_popup.dart';
+import 'parent_medical_reports_page.dart';
+
 
 class _UpcomingVaccine {
   final String key;
@@ -664,13 +666,24 @@ class _ChildDashboardState extends State<ChildDashboard> {
                                     childId: widget.childId,
                                     childName: widget.childName)))),
                     _DashboardCard(
-                        iconPath: 'lib/icons/stethoscope.svg',
-                        title: "Medical Conditions",
-                        subtitle: "Overview of conditions",
-                        iconSize: sw * 0.075,
-                        padding: sw * 0.035,
-                        fontSizeTitle: sw * 0.035,
-                        fontSizeSubtitle: sw * 0.030),
+                      iconPath: 'lib/icons/stethoscope.svg',
+                      title: "Medical Conditions",
+                      subtitle: "Overview of conditions",
+                      iconSize: sw * 0.075,
+                      padding: sw * 0.035,
+                      fontSizeTitle: sw * 0.035,
+                      fontSizeSubtitle: sw * 0.030,
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => ParentMedicalReportsPage(
+                            childId: widget.childId,
+                            childName: widget.childName,
+                          ),
+                        ),
+                      ),
+                    ),
+
                     _DashboardCard(
                         iconPath: 'lib/icons/book.svg',
                         title: "Activity Library",
