@@ -12,6 +12,8 @@ dependencies:
     sdk: flutter
   flutter_localizations:
     sdk: flutter
+
+  # Core
   intl: ^0.20.2
 
   # QR
@@ -23,10 +25,14 @@ dependencies:
   mobile_scanner: ^6.0.11
   video_player: ^2.9.1
   image: ^4.5.4
-  file_picker: ^8.0.0   # رفع PDF/صورة
+  file_picker: ^8.0.0
 
-  # OCR (images)
+  # OCR
   google_mlkit_text_recognition: ^0.13.0
+
+  # PDF
+  pdf_render_maintained: ^1.6.1
+  syncfusion_flutter_pdf: ^32.2.4
 
   # UI
   cupertino_icons: ^1.0.8
@@ -40,7 +46,7 @@ dependencies:
   firebase_storage: ^12.3.4
 
   # Open file in browser / PDF app
-  url_launcher: ^6.3.0   # فتح التقرير مباشرة
+  url_launcher: ^6.3.0
 
   # ONNX
   onnxruntime: ^1.4.1
