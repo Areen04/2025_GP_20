@@ -54,7 +54,7 @@ dependencies:
   # Local storage
   shared_preferences: ^2.3.2
   flutter_cache_manager: ^3.4.1
-
+  fl_chart: ^0.68.0
 dev_dependencies:
   flutter_test:
     sdk: flutter
