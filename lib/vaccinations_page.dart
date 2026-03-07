@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
+import 'package:rafiq_gp/l10n/app_localizations.dart';
 
 enum VaccineStatus { upcoming, completed, overdue, hidden }
 
@@ -26,6 +27,7 @@ class VaccinationsPage extends StatefulWidget {
 }
 
 class _VaccinationsPageState extends State<VaccinationsPage> {
+  AppLocalizations get l10n => AppLocalizations.of(context)!;
   DateTime? _birthDate;
   Map<String, dynamic> _takenVaccines = {};
   bool _isLoading = true;
@@ -258,25 +260,25 @@ class _VaccinationsPageState extends State<VaccinationsPage> {
   String _sectionTitleForMonth(int month) {
     switch (month) {
       case 0:
-        return "At Birth";
+        return l10n.vaccinationsSectionAtBirth;
       case 2:
-        return "2 Months";
+        return l10n.vaccinationsSection2Months;
       case 4:
-        return "4 Months";
+        return l10n.vaccinationsSection4Months;
       case 6:
-        return "6 Months";
+        return l10n.vaccinationsSection6Months;
       case 9:
-        return "9 Months";
+        return l10n.vaccinationsSection9Months;
       case 12:
-        return "12 Months";
+        return l10n.vaccinationsSection12Months;
       case 18:
-        return "18 Months";
+        return l10n.vaccinationsSection18Months;
       case 24:
-        return "24 Months";
+        return l10n.vaccinationsSection24Months;
       case 60:
-        return "School Age";
+        return l10n.vaccinationsSectionSchoolAge;
       default:
-        return "At Birth";
+        return l10n.vaccinationsSectionAtBirth;
     }
   }
 
@@ -446,11 +448,11 @@ class _VaccinationsPageState extends State<VaccinationsPage> {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
     if (_birthDate == null) {
-      return const Scaffold(
+      return Scaffold(
         body: Center(
           child: Text(
-            "Birth date not found for this child.",
-            style: TextStyle(fontSize: 14, color: Colors.black87),
+            l10n.vaccinationsBirthDateMissing,
+            style: const TextStyle(fontSize: 14, color: Colors.black87),
           ),
         ),
       );
@@ -468,12 +470,12 @@ class _VaccinationsPageState extends State<VaccinationsPage> {
         child: AppBar(
           backgroundColor: Colors.white,
           elevation: 0,
-          surfaceTintColor: Colors.white,
+          surfaceTintColor: Colors.transparent,
           scrolledUnderElevation: 0,
           centerTitle: true,
-          title: const Text(
-            "Vaccinations",
-            style: TextStyle(
+          title: Text(
+            l10n.vaccinationsTitle,
+            style: const TextStyle(
               fontFamily: 'Inter',
               fontWeight: FontWeight.w600,
               fontSize: 20,
@@ -498,10 +500,10 @@ class _VaccinationsPageState extends State<VaccinationsPage> {
         ),
       ),
       body: ListView(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 25),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         children: [
           _visitSection(
-              title: "At Birth",
+              title: l10n.vaccinationsSectionAtBirth,
               isExpanded: currentSection == 0,
               vaccines: [
                 _buildVaccineRow("BCG_0", 0),
@@ -509,7 +511,7 @@ class _VaccinationsPageState extends State<VaccinationsPage> {
                 if (currentSection == 0) ..._buildLateComponents(),
               ]),
           _visitSection(
-              title: "2 Months",
+              title: l10n.vaccinationsSection2Months,
               isExpanded: currentSection == 2,
               vaccines: [
                 _buildVaccineRow("DTAP_1", 2),
@@ -521,7 +523,7 @@ class _VaccinationsPageState extends State<VaccinationsPage> {
                 if (currentSection == 2) ..._buildLateComponents(),
               ]),
           _visitSection(
-              title: "4 Months",
+              title: l10n.vaccinationsSection4Months,
               isExpanded: currentSection == 4,
               vaccines: [
                 _buildVaccineRow("DTAP_2", 4),
@@ -533,7 +535,7 @@ class _VaccinationsPageState extends State<VaccinationsPage> {
                 if (currentSection == 4) ..._buildLateComponents(),
               ]),
           _visitSection(
-              title: "6 Months",
+              title: l10n.vaccinationsSection6Months,
               isExpanded: currentSection == 6,
               vaccines: [
                 _buildVaccineRow("DTAP_3", 6),
@@ -545,7 +547,7 @@ class _VaccinationsPageState extends State<VaccinationsPage> {
                 if (currentSection == 6) ..._buildLateComponents(),
               ]),
           _visitSection(
-              title: "9 Months",
+              title: l10n.vaccinationsSection9Months,
               isExpanded: currentSection == 9,
               vaccines: [
                 _buildVaccineRow("MCV4_1", 9),
@@ -553,7 +555,7 @@ class _VaccinationsPageState extends State<VaccinationsPage> {
                 if (currentSection == 9) ..._buildLateComponents(),
               ]),
           _visitSection(
-              title: "12 Months",
+              title: l10n.vaccinationsSection12Months,
               isExpanded: currentSection == 12,
               vaccines: [
                 _buildVaccineRow("PCV_FINAL", 12),
@@ -564,7 +566,7 @@ class _VaccinationsPageState extends State<VaccinationsPage> {
                 if (currentSection == 12) ..._buildLateComponents(),
               ]),
           _visitSection(
-              title: "18 Months",
+              title: l10n.vaccinationsSection18Months,
               isExpanded: currentSection == 18,
               vaccines: [
                 _buildVaccineRow("DTAP_4", 18),
@@ -576,14 +578,14 @@ class _VaccinationsPageState extends State<VaccinationsPage> {
                 if (currentSection == 18) ..._buildLateComponents(),
               ]),
           _visitSection(
-              title: "24 Months",
+              title: l10n.vaccinationsSection24Months,
               isExpanded: currentSection == 24,
               vaccines: [
                 _buildVaccineRow("HEPA_2", 24),
                 if (currentSection == 24) ..._buildLateComponents(),
               ]),
           _visitSection(
-              title: "School Age",
+              title: l10n.vaccinationsSectionSchoolAge,
               isExpanded: currentSection == 60,
               vaccines: [
                 _buildVaccineRow("DTAP_5", 60),
@@ -624,7 +626,8 @@ class _VaccinationsPageState extends State<VaccinationsPage> {
 
   String? _getTakenSubtitle(String key) {
     if (_takenVaccines[key] == null) return null;
-    return "Taken on ${DateFormat('d MMM yyyy').format(DateTime.parse(_takenVaccines[key]['takenOn']))}";
+    return l10n.vaccinationsTakenOn(
+        DateFormat('d MMM yyyy').format(DateTime.parse(_takenVaccines[key]['takenOn'])));
   }
 
   String? _getDeadlineText(String key) {
@@ -633,9 +636,9 @@ class _VaccinationsPageState extends State<VaccinationsPage> {
       final useAvailableUntil =
           key == "BCG_0" || key == "ROTA_1" || key == "ROTA_2";
       if (useAvailableUntil) {
-        return "Available until $months months";
+        return l10n.vaccinationsAvailableUntil(months!);
       }
-      return "Must be taken before $months months";
+      return l10n.vaccinationsMustBeTakenBefore(months!);
     }
     return null;
   }
@@ -653,17 +656,18 @@ class _VaccinationsPageState extends State<VaccinationsPage> {
           (status == VaccineStatus.overdue || isLate(key, schedDate))) {
         lateWidgets.add(_vaccineItem(key, _getVaccineName(key), status,
             subtitle: status == VaccineStatus.completed
-                ? "Taken late • ${_getTakenSubtitle(key)}"
-                : "Overdue from ${scheduledMonth}m"));
+                ? l10n.vaccinationsTakenLate(
+                    _getTakenSubtitle(key) ?? "")
+                : l10n.vaccinationsOverdueFrom(scheduledMonth)));
       }
     });
     return lateWidgets.isEmpty
         ? []
         : [
             const Divider(),
-            const Text("Late Vaccinations",
-                style:
-                    TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+            Text(l10n.vaccinationsLateVaccinations,
+                style: const TextStyle(
+                    color: Colors.red, fontWeight: FontWeight.bold)),
             ...lateWidgets
           ];
   }
@@ -677,11 +681,11 @@ class _VaccinationsPageState extends State<VaccinationsPage> {
     }
     final isOpen = _expandedSectionTitle == title;
     return Container(
-      margin: const EdgeInsets.only(bottom: 15),
+      margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: const Color(0xFFF8F5F6),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade200),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey.shade300),
       ),
       child: Theme(
         data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
@@ -726,47 +730,88 @@ class _VaccinationsPageState extends State<VaccinationsPage> {
   }
 
   String _getVaccineName(String key) {
-    Map<String, String> names = {
-      "BCG_0": "BCG (Tuberculosis)",
-      "HEPB_BIRTH": "Hepatitis B (Birth Dose)",
-      "HEPB_1": "Hepatitis B (Dose 1)",
-      "HEPB_2": "Hepatitis B (Dose 2)",
-      "HEPB_3": "Hepatitis B (Dose 3)",
-      "DTAP_1": "DTaP (Dose 1)",
-      "DTAP_2": "DTaP (Dose 2)",
-      "DTAP_3": "DTaP (Dose 3)",
-      "DTAP_4": "DTaP (Dose 4)",
-      "DTAP_5": "DTaP/Td (School Age)",
-      "HIB_1": "Hib (Dose 1)",
-      "HIB_2": "Hib (Dose 2)",
-      "HIB_3": "Hib (Dose 3)",
-      "HIB_FINAL": "Hib (Final Dose)",
-      "PCV_1": "PCV (Dose 1)",
-      "PCV_2": "PCV (Dose 2)",
-      "PCV_3": "PCV (Dose 3)",
-      "PCV_FINAL": "PCV (Final)",
-      "IPV_1": "IPV (Dose 1)",
-      "IPV_2": "IPV (Dose 2)",
-      "IPV_3": "IPV (Dose 3)",
-      "OPV_1": "OPV (Dose 1)",
-      "OPV_2": "OPV (Dose 2)",
-      "OPV_3": "OPV (Dose 3)",
-      "OPV_4": "OPV (Dose 4)",
-      "ROTA_1": "Rotavirus (Dose 1)",
-      "ROTA_2": "Rotavirus (Dose 2)",
-      "MEASLES_1": "Measles (Dose 1)",
-      "MMR_1": "MMR (Dose 1)",
-      "MMR_2": "MMR (Dose 2)",
-      "MMR_SCHOOL": "MMR (School Age)",
-      "VARICELLA_1": "Varicella (Dose 1)",
-      "VARICELLA_2": "Varicella (Dose 2)",
-      "VARICELLA_SCHOOL": "Varicella (School Age)",
-      "MCV4_1": "MCV4 (Dose 1)",
-      "MCV4_2": "MCV4 (Dose 2)",
-      "HEPA_1": "Hepatitis A (Dose 1)",
-      "HEPA_2": "Hepatitis A (Dose 2)",
-    };
-    return names[key] ?? key;
+    switch (key) {
+      case "BCG_0":
+        return l10n.vaxBCG0;
+      case "HEPB_BIRTH":
+        return l10n.vaxHEPBBIRTH;
+      case "HEPB_1":
+        return l10n.vaxHEPB1;
+      case "HEPB_2":
+        return l10n.vaxHEPB2;
+      case "HEPB_3":
+        return l10n.vaxHEPB3;
+      case "DTAP_1":
+        return l10n.vaxDTAP1;
+      case "DTAP_2":
+        return l10n.vaxDTAP2;
+      case "DTAP_3":
+        return l10n.vaxDTAP3;
+      case "DTAP_4":
+        return l10n.vaxDTAP4;
+      case "DTAP_5":
+        return l10n.vaxDTAP5;
+      case "HIB_1":
+        return l10n.vaxHIB1;
+      case "HIB_2":
+        return l10n.vaxHIB2;
+      case "HIB_3":
+        return l10n.vaxHIB3;
+      case "HIB_FINAL":
+        return l10n.vaxHIBFINAL;
+      case "PCV_1":
+        return l10n.vaxPCV1;
+      case "PCV_2":
+        return l10n.vaxPCV2;
+      case "PCV_3":
+        return l10n.vaxPCV3;
+      case "PCV_FINAL":
+        return l10n.vaxPCVFINAL;
+      case "IPV_1":
+        return l10n.vaxIPV1;
+      case "IPV_2":
+        return l10n.vaxIPV2;
+      case "IPV_3":
+        return l10n.vaxIPV3;
+      case "IPV_FINAL":
+        return l10n.vaxIPVFINAL;
+      case "OPV_1":
+        return l10n.vaxOPV1;
+      case "OPV_2":
+        return l10n.vaxOPV2;
+      case "OPV_3":
+        return l10n.vaxOPV3;
+      case "OPV_4":
+        return l10n.vaxOPV4;
+      case "ROTA_1":
+        return l10n.vaxROTA1;
+      case "ROTA_2":
+        return l10n.vaxROTA2;
+      case "MEASLES_1":
+        return l10n.vaxMEASLES1;
+      case "MMR_1":
+        return l10n.vaxMMR1;
+      case "MMR_2":
+        return l10n.vaxMMR2;
+      case "MMR_SCHOOL":
+        return l10n.vaxMMRSCHOOL;
+      case "VARICELLA_1":
+        return l10n.vaxVARICELLA1;
+      case "VARICELLA_2":
+        return l10n.vaxVARICELLA2;
+      case "VARICELLA_SCHOOL":
+        return l10n.vaxVARICELLASCHOOL;
+      case "MCV4_1":
+        return l10n.vaxMCV41;
+      case "MCV4_2":
+        return l10n.vaxMCV42;
+      case "HEPA_1":
+        return l10n.vaxHEPA1;
+      case "HEPA_2":
+        return l10n.vaxHEPA2;
+      default:
+        return key.replaceAll('_', ' ');
+    }
   }
 
   Widget _vaccineItem(String key, String name, VaccineStatus status,
@@ -798,8 +843,8 @@ class _VaccinationsPageState extends State<VaccinationsPage> {
             borderRadius: BorderRadius.circular(20),
             border: Border.all(color: const Color(0xFFDADADA)),
           ),
-          child: const Text("Upcoming",
-              style: TextStyle(
+          child: Text(l10n.vaccinationsUpcoming,
+              style: const TextStyle(
                   color: Colors.black87,
                   fontSize: 11,
                   fontWeight: FontWeight.w600)),
@@ -817,8 +862,8 @@ class _VaccinationsPageState extends State<VaccinationsPage> {
             color: const Color(0xFF9D5C7D),
             borderRadius: BorderRadius.circular(20),
           ),
-          child: const Text("Completed",
-              style: TextStyle(
+          child: Text(l10n.vaccinationsCompleted,
+              style: const TextStyle(
                   color: Colors.white,
                   fontSize: 11,
                   fontWeight: FontWeight.w600)),
@@ -836,8 +881,8 @@ class _VaccinationsPageState extends State<VaccinationsPage> {
           borderRadius: BorderRadius.circular(20),
           border: Border.all(color: Colors.redAccent),
         ),
-        child: const Text("Overdue",
-            style: TextStyle(
+        child: Text(l10n.vaccinationsOverdue,
+            style: const TextStyle(
                 color: Colors.redAccent,
                 fontSize: 11,
                 fontWeight: FontWeight.w600)),
@@ -872,22 +917,22 @@ class _VaccinationsPageState extends State<VaccinationsPage> {
   Widget _confirmSection() {
     final items = _getConfirmableVaccines();
     return Container(
-      margin: const EdgeInsets.only(top: 15, bottom: 25),
+      margin: const EdgeInsets.only(top: 24, bottom: 24),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFE6E6E6)),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey.shade300),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text("Confirm Vaccinations",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+          Text(l10n.vaccinationsConfirmTitle,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
           const SizedBox(height: 12),
           if (items.isEmpty)
-            const Text("No vaccinations available for confirmation.",
-                style: TextStyle(fontSize: 12, color: Colors.grey))
+            Text(l10n.vaccinationsNoConfirm,
+                style: const TextStyle(fontSize: 13, color: Colors.grey))
           else
             ...items.map((item) => Container(
                   padding: const EdgeInsets.symmetric(vertical: 10),
@@ -927,13 +972,13 @@ class _VaccinationsPageState extends State<VaccinationsPage> {
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 12, vertical: 6),
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(10),
                             ),
                           ),
                           icon: const Icon(Icons.check,
                               size: 14, color: Colors.white),
-                          label: const Text("Confirm",
-                              style: TextStyle(
+                          label: Text(l10n.vaccinationsConfirmButton,
+                              style: const TextStyle(
                                   fontSize: 11,
                                   fontWeight: FontWeight.w600,
                                   color: Colors.white)),

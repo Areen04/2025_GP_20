@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:rafiq_gp/l10n/app_localizations.dart';
 import 'package:fl_chart/fl_chart.dart';
 
 // ✅ استيراد كافة الصفحات لضمان عمل الـ Navigation
@@ -48,6 +49,7 @@ class ChildDashboard extends StatefulWidget {
 }
 
 class _ChildDashboardState extends State<ChildDashboard> {
+  AppLocalizations get l10n => AppLocalizations.of(context)!;
   // --- Variables ---
   String? childAge;
   String? updatedImageUrl;
@@ -270,81 +272,81 @@ class _ChildDashboardState extends State<ChildDashboard> {
   String _getVaccineDisplayName(String key) {
     switch (key) {
       case "BCG_0":
-        return "BCG (Tuberculosis)";
+        return l10n.vaxBCG0;
       case "HEPB_BIRTH":
-        return "Hepatitis B (Birth Dose)";
+        return l10n.vaxHEPBBIRTH;
       case "HEPB_1":
-        return "Hepatitis B (Dose 1)";
+        return l10n.vaxHEPB1;
       case "HEPB_2":
-        return "Hepatitis B (Dose 2)";
+        return l10n.vaxHEPB2;
       case "HEPB_3":
-        return "Hepatitis B (Dose 3)";
+        return l10n.vaxHEPB3;
       case "DTAP_1":
-        return "DTaP (Dose 1)";
+        return l10n.vaxDTAP1;
       case "DTAP_2":
-        return "DTaP (Dose 2)";
+        return l10n.vaxDTAP2;
       case "DTAP_3":
-        return "DTaP (Dose 3)";
+        return l10n.vaxDTAP3;
       case "DTAP_4":
-        return "DTaP (Dose 4)";
+        return l10n.vaxDTAP4;
       case "DTAP_5":
-        return "DTaP (Dose 5)";
+        return l10n.vaxDTAP5;
       case "PCV_1":
-        return "PCV (Dose 1)";
+        return l10n.vaxPCV1;
       case "PCV_2":
-        return "PCV (Dose 2)";
+        return l10n.vaxPCV2;
       case "PCV_3":
-        return "PCV (Dose 3)";
+        return l10n.vaxPCV3;
       case "PCV_FINAL":
-        return "PCV (Final)";
+        return l10n.vaxPCVFINAL;
       case "HIB_1":
-        return "Hib (Dose 1)";
+        return l10n.vaxHIB1;
       case "HIB_2":
-        return "Hib (Dose 2)";
+        return l10n.vaxHIB2;
       case "HIB_3":
-        return "Hib (Dose 3)";
+        return l10n.vaxHIB3;
       case "HIB_FINAL":
-        return "Hib (Final)";
+        return l10n.vaxHIBFINAL;
       case "IPV_1":
-        return "IPV (Polio Dose 1)";
+        return l10n.vaxIPV1;
       case "IPV_2":
-        return "IPV (Polio Dose 2)";
+        return l10n.vaxIPV2;
       case "IPV_3":
-        return "IPV (Polio Dose 3)";
+        return l10n.vaxIPV3;
       case "OPV_1":
-        return "OPV (Dose 1)";
+        return l10n.vaxOPV1;
       case "OPV_2":
-        return "OPV (Dose 2)";
+        return l10n.vaxOPV2;
       case "OPV_3":
-        return "OPV (Dose 3)";
+        return l10n.vaxOPV3;
       case "OPV_4":
-        return "OPV (Dose 4)";
+        return l10n.vaxOPV4;
       case "ROTA_1":
-        return "Rotavirus (Dose 1)";
+        return l10n.vaxROTA1;
       case "ROTA_2":
-        return "Rotavirus (Dose 2)";
+        return l10n.vaxROTA2;
       case "MEASLES_1":
-        return "Measles (Dose 1)";
+        return l10n.vaxMEASLES1;
       case "MMR_1":
-        return "MMR (Dose 1)";
+        return l10n.vaxMMR1;
       case "MMR_2":
-        return "MMR (Dose 2)";
+        return l10n.vaxMMR2;
       case "MMR_SCHOOL":
-        return "MMR (School Age)";
+        return l10n.vaxMMRSCHOOL;
       case "VARICELLA_1":
-        return "Varicella (Dose 1)";
+        return l10n.vaxVARICELLA1;
       case "VARICELLA_2":
-        return "Varicella (Dose 2)";
+        return l10n.vaxVARICELLA2;
       case "VARICELLA_SCHOOL":
-        return "Varicella (School Age)";
+        return l10n.vaxVARICELLASCHOOL;
       case "MCV4_1":
-        return "Meningococcal (Dose 1)";
+        return l10n.vaxMCV41;
       case "MCV4_2":
-        return "Meningococcal (Dose 2)";
+        return l10n.vaxMCV42;
       case "HEPA_1":
-        return "Hepatitis A (Dose 1)";
+        return l10n.vaxHEPA1;
       case "HEPA_2":
-        return "Hepatitis A (Dose 2)";
+        return l10n.vaxHEPA2;
       default:
         return key.replaceAll('_', ' ');
     }
@@ -425,7 +427,11 @@ class _ChildDashboardState extends State<ChildDashboard> {
     }
     return {
       "totalMonths": (years * 12 + months),
-      "display": years == 0 ? "$months months" : "$years years, $months months"
+      "display": years == 0
+          ? l10n.ageMonths(months)
+          : months == 0
+              ? l10n.ageYears(years)
+              : l10n.ageYearsMonths(years, months)
     };
   }
 
@@ -529,28 +535,30 @@ class _ChildDashboardState extends State<ChildDashboard> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            children: const [
+            children: [
               Text(
-                "Growth Chart",
-                style: TextStyle(
+                l10n.childDashboardGrowthChartTitle,
+                style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
                   color: Colors.black,
                   fontFamily: 'Inter',
                 ),
               ),
-              Spacer(),
+              const Spacer(),
             ],
           ),
           const SizedBox(height: 14),
 
           // ✅ تشارت الطول
-          _singleChartBlock(title: "Height (cm)", isHeight: true),
+          _singleChartBlock(
+              title: l10n.childDashboardGrowthChartHeight, isHeight: true),
 
           const SizedBox(height: 14),
 
           // ✅ تشارت الوزن
-          _singleChartBlock(title: "Weight (kg)", isHeight: false),
+          _singleChartBlock(
+              title: l10n.childDashboardGrowthChartWeight, isHeight: false),
         ],
       ),
     );
@@ -721,10 +729,14 @@ class _ChildDashboardState extends State<ChildDashboard> {
         const SizedBox(height: 10),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: const [
-            _LegendDot(color: Color(0xFF9D5C7D), label: "Normal Growth"),
-            SizedBox(width: 26),
-            _LegendDot(color: Color(0xFFC9A2B8), label: "Child Growth"),
+          children: [
+            _LegendDot(
+                color: const Color(0xFF9D5C7D),
+                label: l10n.childDashboardGrowthChartNormal),
+            const SizedBox(width: 26),
+            _LegendDot(
+                color: const Color(0xFFC9A2B8),
+                label: l10n.childDashboardGrowthChartChild),
           ],
         ),
       ],
@@ -754,9 +766,9 @@ class _ChildDashboardState extends State<ChildDashboard> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            "Vaccination Timeline",
-            style: TextStyle(
+          Text(
+            l10n.childDashboardVaccinationTimelineTitle,
+            style: const TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.w700,
               letterSpacing: 0.2,
@@ -771,8 +783,9 @@ class _ChildDashboardState extends State<ChildDashboard> {
               Expanded(
                 child: Text(
                   _nextAppointment != null
-                      ? "Next Appointment: ${_nextAppointment!.day}-${_nextAppointment!.month}-${_nextAppointment!.year}"
-                      : "Next Appointment: ---",
+                      ? l10n.childDashboardNextAppointment(
+                          "${_nextAppointment!.day}-${_nextAppointment!.month}-${_nextAppointment!.year}")
+                      : l10n.childDashboardNextAppointmentNone,
                   style: const TextStyle(
                       fontSize: 14, fontWeight: FontWeight.w500),
                 ),
@@ -785,9 +798,9 @@ class _ChildDashboardState extends State<ChildDashboard> {
               child: CircularProgressIndicator(color: Color(0xFF9D5C7D)),
             )
           else if (_dashboardVaccines.isEmpty)
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 10),
-              child: Text("No immediate vaccinations. All set! ✨"),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 10),
+              child: Text(l10n.childDashboardNoImmediateVaccinations),
             )
           else
             ..._dashboardVaccines.map(
@@ -823,9 +836,9 @@ class _ChildDashboardState extends State<ChildDashboard> {
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(color: const Color(0xFFDADADA)),
                         ),
-                        child: const Text(
-                          "Upcoming",
-                          style: TextStyle(
+                        child: Text(
+                          l10n.vaccinationsUpcoming,
+                          style: const TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
                             color: Colors.black87,
@@ -858,17 +871,18 @@ class _ChildDashboardState extends State<ChildDashboard> {
               },
               child: Row(
                 mainAxisSize: MainAxisSize.min,
-                children: const [
+                children: [
                   Text(
-                    "View Full Timeline",
-                    style: TextStyle(
+                    l10n.childDashboardViewFullTimeline,
+                    style: const TextStyle(
                       color: Color(0xFF9D5C7D),
                       fontWeight: FontWeight.w600,
                       fontSize: 14,
                     ),
                   ),
-                  SizedBox(width: 6),
-                  Icon(Icons.chevron_right, color: Color(0xFF9D5C7D), size: 22),
+                  const SizedBox(width: 6),
+                  const Icon(Icons.chevron_right,
+                      color: Color(0xFF9D5C7D), size: 22),
                 ],
               ),
             ),
@@ -953,7 +967,7 @@ class _ChildDashboardState extends State<ChildDashboard> {
                             ),
                           ),
                           Text(
-                            childAge ?? "Calculating...",
+                            childAge ?? l10n.childDashboardCalculatingAge,
                             style: const TextStyle(
                               fontSize: 13,
                               color: Color(0xFF6F6F6F),
@@ -1012,9 +1026,9 @@ class _ChildDashboardState extends State<ChildDashboard> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    "Health Journey",
-                    style: TextStyle(
+                  Text(
+                    l10n.childDashboardHealthJourney,
+                    style: const TextStyle(
                         fontSize: 18, fontWeight: FontWeight.w700),
                   ),
                   const SizedBox(height: 20),
@@ -1137,8 +1151,8 @@ class _ChildDashboardState extends State<ChildDashboard> {
               children: [
                 _DashboardCard(
                   iconPath: 'lib/icons/signpost.svg',
-                  title: "Developmental Milestones",
-                  subtitle: "Monitor growth and learning",
+                  title: l10n.childDashboardMilestonesTitle,
+                  subtitle: l10n.childDashboardMilestonesSubtitle,
                   iconSize: sw * 0.075,
                   padding: sw * 0.035,
                   fontSizeTitle: sw * 0.035,
@@ -1147,8 +1161,8 @@ class _ChildDashboardState extends State<ChildDashboard> {
                 ),
                 _DashboardCard(
                   iconPath: 'lib/icons/scan.svg',
-                  title: "AI Skin Analysis",
-                  subtitle: "Upload photos for insights",
+                  title: l10n.aiSkinTitle,
+                  subtitle: l10n.childDashboardAiSkinSubtitle,
                   iconSize: sw * 0.075,
                   padding: sw * 0.035,
                   fontSizeTitle: sw * 0.035,
@@ -1169,8 +1183,8 @@ class _ChildDashboardState extends State<ChildDashboard> {
                 ),
                 _DashboardCard(
                   iconPath: 'lib/icons/stethoscope.svg',
-                  title: "Medical Conditions",
-                  subtitle: "Overview of conditions",
+                  title: l10n.childDashboardMedicalConditionsTitle,
+                  subtitle: l10n.childDashboardMedicalConditionsSubtitle,
                   iconSize: sw * 0.075,
                   padding: sw * 0.035,
                   fontSizeTitle: sw * 0.035,
@@ -1191,8 +1205,8 @@ class _ChildDashboardState extends State<ChildDashboard> {
                 ),
                 _DashboardCard(
                   iconPath: 'lib/icons/book.svg',
-                  title: "Activity Library",
-                  subtitle: "Curated learning content",
+                  title: l10n.activityLibraryTitle,
+                  subtitle: l10n.childDashboardActivityLibrarySubtitle,
                   iconSize: sw * 0.075,
                   padding: sw * 0.035,
                   fontSizeTitle: sw * 0.035,

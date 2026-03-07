@@ -136,12 +136,12 @@ class _DoctorMilestonesOverviewPageState
         child: AppBar(
           backgroundColor: Colors.white,
           elevation: 0,
-          surfaceTintColor: Colors.white,
+          surfaceTintColor: Colors.transparent,
           scrolledUnderElevation: 0,
           centerTitle: true,
-          title: const Text(
-            "Milestones Overview",
-            style: TextStyle(
+          title: Text(
+            l10n.milestonesOverviewTitle,
+            style: const TextStyle(
               fontFamily: 'Inter',
               fontWeight: FontWeight.w600,
               fontSize: 20,
@@ -152,6 +152,7 @@ class _DoctorMilestonesOverviewPageState
             icon: const Icon(
               Icons.arrow_back_ios_new_rounded,
               color: Color(0xFF9D5C7D),
+              size: 23,
             ),
             onPressed: () => Navigator.pop(context),
           ),
@@ -165,28 +166,10 @@ class _DoctorMilestonesOverviewPageState
           ? const Center(
               child: CircularProgressIndicator(color: Color(0xFF9D5C7D)))
           : SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    widget.childName,
-                    style: const TextStyle(
-                      fontFamily: 'Inter',
-                      fontWeight: FontWeight.w600,
-                      fontSize: 18,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    "Age: $_ageMonths months",
-                    style: const TextStyle(
-                      fontFamily: 'Inter',
-                      fontSize: 13,
-                      color: Color(0xFF6F6F6F),
-                    ),
-                  ),
-                  const SizedBox(height: 18),
                   ...sections.map((section) {
                     final delayed = section.items
                         .where((item) => _completed[item] != true)
@@ -210,7 +193,7 @@ class _SectionDef {
   const _SectionDef({required this.title, required this.items});
 }
 
-class _DelayedSectionCard extends StatelessWidget {
+class _DelayedSectionCard extends StatefulWidget {
   final String title;
   final List<String> delayedItems;
   final String expectedText;
@@ -222,46 +205,72 @@ class _DelayedSectionCard extends StatelessWidget {
   });
 
   @override
+  State<_DelayedSectionCard> createState() => _DelayedSectionCardState();
+}
+
+class _DelayedSectionCardState extends State<_DelayedSectionCard> {
+  bool _expanded = false;
+
+  @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Container(
-      margin: const EdgeInsets.only(bottom: 14),
+      margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(8),
         border: Border.all(color: Colors.grey.shade300),
       ),
-      child: ExpansionTile(
-        collapsedIconColor: const Color(0xFF9D5C7D),
-        iconColor: const Color(0xFF9D5C7D),
-        title: Text(
-          title,
-          style: const TextStyle(
-            fontFamily: 'Inter',
-            fontWeight: FontWeight.w600,
-            fontSize: 15,
+      child: Theme(
+        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+        child: ExpansionTile(
+          key: ValueKey("${widget.title}-$_expanded"),
+          initiallyExpanded: _expanded,
+          onExpansionChanged: (open) {
+            setState(() => _expanded = open);
+          },
+          collapsedIconColor: const Color(0xFF9D5C7D),
+          iconColor: const Color(0xFF9D5C7D),
+          trailing: AnimatedRotation(
+            turns: _expanded ? 0.5 : 0.0,
+            duration: const Duration(milliseconds: 250),
+            child: const Icon(
+              Icons.keyboard_arrow_down_rounded,
+              size: 32,
+              color: Color(0xFF9D5C7D),
+            ),
           ),
-        ),
-        childrenPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        children: delayedItems.isEmpty
-            ? [
-                const Padding(
-                  padding: EdgeInsets.only(bottom: 10),
-                  child: Text(
-                    "No delayed milestones",
-                    style: TextStyle(
-                      fontFamily: 'Inter',
-                      fontSize: 12,
-                      color: Color(0xFF6F6F6F),
+          title: Text(
+            widget.title,
+            style: const TextStyle(
+              fontFamily: 'Inter',
+              fontWeight: FontWeight.w700,
+              fontSize: 18,
+            ),
+          ),
+          childrenPadding:
+              const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          children: widget.delayedItems.isEmpty
+              ? [
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: Text(
+                      l10n.doctorMilestonesNoDelayed,
+                      style: const TextStyle(
+                        fontFamily: 'Inter',
+                        fontSize: 12,
+                        color: Color(0xFF6F6F6F),
+                      ),
                     ),
                   ),
-                ),
-              ]
-            : delayedItems
-                .map((item) => _DelayedMilestoneRow(
-                      title: item,
-                      expectedText: expectedText,
-                    ))
-                .toList(),
+                ]
+              : widget.delayedItems
+                  .map((item) => _DelayedMilestoneRow(
+                        title: item,
+                        expectedText: widget.expectedText,
+                      ))
+                  .toList(),
+        ),
       ),
     );
   }
@@ -305,7 +314,8 @@ class _DelayedMilestoneRow extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  "Expected $expectedText",
+                  AppLocalizations.of(context)
+                      .doctorMilestonesExpected(expectedText),
                   style: const TextStyle(
                     fontFamily: 'Inter',
                     fontSize: 11,
@@ -323,9 +333,9 @@ class _DelayedMilestoneRow extends StatelessWidget {
               borderRadius: BorderRadius.circular(20),
               border: Border.all(color: Colors.redAccent),
             ),
-            child: const Text(
-              "Delayed",
-              style: TextStyle(
+            child: Text(
+              AppLocalizations.of(context).doctorMilestonesDelayed,
+              style: const TextStyle(
                 fontFamily: 'Inter',
                 fontSize: 11,
                 fontWeight: FontWeight.w600,

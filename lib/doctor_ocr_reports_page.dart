@@ -12,6 +12,7 @@ import 'package:intl/intl.dart';
 import 'package:pdf_render_maintained/pdf_render.dart' as pr;
 import 'package:syncfusion_flutter_pdf/pdf.dart' as sf;
 import 'package:url_launcher/url_launcher.dart';
+import 'package:rafiq_gp/l10n/app_localizations.dart';
 
 class DoctorOcrReportsPage extends StatefulWidget {
   final String childId;
@@ -27,6 +28,7 @@ class DoctorOcrReportsPage extends StatefulWidget {
 
 class _DoctorOcrReportsPageState extends State<DoctorOcrReportsPage> {
   static const _pink = Color(0xFF9D5C7D);
+  AppLocalizations get l10n => AppLocalizations.of(context)!;
 
   bool _uploading = false;
 
@@ -97,19 +99,35 @@ class _DoctorOcrReportsPageState extends State<DoctorOcrReportsPage> {
     return _reportsCol.orderBy("uploadedAt", descending: true).snapshots();
   }
 
-  void _toast(String msg) {
+  void _toast(String msg, {bool isError = false}) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          msg,
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        backgroundColor: isError ? Colors.redAccent : const Color(0xFF9D5C7D),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        duration: const Duration(seconds: 2),
+      ),
+    );
   }
 
   Future<void> _openUrl(String url) async {
     final uri = Uri.tryParse(url);
     if (uri == null) {
-      _toast("Invalid file URL.");
+      _toast(l10n.medicalReportsInvalidUrl);
       return;
     }
     final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
-    if (!ok) _toast("Couldn't open the file.");
+    if (!ok) _toast(l10n.medicalReportsOpenFailed);
   }
 
   // ---------- OCR helpers ----------
@@ -245,7 +263,7 @@ class _DoctorOcrReportsPageState extends State<DoctorOcrReportsPage> {
     final isPdf = ext == 'pdf';
 
     if (!isImage && !isPdf) {
-      _toast("Unsupported file type.");
+      _toast(l10n.doctorOcrUnsupportedFile, isError: true);
       return;
     }
 
@@ -325,13 +343,13 @@ class _DoctorOcrReportsPageState extends State<DoctorOcrReportsPage> {
           "conditions": <String>[],
         });
 
-        _toast("OCR failed (upload saved).");
+        _toast(l10n.doctorOcrFailedButSaved, isError: true);
       }
     } catch (e) {
       try {
         await reportRef?.delete();
       } catch (_) {}
-      _toast("Upload failed. Check permissions.");
+      _toast(l10n.doctorOcrUploadFailed, isError: true);
     } finally {
       if (mounted) setState(() => _uploading = false);
     }
@@ -398,31 +416,35 @@ class _DoctorOcrReportsPageState extends State<DoctorOcrReportsPage> {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        surfaceTintColor: Colors.white,
-        centerTitle: true,
-        title: const Text(
-          "Medical Conditions",
-          style: TextStyle(
-            fontFamily: 'Inter',
-            fontWeight: FontWeight.w600,
-            fontSize: 20,
-            color: Colors.black87,
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(70),
+        child: AppBar(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          surfaceTintColor: Colors.transparent,
+          scrolledUnderElevation: 0,
+          centerTitle: true,
+          title: Text(
+            l10n.childDashboardMedicalConditionsTitle,
+            style: const TextStyle(
+              fontFamily: 'Inter',
+              fontWeight: FontWeight.w600,
+              fontSize: 20,
+              color: Colors.black87,
+            ),
           ),
-        ),
-        leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back_ios_new_rounded,
-            color: _pink,
-            size: 23,
+          leading: IconButton(
+            icon: const Icon(
+              Icons.arrow_back_ios_new_rounded,
+              color: _pink,
+              size: 23,
+            ),
+            onPressed: () => Navigator.pop(context),
           ),
-          onPressed: () => Navigator.pop(context),
-        ),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(1),
-          child: Container(height: 1, color: const Color(0xFFE0E0E0)),
+          bottom: PreferredSize(
+            preferredSize: const Size.fromHeight(1),
+            child: Container(height: 1, color: const Color(0xFFE0E0E0)),
+          ),
         ),
       ),
       body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
@@ -432,17 +454,18 @@ class _DoctorOcrReportsPageState extends State<DoctorOcrReportsPage> {
           final conditions = _uniqueConditions(docs);
 
           return SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 25),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 // Upload Card
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 22),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.grey.shade200),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.grey.shade300),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withOpacity(0.03),
@@ -456,10 +479,10 @@ class _DoctorOcrReportsPageState extends State<DoctorOcrReportsPage> {
                       Icon(Icons.description_outlined,
                           color: _pink, size: topIconSize),
                       const SizedBox(height: 14),
-                      const Text(
-                        "Digitize Medical Reports",
+                      Text(
+                        l10n.doctorOcrDigitizeTitle,
                         textAlign: TextAlign.center,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontFamily: 'Inter',
                           fontSize: 20,
                           fontWeight: FontWeight.w700,
@@ -467,10 +490,10 @@ class _DoctorOcrReportsPageState extends State<DoctorOcrReportsPage> {
                         ),
                       ),
                       const SizedBox(height: 8),
-                      const Text(
-                        "Upload PDF or images and convert them using OCR.",
+                      Text(
+                        l10n.doctorOcrDigitizeSubtitle,
                         textAlign: TextAlign.center,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontFamily: 'Inter',
                           fontSize: 13,
                           height: 1.4,
@@ -492,7 +515,9 @@ class _DoctorOcrReportsPageState extends State<DoctorOcrReportsPage> {
                             ),
                           )
                               : const Icon(Icons.cloud_upload_outlined),
-                          label: Text(_uploading ? "Uploading..." : "Upload Report"),
+                          label: Text(_uploading
+                              ? l10n.doctorOcrUploading
+                              : l10n.doctorOcrUploadReport),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: _pink,
                             foregroundColor: Colors.white,
@@ -511,31 +536,19 @@ class _DoctorOcrReportsPageState extends State<DoctorOcrReportsPage> {
                   ),
                 ),
 
-                const SizedBox(height: 22),
-
-                // Medical Conditions
-                const Text(
-                  "Medical Conditions",
-                  style: TextStyle(
-                    fontFamily: 'Inter',
-                    fontSize: 22,
-                    fontWeight: FontWeight.w800,
-                    color: Colors.black87,
-                  ),
-                ),
-                const SizedBox(height: 14),
+                const SizedBox(height: 24),
 
                 if (conditions.isEmpty)
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       color: const Color(0xFFF8F5F6),
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: Colors.grey.shade200),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.grey.shade300),
                     ),
-                    child: const Text(
-                      "No medical conditions recorded yet.",
-                      style: TextStyle(
+                    child: Text(
+                      l10n.medicalReportsNoConditions,
+                      style: const TextStyle(
                         fontFamily: 'Inter',
                         fontSize: 13,
                         color: Color(0xFF6F6F6F),
@@ -565,12 +578,12 @@ class _DoctorOcrReportsPageState extends State<DoctorOcrReportsPage> {
                     }).toList(),
                   ),
 
-                const SizedBox(height: 26),
+                const SizedBox(height: 24),
 
                 // Previous Reports
-                const Text(
-                  "Previous Reports",
-                  style: TextStyle(
+                Text(
+                  l10n.medicalReportsPreviousReports,
+                  style: const TextStyle(
                     fontFamily: 'Inter',
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
@@ -580,9 +593,9 @@ class _DoctorOcrReportsPageState extends State<DoctorOcrReportsPage> {
                 const SizedBox(height: 12),
 
                 if (docs.isEmpty)
-                  const Text(
-                    "No reports uploaded yet.",
-                    style: TextStyle(
+                  Text(
+                    l10n.medicalReportsNoReports,
+                    style: const TextStyle(
                       fontFamily: 'Inter',
                       fontSize: 13,
                       color: Color(0xFF6F6F6F),
@@ -593,7 +606,9 @@ class _DoctorOcrReportsPageState extends State<DoctorOcrReportsPage> {
                     children: docs.map((d) {
                       final data = d.data();
 
-                      final fileName = (data["fileName"] ?? "Report").toString();
+                      final fileName =
+                          (data["fileName"] ?? l10n.medicalReportsReport)
+                              .toString();
                       final type = (data["fileType"] ?? "").toString();
                       final url = (data["fileUrl"] ?? "").toString();
                       final status = (data["status"] ?? "").toString();
@@ -655,51 +670,42 @@ class _ConditionTileChevronRight extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade200),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey.shade300),
         color: Colors.white,
       ),
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    title,
-                    style: const TextStyle(
-                      fontFamily: 'Inter',
-                      fontSize: 22,
-                      fontWeight: FontWeight.w800,
-                      color: Colors.black87,
-                    ),
-                  ),
-                ),
-
-                InkWell(
-                  onTap: onToggle,
-                  borderRadius: BorderRadius.circular(20),
-                  child: Padding(
-                    padding: const EdgeInsets.all(4),
-                    child: Icon(
-                      isExpanded
-                          ? Icons.keyboard_arrow_up_rounded
-                          : Icons.keyboard_arrow_down_rounded,
-                      color: _pink,
-                      size: 26,
-                    ),
-                  ),
-                ),
-              ],
+      child: Theme(
+        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+        child: ExpansionTile(
+          key: ValueKey("$title-$isExpanded"),
+          initiallyExpanded: isExpanded,
+          onExpansionChanged: (_) => onToggle(),
+          tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+          collapsedIconColor: _pink,
+          iconColor: _pink,
+          trailing: AnimatedRotation(
+            turns: isExpanded ? 0.5 : 0.0,
+            duration: const Duration(milliseconds: 250),
+            child: const Icon(
+              Icons.keyboard_arrow_down_rounded,
+              size: 32,
+              color: _pink,
             ),
           ),
-          if (isExpanded)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-              child: _ReportTextBox(texts: texts),
+          title: Text(
+            title,
+            style: const TextStyle(
+              fontFamily: 'Inter',
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+              color: Colors.black87,
             ),
-        ],
+          ),
+          children: [
+            _ReportTextBox(texts: texts),
+          ],
+        ),
       ),
     );
   }
@@ -718,12 +724,12 @@ class _ReportTextBox extends StatelessWidget {
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: const Color(0xFFF8F5F6),
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: Colors.grey.shade200),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: Colors.grey.shade300),
         ),
-        child: const Text(
-          "No extracted text available for this condition yet.",
-          style: TextStyle(
+        child: Text(
+          AppLocalizations.of(context)!.medicalReportsNoExtractedText,
+          style: const TextStyle(
             fontFamily: 'Inter',
             fontSize: 13,
             color: Color(0xFF6F6F6F),
@@ -740,8 +746,8 @@ class _ReportTextBox extends StatelessWidget {
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
             color: const Color(0xFFF8F5F6),
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: Colors.grey.shade200),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: Colors.grey.shade300),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -791,15 +797,15 @@ class _ReportTile extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 10),
       child: Material(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(8),
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(8),
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.grey.shade200),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.grey.shade300),
               color: Colors.white,
             ),
             child: Row(

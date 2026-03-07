@@ -56,6 +56,27 @@ bool _isProcessing = false;
       });
     }
   }
+  void _showSnackBar(String message, {bool isError = false}) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          message,
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        backgroundColor: isError ? Colors.redAccent : const Color(0xFF9D5C7D),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
 Future<void> _handleScannedQR(String token) async {
   final l10n = AppLocalizations.of(context);
   if (_isProcessing) return;
@@ -64,11 +85,7 @@ Future<void> _handleScannedQR(String token) async {
   final childId = await VisitTokenService.consumeToken(token);
 
   if (childId == null) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(l10n.qrInvalid),
-      ),
-    );
+    _showSnackBar(l10n.qrInvalid, isError: true);
     _isProcessing = false;
     return;
   }

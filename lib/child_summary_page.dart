@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:rafiq_gp/l10n/app_localizations.dart';
 
 class ChildSummaryPage extends StatelessWidget {
   final String childId;
@@ -8,8 +9,9 @@ class ChildSummaryPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBar(title: const Text("Child Summary")),
+      appBar: AppBar(title: Text(l10n.childSummaryTitle)),
       body: FutureBuilder<DocumentSnapshot>(
         future: FirebaseFirestore.instance
             .collection('children')
@@ -21,7 +23,7 @@ class ChildSummaryPage extends StatelessWidget {
           }
 
           if (!snapshot.hasData || !snapshot.data!.exists) {
-            return const Center(child: Text("Child not found"));
+            return Center(child: Text(l10n.childSummaryNotFound));
           }
 
           final data = snapshot.data!.data() as Map<String, dynamic>;
@@ -32,16 +34,16 @@ class ChildSummaryPage extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  data['name'] ?? 'Child',
+                  data['name'] ?? l10n.childSummaryDefaultName,
                   style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 const SizedBox(height: 8),
-                const Text(
-                  "Child summary will appear here later.",
-                  style: TextStyle(color: Colors.grey),
+                Text(
+                  l10n.childSummaryPlaceholder,
+                  style: const TextStyle(color: Colors.grey),
                 ),
               ],
             ),

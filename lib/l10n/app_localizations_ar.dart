@@ -114,10 +114,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get healthcareProviderTab => 'مقدم رعاية صحية';
 
   @override
-  String get fullNameLabel => 'الاسم الكامل (بالإنجليزية)';
+  String get fullNameLabel => 'الاسم الكامل';
 
   @override
-  String get enterFullNameHint => 'أدخل الاسم الكامل (بالإنجليزية)';
+  String get enterFullNameHint => 'أدخل الاسم الكامل';
 
   @override
   String get emailExampleHint => 'example@gmail.com';
@@ -209,7 +209,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get logOut => 'تسجيل الخروج';
 
   @override
-  String get enterYourFullNameHint => 'أدخل اسمك الكامل (بالإنجليزية)';
+  String get enterYourFullNameHint => 'أدخل اسمك الكامل';
 
   @override
   String get saveChanges => 'حفظ التغييرات';
@@ -312,7 +312,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get takePhoto => 'التقاط صورة';
 
   @override
-  String get childFullNameLabel => 'اسم الطفل الكامل (بالإنجليزية)';
+  String get childFullNameLabel => 'اسم الطفل الكامل';
 
   @override
   String get dateOfBirthLabel => 'تاريخ الميلاد';
@@ -354,7 +354,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get uploadPhoto => 'رفع صورة';
 
   @override
-  String get enterChildFullNameHint => 'أدخل اسم الطفل الكامل (بالإنجليزية)';
+  String get enterChildFullNameHint => 'أدخل اسم الطفل الكامل';
 
   @override
   String helloDoctor(Object name) {
@@ -365,14 +365,15 @@ class AppLocalizationsAr extends AppLocalizations {
   String get doctorLabel => 'طبيب';
 
   @override
-  String get doctorGreeting => 'راجع وأدر ملفات صحة مرضاك.';
+  String get doctorGreeting =>
+      'أدر وقت الزيارة بكفاءة من خلال مراجعة معلومات صحة مرضاك.';
 
   @override
   String get scanQrTitle => 'مسح رمز الاستجابة للطفل';
 
   @override
   String get scanQrInstruction =>
-      'وجّه الكاميرا نحو الرمز داخل الإطار أدناه\nلبدء عملية التعريف.';
+      'وجّه الكاميرا نحو الرمز داخل الإطار أدناه\nلعرض ملفه الصحي أثناء الزيارة.';
 
   @override
   String get qrInvalid => 'رمز الاستجابة غير صالح أو منتهي';
@@ -1640,4 +1641,521 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get close => 'إغلاق';
+
+  @override
+  String get remindersTitle => 'التذكيرات';
+
+  @override
+  String get remindersPleaseLogin => 'يرجى تسجيل الدخول';
+
+  @override
+  String remindersNoneForDays(Object days) {
+    return 'لا توجد تذكيرات خلال الـ $days أيام القادمة';
+  }
+
+  @override
+  String remindersDueToday(Object childName, Object label) {
+    return '$childName: موعد $label اليوم.';
+  }
+
+  @override
+  String remindersDueInOneDay(Object childName, Object label) {
+    return '$childName: موعد $label خلال يوم واحد.';
+  }
+
+  @override
+  String remindersDueInDays(Object childName, Object days, Object label) {
+    return '$childName: موعد $label خلال $days أيام.';
+  }
+
+  @override
+  String remindersMonthVaccination(Object months) {
+    return 'تطعيم عمر $months شهرًا';
+  }
+
+  @override
+  String get remindersVaccineNewborn => 'تطعيم حديثي الولادة';
+
+  @override
+  String get remindersVaccine2Months => 'تطعيم عمر شهرين';
+
+  @override
+  String get remindersVaccine4Months => 'تطعيم عمر 4 أشهر';
+
+  @override
+  String get remindersVaccine6Months => 'تطعيم عمر 6 أشهر';
+
+  @override
+  String get remindersVaccine9Months => 'تطعيم عمر 9 أشهر';
+
+  @override
+  String get remindersVaccine12Months => 'تطعيم عمر 12 شهرًا';
+
+  @override
+  String get remindersVaccine18Months => 'تطعيم عمر 18 شهرًا';
+
+  @override
+  String get remindersVaccine24Months => 'تطعيم عمر 24 شهرًا';
+
+  @override
+  String get remindersVaccineSchoolAge => 'تطعيم سن المدرسة';
+
+  @override
+  String get remindersMilestone2Months => 'فحص معالم عمر شهرين';
+
+  @override
+  String get remindersMilestone4Months => 'فحص معالم عمر 4 أشهر';
+
+  @override
+  String get remindersMilestone6Months => 'فحص معالم عمر 6 أشهر';
+
+  @override
+  String get remindersMilestone9Months => 'فحص معالم عمر 9 أشهر';
+
+  @override
+  String get remindersMilestone12Months => 'فحص معالم عمر سنة';
+
+  @override
+  String get remindersMilestone15Months => 'فحص معالم عمر 15 شهرًا';
+
+  @override
+  String get remindersMilestone18Months => 'فحص معالم عمر 18 شهرًا';
+
+  @override
+  String get remindersMilestone24Months => 'فحص معالم عمر سنتين';
+
+  @override
+  String get remindersMilestone30Months => 'فحص معالم عمر 30 شهرًا';
+
+  @override
+  String get remindersMilestone36Months => 'فحص معالم عمر 3 سنوات';
+
+  @override
+  String get remindersMilestone48Months => 'فحص معالم عمر 4 سنوات';
+
+  @override
+  String get remindersMilestone60Months => 'فحص معالم عمر 5 سنوات';
+
+  @override
+  String get childDashboardNoImmediateVaccinations =>
+      'لا توجد تطعيمات قريبة. كل شيء جيد! ✨';
+
+  @override
+  String get childDashboardVaccinationTimelineTitle => 'جدول التطعيمات';
+
+  @override
+  String childDashboardNextAppointment(Object date) {
+    return 'الموعد القادم: $date';
+  }
+
+  @override
+  String get childDashboardNextAppointmentNone => 'الموعد القادم: ---';
+
+  @override
+  String get childDashboardViewFullTimeline => 'عرض الجدول الكامل';
+
+  @override
+  String get childDashboardCalculatingAge => 'جارٍ الحساب...';
+
+  @override
+  String get childDashboardHealthJourney => 'رحلة الصحة';
+
+  @override
+  String get childDashboardMilestonesTitle => 'مراحل النمو والتطور';
+
+  @override
+  String get childDashboardMilestonesSubtitle => 'تابع النمو والتعلّم';
+
+  @override
+  String get childDashboardAiSkinSubtitle =>
+      'ارفع الصور للحصول على معلومات صحية';
+
+  @override
+  String get childDashboardMedicalConditionsTitle => 'الحالات الطبية';
+
+  @override
+  String get childDashboardMedicalConditionsSubtitle => 'نظرة عامة على الحالات';
+
+  @override
+  String get childDashboardActivityLibrarySubtitle => 'محتوى تعليمي مُنتقى';
+
+  @override
+  String get childDashboardGrowthChartTitle => 'مخطط النمو';
+
+  @override
+  String get childDashboardGrowthChartHeight => 'الطول (سم)';
+
+  @override
+  String get childDashboardGrowthChartWeight => 'الوزن (كجم)';
+
+  @override
+  String get childDashboardGrowthChartNormal => 'النمو الطبيعي';
+
+  @override
+  String get childDashboardGrowthChartChild => 'نمو الطفل';
+
+  @override
+  String ageMonths(Object months) {
+    return '$months شهرًا';
+  }
+
+  @override
+  String ageYears(Object years) {
+    return '$years سنة';
+  }
+
+  @override
+  String ageYearsMonths(Object months, Object years) {
+    return '$years سنة، $months شهرًا';
+  }
+
+  @override
+  String get vaccinationsTitle => 'التطعيمات';
+
+  @override
+  String get vaccinationsBirthDateMissing => 'تاريخ ميلاد الطفل غير متوفر.';
+
+  @override
+  String get vaccinationsLateVaccinations => 'تطعيمات متأخرة';
+
+  @override
+  String get vaccinationsUpcoming => 'قادم';
+
+  @override
+  String get vaccinationsCompleted => 'مكتمل';
+
+  @override
+  String get vaccinationsOverdue => 'متأخر';
+
+  @override
+  String get vaccinationsConfirmTitle => 'تأكيد التطعيمات';
+
+  @override
+  String get vaccinationsNoConfirm => 'لا توجد تطعيمات متاحة للتأكيد.';
+
+  @override
+  String get vaccinationsConfirmButton => 'تأكيد';
+
+  @override
+  String vaccinationsTakenOn(Object date) {
+    return 'أُخذ في $date';
+  }
+
+  @override
+  String vaccinationsAvailableUntil(Object months) {
+    return 'متاح حتى عمر $months شهرًا';
+  }
+
+  @override
+  String vaccinationsMustBeTakenBefore(Object months) {
+    return 'يجب أخذه قبل عمر $months شهرًا';
+  }
+
+  @override
+  String vaccinationsTakenLate(Object date) {
+    return 'أُخذ متأخرًا • $date';
+  }
+
+  @override
+  String vaccinationsOverdueFrom(Object months) {
+    return 'متأخر منذ عمر $months شهرًا';
+  }
+
+  @override
+  String get vaccinationsSectionAtBirth => 'عند الولادة';
+
+  @override
+  String get vaccinationsSection2Months => 'عمر شهرين';
+
+  @override
+  String get vaccinationsSection4Months => 'عمر 4 أشهر';
+
+  @override
+  String get vaccinationsSection6Months => 'عمر 6 أشهر';
+
+  @override
+  String get vaccinationsSection9Months => 'عمر 9 أشهر';
+
+  @override
+  String get vaccinationsSection12Months => 'عمر 12 شهرًا';
+
+  @override
+  String get vaccinationsSection18Months => 'عمر 18 شهرًا';
+
+  @override
+  String get vaccinationsSection24Months => 'عمر 24 شهرًا';
+
+  @override
+  String get vaccinationsSectionSchoolAge => 'سن المدرسة';
+
+  @override
+  String get vaxBCG0 => 'السل BCG';
+
+  @override
+  String get vaxHEPBBIRTH => 'الكبدي ب HepB (جرعة الولادة)';
+
+  @override
+  String get vaxHEPB1 => 'الكبدي ب HepB (الجرعة 1)';
+
+  @override
+  String get vaxHEPB2 => 'الكبدي ب HepB (الجرعة 2)';
+
+  @override
+  String get vaxHEPB3 => 'الكبدي ب HepB (الجرعة 3)';
+
+  @override
+  String get vaxDTAP1 => 'الثلاثي البكتيري DTaP (الجرعة 1)';
+
+  @override
+  String get vaxDTAP2 => 'الثلاثي البكتيري DTaP (الجرعة 2)';
+
+  @override
+  String get vaxDTAP3 => 'الثلاثي البكتيري DTaP (الجرعة 3)';
+
+  @override
+  String get vaxDTAP4 => 'الثلاثي البكتيري DTaP (الجرعة 4)';
+
+  @override
+  String get vaxDTAP5 => 'الثلاثي البكتيري/الكزاز Td/DTaP (سن المدرسة)';
+
+  @override
+  String get vaxHIB1 => 'المستديمة النزلية Hib (الجرعة 1)';
+
+  @override
+  String get vaxHIB2 => 'المستديمة النزلية Hib (الجرعة 2)';
+
+  @override
+  String get vaxHIB3 => 'المستديمة النزلية Hib (الجرعة 3)';
+
+  @override
+  String get vaxHIBFINAL => 'المستديمة النزلية Hib (الجرعة النهائية)';
+
+  @override
+  String get vaxPCV1 => 'العقدية الرئوية المدمج PCV (الجرعة 1)';
+
+  @override
+  String get vaxPCV2 => 'العقدية الرئوية المدمج PCV (الجرعة 2)';
+
+  @override
+  String get vaxPCV3 => 'العقدية الرئوية المدمج PCV (الجرعة 3)';
+
+  @override
+  String get vaxPCVFINAL => 'العقدية الرئوية المدمج PCV (الجرعة النهائية)';
+
+  @override
+  String get vaxIPV1 => 'شلل أطفال معطل IPV (الجرعة 1)';
+
+  @override
+  String get vaxIPV2 => 'شلل أطفال معطل IPV (الجرعة 2)';
+
+  @override
+  String get vaxIPV3 => 'شلل أطفال معطل IPV (الجرعة 3)';
+
+  @override
+  String get vaxIPVFINAL => 'شلل أطفال معطل IPV (الجرعة النهائية)';
+
+  @override
+  String get vaxOPV1 => 'شلل الأطفال الفموي OPV (الجرعة 1)';
+
+  @override
+  String get vaxOPV2 => 'شلل الأطفال الفموي OPV (الجرعة 2)';
+
+  @override
+  String get vaxOPV3 => 'شلل الأطفال الفموي OPV (الجرعة 3)';
+
+  @override
+  String get vaxOPV4 => 'شلل الأطفال الفموي OPV (الجرعة 4)';
+
+  @override
+  String get vaxROTA1 => 'فيروس الروتا RV (الجرعة 1)';
+
+  @override
+  String get vaxROTA2 => 'فيروس الروتا RV (الجرعة 2)';
+
+  @override
+  String get vaxMEASLES1 => 'الحصبة المفردة Measles (الجرعة 1)';
+
+  @override
+  String get vaxMMR1 => 'الثلاثي الفيروسي MMR (الجرعة 1)';
+
+  @override
+  String get vaxMMR2 => 'الثلاثي الفيروسي MMR (الجرعة 2)';
+
+  @override
+  String get vaxMMRSCHOOL => 'الثلاثي الفيروسي MMR (سن المدرسة)';
+
+  @override
+  String get vaxVARICELLA1 => 'الجديري المائي Varicella (الجرعة 1)';
+
+  @override
+  String get vaxVARICELLA2 => 'الجديري المائي Varicella (الجرعة 2)';
+
+  @override
+  String get vaxVARICELLASCHOOL => 'الجديري المائي Varicella (سن المدرسة)';
+
+  @override
+  String get vaxMCV41 => 'الحمى الشوكية 4MCV (الجرعة 1)';
+
+  @override
+  String get vaxMCV42 => 'الحمى الشوكية 4MCV (الجرعة 2)';
+
+  @override
+  String get vaxHEPA1 => 'الكبدي أ HepA (الجرعة 1)';
+
+  @override
+  String get vaxHEPA2 => 'الكبدي أ HepA (الجرعة 2)';
+
+  @override
+  String get doctorVisitEnterValidHeightWeight => 'أدخل طولًا ووزنًا صالحين.';
+
+  @override
+  String get doctorVisitBirthDateNotAvailable => 'تاريخ الميلاد غير متوفر.';
+
+  @override
+  String get doctorVisitSaved => 'تم الحفظ ✅';
+
+  @override
+  String get doctorVisitSaveFailed => 'فشل حفظ القياسات.';
+
+  @override
+  String get doctorVisitChildNotFound => 'الطفل غير موجود';
+
+  @override
+  String doctorVisitChildId(Object id) {
+    return 'معرّف الطفل: $id';
+  }
+
+  @override
+  String get doctorVisitMilestonesNotAvailable =>
+      'بيانات المعالم غير متوفرة بعد.';
+
+  @override
+  String get doctorVisitLatestMeasurements => 'آخر القياسات';
+
+  @override
+  String get doctorVisitEnterHeight => 'أدخل الطول';
+
+  @override
+  String get doctorVisitEnterWeight => 'أدخل الوزن';
+
+  @override
+  String get doctorVisitSaving => 'جارٍ الحفظ...';
+
+  @override
+  String get doctorVisitConfirm => 'تأكيد';
+
+  @override
+  String get doctorVisitPatientDetails => 'تفاصيل المريض';
+
+  @override
+  String get doctorVisitMilestonesTitle => 'مراحل النمو والتطور';
+
+  @override
+  String get doctorVisitMilestonesSubtitle => 'تابع تقدم التطور';
+
+  @override
+  String get doctorVisitAiSkinHistoryTitle =>
+      'سجل تحليل الجلد بالذكاء الاصطناعي';
+
+  @override
+  String get doctorVisitAiSkinHistorySubtitle => 'عرض النتائج السابقة';
+
+  @override
+  String get doctorVisitMedicalConditionsTitle => 'الحالات الطبية';
+
+  @override
+  String get doctorVisitMedicalConditionsSubtitle => 'مسح واستخراج الحالات';
+
+  @override
+  String get doctorVisitVaccinationsSubtitle => 'مراجعة وتأكيد';
+
+  @override
+  String get doctorVisitFinishVisit => 'إنهاء الزيارة';
+
+  @override
+  String get milestonesOverviewTitle => 'مراحل النمو والتطور';
+
+  @override
+  String get doctorMilestonesNoDelayed => 'لا توجد معالم متأخرة';
+
+  @override
+  String doctorMilestonesExpected(Object expected) {
+    return 'المتوقع $expected';
+  }
+
+  @override
+  String get doctorMilestonesDelayed => 'متأخر';
+
+  @override
+  String get childSummaryTitle => 'ملخص الطفل';
+
+  @override
+  String get childSummaryNotFound => 'الطفل غير موجود';
+
+  @override
+  String get childSummaryPlaceholder => 'سيظهر ملخص الطفل هنا لاحقًا.';
+
+  @override
+  String get childSummaryDefaultName => 'طفل';
+
+  @override
+  String get aiSkinHistoryTitle => 'سجل تحليل الجلد بالذكاء الاصطناعي';
+
+  @override
+  String get aiSkinHistoryParentNotFound =>
+      'لم يتم العثور على ولي الأمر لهذا الطفل.';
+
+  @override
+  String get aiSkinHistoryNoHistory =>
+      'لا يوجد سجل لتحليل الجلد بالذكاء الاصطناعي بعد.';
+
+  @override
+  String get aiSkinHistoryUnknown => 'غير معروف';
+
+  @override
+  String get aiSkinHistoryUnknownDate => 'تاريخ غير معروف';
+
+  @override
+  String get medicalReportsInvalidUrl => 'رابط الملف غير صالح.';
+
+  @override
+  String get medicalReportsOpenFailed => 'تعذر فتح الملف.';
+
+  @override
+  String get medicalReportsNoConditions => 'لا توجد حالات طبية مسجلة بعد.';
+
+  @override
+  String get medicalReportsPreviousReports => 'التقارير السابقة';
+
+  @override
+  String get medicalReportsNoReports => 'لا توجد تقارير مرفوعة بعد.';
+
+  @override
+  String get medicalReportsReport => 'تقرير';
+
+  @override
+  String get medicalReportsNoExtractedText =>
+      'لا يوجد نص مستخرج لهذا التشخيص بعد.';
+
+  @override
+  String get doctorOcrDigitizeTitle => 'رقمنة التقارير الطبية';
+
+  @override
+  String get doctorOcrDigitizeSubtitle =>
+      'ارفع ملفات PDF أو الصور وحولها باستخدام OCR.';
+
+  @override
+  String get doctorOcrUploading => 'جارٍ الرفع...';
+
+  @override
+  String get doctorOcrUploadReport => 'رفع التقرير';
+
+  @override
+  String get doctorOcrUnsupportedFile => 'نوع الملف غير مدعوم.';
+
+  @override
+  String get doctorOcrFailedButSaved => 'فشل التعرف (تم حفظ الرفع).';
+
+  @override
+  String get doctorOcrUploadFailed => 'فشل الرفع. تحقق من الصلاحيات.';
 }

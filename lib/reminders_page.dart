@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:rafiq_gp/l10n/app_localizations.dart';
 
 class RemindersPage extends StatefulWidget {
   const RemindersPage({super.key});
@@ -85,7 +86,8 @@ class _RemindersPageState extends State<RemindersPage> {
     60: "5-year milestone check-up",
   };
 
-  List<_ReminderItem> _buildReminders(QuerySnapshot snapshot) {
+  List<_ReminderItem> _buildReminders(
+      QuerySnapshot snapshot, AppLocalizations l10n) {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final items = <_ReminderItem>[];
@@ -121,13 +123,12 @@ class _RemindersPageState extends State<RemindersPage> {
         final daysUntil = dueDay.difference(today).inDays;
         if (daysUntil < 0 || daysUntil > _reminderWindowDays) return;
 
-        final label = _vaccineSectionLabels[sectionMonth] ??
-            "$sectionMonth-month vaccination";
+        final label = _vaccineSectionLabel(l10n, sectionMonth);
         final text = daysUntil == 0
-            ? "$childName: $label is due today."
+            ? l10n.remindersDueToday(childName, label)
             : daysUntil == 1
-                ? "$childName: $label is due in 1 day."
-                : "$childName: $label is due in $daysUntil days.";
+                ? l10n.remindersDueInOneDay(childName, label)
+                : l10n.remindersDueInDays(childName, label, daysUntil);
 
         final id = "${doc.id}_vax_$sectionMonth";
         if (_dismissed.contains(id)) return;
@@ -139,17 +140,18 @@ class _RemindersPageState extends State<RemindersPage> {
         ));
       });
 
-      _milestoneLabels.forEach((months, label) {
+      _milestoneLabels.forEach((months, _) {
         final dueDate = _scheduledDate(birthDate!, months);
         final dueDay = DateTime(dueDate.year, dueDate.month, dueDate.day);
         final daysUntil = dueDay.difference(today).inDays;
         if (daysUntil < 0 || daysUntil > _reminderWindowDays) return;
 
+        final label = _milestoneLabel(l10n, months);
         final text = daysUntil == 0
-            ? "$childName: $label is due today."
+            ? l10n.remindersDueToday(childName, label)
             : daysUntil == 1
-                ? "$childName: $label is due in 1 day."
-                : "$childName: $label is due in $daysUntil days.";
+                ? l10n.remindersDueInOneDay(childName, label)
+                : l10n.remindersDueInDays(childName, label, daysUntil);
 
         final id = "${doc.id}_ms_$months";
         if (_dismissed.contains(id)) return;
@@ -168,9 +170,11 @@ class _RemindersPageState extends State<RemindersPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
-      return const Scaffold(body: Center(child: Text("Please login")));
+      return Scaffold(
+          body: Center(child: Text(l10n.remindersPleaseLogin)));
     }
     final uid = user.uid;
 
@@ -184,8 +188,8 @@ class _RemindersPageState extends State<RemindersPage> {
           surfaceTintColor: Colors.white,
           scrolledUnderElevation: 0,
           centerTitle: true,
-          title: const Text(
-            "Reminders",
+          title: Text(
+            l10n.remindersTitle,
             style: TextStyle(
               fontFamily: 'Inter',
               fontWeight: FontWeight.w600,
@@ -225,15 +229,17 @@ class _RemindersPageState extends State<RemindersPage> {
 
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
             return Center(
-              child: Text("No reminders for the next $_reminderWindowDays days",
+              child: Text(
+                  l10n.remindersNoneForDays(_reminderWindowDays),
                   style: const TextStyle(color: Colors.grey)),
             );
           }
 
-          final reminders = _buildReminders(snapshot.data!);
+          final reminders = _buildReminders(snapshot.data!, l10n);
           if (reminders.isEmpty) {
             return Center(
-              child: Text("No reminders for the next $_reminderWindowDays days",
+              child: Text(
+                  l10n.remindersNoneForDays(_reminderWindowDays),
                   style: const TextStyle(color: Colors.grey)),
             );
           }
@@ -290,4 +296,60 @@ class _ReminderItem {
     required this.text,
     required this.dueDate,
   });
+}
+
+String _vaccineSectionLabel(AppLocalizations l10n, int month) {
+  switch (month) {
+    case 0:
+      return l10n.remindersVaccineNewborn;
+    case 2:
+      return l10n.remindersVaccine2Months;
+    case 4:
+      return l10n.remindersVaccine4Months;
+    case 6:
+      return l10n.remindersVaccine6Months;
+    case 9:
+      return l10n.remindersVaccine9Months;
+    case 12:
+      return l10n.remindersVaccine12Months;
+    case 18:
+      return l10n.remindersVaccine18Months;
+    case 24:
+      return l10n.remindersVaccine24Months;
+    case 60:
+      return l10n.remindersVaccineSchoolAge;
+    default:
+      return l10n.remindersMonthVaccination(month);
+  }
+}
+
+String _milestoneLabel(AppLocalizations l10n, int month) {
+  switch (month) {
+    case 2:
+      return l10n.remindersMilestone2Months;
+    case 4:
+      return l10n.remindersMilestone4Months;
+    case 6:
+      return l10n.remindersMilestone6Months;
+    case 9:
+      return l10n.remindersMilestone9Months;
+    case 12:
+      return l10n.remindersMilestone12Months;
+    case 15:
+      return l10n.remindersMilestone15Months;
+    case 18:
+      return l10n.remindersMilestone18Months;
+    case 24:
+      return l10n.remindersMilestone24Months;
+    case 30:
+      return l10n.remindersMilestone30Months;
+    case 36:
+      return l10n.remindersMilestone36Months;
+    case 48:
+      return l10n.remindersMilestone48Months;
+    case 60:
+      return l10n.remindersMilestone60Months;
+    default:
+      return l10n.remindersMilestone60Months;
+  }
 }

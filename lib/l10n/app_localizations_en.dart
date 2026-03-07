@@ -367,14 +367,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get doctorGreeting =>
-      'Review and manage your patients’ health profiles.';
+      'Manage visit time more efficiently by reviewing your patients’ health information.';
 
   @override
   String get scanQrTitle => 'Scan Child\'s QR Code';
 
   @override
   String get scanQrInstruction =>
-      'Align the QR code within the frame below\nto begin the identification process.';
+      'Align the QR code within the frame below\nto view their health profile during the visit.';
 
   @override
   String get qrInvalid => 'QR code expired or invalid';
@@ -1657,4 +1657,524 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get close => 'Close';
+
+  @override
+  String get remindersTitle => 'Reminders';
+
+  @override
+  String get remindersPleaseLogin => 'Please login';
+
+  @override
+  String remindersNoneForDays(Object days) {
+    return 'No reminders for the next $days days';
+  }
+
+  @override
+  String remindersDueToday(Object childName, Object label) {
+    return '$childName: $label is due today.';
+  }
+
+  @override
+  String remindersDueInOneDay(Object childName, Object label) {
+    return '$childName: $label is due in 1 day.';
+  }
+
+  @override
+  String remindersDueInDays(Object childName, Object days, Object label) {
+    return '$childName: $label is due in $days days.';
+  }
+
+  @override
+  String remindersMonthVaccination(Object months) {
+    return '$months-month vaccination';
+  }
+
+  @override
+  String get remindersVaccineNewborn => 'Newborn vaccination';
+
+  @override
+  String get remindersVaccine2Months => '2-month vaccination';
+
+  @override
+  String get remindersVaccine4Months => '4-month vaccination';
+
+  @override
+  String get remindersVaccine6Months => '6-month vaccination';
+
+  @override
+  String get remindersVaccine9Months => '9-month vaccination';
+
+  @override
+  String get remindersVaccine12Months => '12-month vaccination';
+
+  @override
+  String get remindersVaccine18Months => '18-month vaccination';
+
+  @override
+  String get remindersVaccine24Months => '24-month vaccination';
+
+  @override
+  String get remindersVaccineSchoolAge => 'School-age vaccination';
+
+  @override
+  String get remindersMilestone2Months => '2-month milestone check-up';
+
+  @override
+  String get remindersMilestone4Months => '4-month milestone check-up';
+
+  @override
+  String get remindersMilestone6Months => '6-month milestone check-up';
+
+  @override
+  String get remindersMilestone9Months => '9-month milestone check-up';
+
+  @override
+  String get remindersMilestone12Months => '1-year milestone check-up';
+
+  @override
+  String get remindersMilestone15Months => '15-month milestone check-up';
+
+  @override
+  String get remindersMilestone18Months => '18-month milestone check-up';
+
+  @override
+  String get remindersMilestone24Months => '2-year milestone check-up';
+
+  @override
+  String get remindersMilestone30Months => '30-month milestone check-up';
+
+  @override
+  String get remindersMilestone36Months => '3-year milestone check-up';
+
+  @override
+  String get remindersMilestone48Months => '4-year milestone check-up';
+
+  @override
+  String get remindersMilestone60Months => '5-year milestone check-up';
+
+  @override
+  String get childDashboardNoImmediateVaccinations =>
+      'No immediate vaccinations. All set! ✨';
+
+  @override
+  String get childDashboardVaccinationTimelineTitle => 'Vaccination Timeline';
+
+  @override
+  String childDashboardNextAppointment(Object date) {
+    return 'Next Appointment: $date';
+  }
+
+  @override
+  String get childDashboardNextAppointmentNone => 'Next Appointment: ---';
+
+  @override
+  String get childDashboardViewFullTimeline => 'View Full Timeline';
+
+  @override
+  String get childDashboardCalculatingAge => 'Calculating...';
+
+  @override
+  String get childDashboardHealthJourney => 'Health Journey';
+
+  @override
+  String get childDashboardMilestonesTitle => 'Developmental Milestones';
+
+  @override
+  String get childDashboardMilestonesSubtitle => 'Monitor growth and learning';
+
+  @override
+  String get childDashboardAiSkinSubtitle => 'Upload photos for insights';
+
+  @override
+  String get childDashboardMedicalConditionsTitle => 'Medical Conditions';
+
+  @override
+  String get childDashboardMedicalConditionsSubtitle =>
+      'Overview of conditions';
+
+  @override
+  String get childDashboardActivityLibrarySubtitle =>
+      'Curated learning content';
+
+  @override
+  String get childDashboardGrowthChartTitle => 'Growth Chart';
+
+  @override
+  String get childDashboardGrowthChartHeight => 'Height (cm)';
+
+  @override
+  String get childDashboardGrowthChartWeight => 'Weight (kg)';
+
+  @override
+  String get childDashboardGrowthChartNormal => 'Normal Growth';
+
+  @override
+  String get childDashboardGrowthChartChild => 'Child Growth';
+
+  @override
+  String ageMonths(Object months) {
+    return '$months months';
+  }
+
+  @override
+  String ageYears(Object years) {
+    return '$years years';
+  }
+
+  @override
+  String ageYearsMonths(Object months, Object years) {
+    return '$years years, $months months';
+  }
+
+  @override
+  String get vaccinationsTitle => 'Vaccinations';
+
+  @override
+  String get vaccinationsBirthDateMissing =>
+      'Birth date not found for this child.';
+
+  @override
+  String get vaccinationsLateVaccinations => 'Late Vaccinations';
+
+  @override
+  String get vaccinationsUpcoming => 'Upcoming';
+
+  @override
+  String get vaccinationsCompleted => 'Completed';
+
+  @override
+  String get vaccinationsOverdue => 'Overdue';
+
+  @override
+  String get vaccinationsConfirmTitle => 'Confirm Vaccinations';
+
+  @override
+  String get vaccinationsNoConfirm =>
+      'No vaccinations available for confirmation.';
+
+  @override
+  String get vaccinationsConfirmButton => 'Confirm';
+
+  @override
+  String vaccinationsTakenOn(Object date) {
+    return 'Taken on $date';
+  }
+
+  @override
+  String vaccinationsAvailableUntil(Object months) {
+    return 'Available until $months months';
+  }
+
+  @override
+  String vaccinationsMustBeTakenBefore(Object months) {
+    return 'Must be taken before $months months';
+  }
+
+  @override
+  String vaccinationsTakenLate(Object date) {
+    return 'Taken late • $date';
+  }
+
+  @override
+  String vaccinationsOverdueFrom(Object months) {
+    return 'Overdue from ${months}m';
+  }
+
+  @override
+  String get vaccinationsSectionAtBirth => 'At Birth';
+
+  @override
+  String get vaccinationsSection2Months => '2 Months';
+
+  @override
+  String get vaccinationsSection4Months => '4 Months';
+
+  @override
+  String get vaccinationsSection6Months => '6 Months';
+
+  @override
+  String get vaccinationsSection9Months => '9 Months';
+
+  @override
+  String get vaccinationsSection12Months => '12 Months';
+
+  @override
+  String get vaccinationsSection18Months => '18 Months';
+
+  @override
+  String get vaccinationsSection24Months => '24 Months';
+
+  @override
+  String get vaccinationsSectionSchoolAge => 'School Age';
+
+  @override
+  String get vaxBCG0 => 'BCG (Tuberculosis)';
+
+  @override
+  String get vaxHEPBBIRTH => 'Hepatitis B (Birth Dose)';
+
+  @override
+  String get vaxHEPB1 => 'Hepatitis B (Dose 1)';
+
+  @override
+  String get vaxHEPB2 => 'Hepatitis B (Dose 2)';
+
+  @override
+  String get vaxHEPB3 => 'Hepatitis B (Dose 3)';
+
+  @override
+  String get vaxDTAP1 => 'DTaP (Dose 1)';
+
+  @override
+  String get vaxDTAP2 => 'DTaP (Dose 2)';
+
+  @override
+  String get vaxDTAP3 => 'DTaP (Dose 3)';
+
+  @override
+  String get vaxDTAP4 => 'DTaP (Dose 4)';
+
+  @override
+  String get vaxDTAP5 => 'DTaP/Td (School Age)';
+
+  @override
+  String get vaxHIB1 => 'Hib (Dose 1)';
+
+  @override
+  String get vaxHIB2 => 'Hib (Dose 2)';
+
+  @override
+  String get vaxHIB3 => 'Hib (Dose 3)';
+
+  @override
+  String get vaxHIBFINAL => 'Hib (Final Dose)';
+
+  @override
+  String get vaxPCV1 => 'PCV (Dose 1)';
+
+  @override
+  String get vaxPCV2 => 'PCV (Dose 2)';
+
+  @override
+  String get vaxPCV3 => 'PCV (Dose 3)';
+
+  @override
+  String get vaxPCVFINAL => 'PCV (Final)';
+
+  @override
+  String get vaxIPV1 => 'IPV (Polio Dose 1)';
+
+  @override
+  String get vaxIPV2 => 'IPV (Polio Dose 2)';
+
+  @override
+  String get vaxIPV3 => 'IPV (Polio Dose 3)';
+
+  @override
+  String get vaxIPVFINAL => 'IPV (Polio Final)';
+
+  @override
+  String get vaxOPV1 => 'OPV (Dose 1)';
+
+  @override
+  String get vaxOPV2 => 'OPV (Dose 2)';
+
+  @override
+  String get vaxOPV3 => 'OPV (Dose 3)';
+
+  @override
+  String get vaxOPV4 => 'OPV (Dose 4)';
+
+  @override
+  String get vaxROTA1 => 'Rotavirus (Dose 1)';
+
+  @override
+  String get vaxROTA2 => 'Rotavirus (Dose 2)';
+
+  @override
+  String get vaxMEASLES1 => 'Measles (Dose 1)';
+
+  @override
+  String get vaxMMR1 => 'MMR (Dose 1)';
+
+  @override
+  String get vaxMMR2 => 'MMR (Dose 2)';
+
+  @override
+  String get vaxMMRSCHOOL => 'MMR (School Age)';
+
+  @override
+  String get vaxVARICELLA1 => 'Varicella (Dose 1)';
+
+  @override
+  String get vaxVARICELLA2 => 'Varicella (Dose 2)';
+
+  @override
+  String get vaxVARICELLASCHOOL => 'Varicella (School Age)';
+
+  @override
+  String get vaxMCV41 => 'MCV4 (Dose 1)';
+
+  @override
+  String get vaxMCV42 => 'MCV4 (Dose 2)';
+
+  @override
+  String get vaxHEPA1 => 'Hepatitis A (Dose 1)';
+
+  @override
+  String get vaxHEPA2 => 'Hepatitis A (Dose 2)';
+
+  @override
+  String get doctorVisitEnterValidHeightWeight =>
+      'Enter valid height & weight.';
+
+  @override
+  String get doctorVisitBirthDateNotAvailable => 'Birth date not available.';
+
+  @override
+  String get doctorVisitSaved => 'Saved ✅';
+
+  @override
+  String get doctorVisitSaveFailed => 'Failed to save measurement.';
+
+  @override
+  String get doctorVisitChildNotFound => 'Child not found';
+
+  @override
+  String doctorVisitChildId(Object id) {
+    return 'Child ID: $id';
+  }
+
+  @override
+  String get doctorVisitMilestonesNotAvailable =>
+      'Milestones data not available yet.';
+
+  @override
+  String get doctorVisitLatestMeasurements => 'Latest Measurements';
+
+  @override
+  String get doctorVisitEnterHeight => 'Enter height';
+
+  @override
+  String get doctorVisitEnterWeight => 'Enter weight';
+
+  @override
+  String get doctorVisitSaving => 'Saving...';
+
+  @override
+  String get doctorVisitConfirm => 'Confirm';
+
+  @override
+  String get doctorVisitPatientDetails => 'Patient Details';
+
+  @override
+  String get doctorVisitMilestonesTitle => 'Developmental Milestones';
+
+  @override
+  String get doctorVisitMilestonesSubtitle => 'Track development progress';
+
+  @override
+  String get doctorVisitAiSkinHistoryTitle => 'AI Skin Analysis History';
+
+  @override
+  String get doctorVisitAiSkinHistorySubtitle => 'View previous AI results';
+
+  @override
+  String get doctorVisitMedicalConditionsTitle => 'Medical Conditions';
+
+  @override
+  String get doctorVisitMedicalConditionsSubtitle =>
+      'Scan & extract conditions';
+
+  @override
+  String get doctorVisitVaccinationsSubtitle => 'Review & confirm';
+
+  @override
+  String get doctorVisitFinishVisit => 'Finish Visit';
+
+  @override
+  String get milestonesOverviewTitle => 'Developmental Milestones';
+
+  @override
+  String get doctorMilestonesNoDelayed => 'No delayed milestones';
+
+  @override
+  String doctorMilestonesExpected(Object expected) {
+    return 'Expected $expected';
+  }
+
+  @override
+  String get doctorMilestonesDelayed => 'Delayed';
+
+  @override
+  String get childSummaryTitle => 'Child Summary';
+
+  @override
+  String get childSummaryNotFound => 'Child not found';
+
+  @override
+  String get childSummaryPlaceholder => 'Child summary will appear here later.';
+
+  @override
+  String get childSummaryDefaultName => 'Child';
+
+  @override
+  String get aiSkinHistoryTitle => 'AI Skin Analysis History';
+
+  @override
+  String get aiSkinHistoryParentNotFound => 'Parent not found for this child.';
+
+  @override
+  String get aiSkinHistoryNoHistory => 'No AI skin analysis history yet.';
+
+  @override
+  String get aiSkinHistoryUnknown => 'Unknown';
+
+  @override
+  String get aiSkinHistoryUnknownDate => 'Unknown date';
+
+  @override
+  String get medicalReportsInvalidUrl => 'Invalid file URL.';
+
+  @override
+  String get medicalReportsOpenFailed => 'Couldn\'t open the file.';
+
+  @override
+  String get medicalReportsNoConditions =>
+      'No medical conditions recorded yet.';
+
+  @override
+  String get medicalReportsPreviousReports => 'Previous Reports';
+
+  @override
+  String get medicalReportsNoReports => 'No reports uploaded yet.';
+
+  @override
+  String get medicalReportsReport => 'Report';
+
+  @override
+  String get medicalReportsNoExtractedText =>
+      'No extracted text available for this condition yet.';
+
+  @override
+  String get doctorOcrDigitizeTitle => 'Digitize Medical Reports';
+
+  @override
+  String get doctorOcrDigitizeSubtitle =>
+      'Upload PDF or images and convert them using OCR.';
+
+  @override
+  String get doctorOcrUploading => 'Uploading...';
+
+  @override
+  String get doctorOcrUploadReport => 'Upload Report';
+
+  @override
+  String get doctorOcrUnsupportedFile => 'Unsupported file type.';
+
+  @override
+  String get doctorOcrFailedButSaved => 'OCR failed (upload saved).';
+
+  @override
+  String get doctorOcrUploadFailed => 'Upload failed. Check permissions.';
 }

@@ -761,7 +761,7 @@ abstract class AppLocalizations {
   /// No description provided for @doctorGreeting.
   ///
   /// In en, this message translates to:
-  /// **'Review and manage your patients’ health profiles.'**
+  /// **'Manage visit time more efficiently by reviewing your patients’ health information.'**
   String get doctorGreeting;
 
   /// No description provided for @scanQrTitle.
@@ -773,7 +773,7 @@ abstract class AppLocalizations {
   /// No description provided for @scanQrInstruction.
   ///
   /// In en, this message translates to:
-  /// **'Align the QR code within the frame below\nto begin the identification process.'**
+  /// **'Align the QR code within the frame below\nto view their health profile during the visit.'**
   String get scanQrInstruction;
 
   /// No description provided for @qrInvalid.
@@ -2929,6 +2929,960 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Close'**
   String get close;
+
+  /// No description provided for @remindersTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminders'**
+  String get remindersTitle;
+
+  /// No description provided for @remindersPleaseLogin.
+  ///
+  /// In en, this message translates to:
+  /// **'Please login'**
+  String get remindersPleaseLogin;
+
+  /// No description provided for @remindersNoneForDays.
+  ///
+  /// In en, this message translates to:
+  /// **'No reminders for the next {days} days'**
+  String remindersNoneForDays(Object days);
+
+  /// No description provided for @remindersDueToday.
+  ///
+  /// In en, this message translates to:
+  /// **'{childName}: {label} is due today.'**
+  String remindersDueToday(Object childName, Object label);
+
+  /// No description provided for @remindersDueInOneDay.
+  ///
+  /// In en, this message translates to:
+  /// **'{childName}: {label} is due in 1 day.'**
+  String remindersDueInOneDay(Object childName, Object label);
+
+  /// No description provided for @remindersDueInDays.
+  ///
+  /// In en, this message translates to:
+  /// **'{childName}: {label} is due in {days} days.'**
+  String remindersDueInDays(Object childName, Object days, Object label);
+
+  /// No description provided for @remindersMonthVaccination.
+  ///
+  /// In en, this message translates to:
+  /// **'{months}-month vaccination'**
+  String remindersMonthVaccination(Object months);
+
+  /// No description provided for @remindersVaccineNewborn.
+  ///
+  /// In en, this message translates to:
+  /// **'Newborn vaccination'**
+  String get remindersVaccineNewborn;
+
+  /// No description provided for @remindersVaccine2Months.
+  ///
+  /// In en, this message translates to:
+  /// **'2-month vaccination'**
+  String get remindersVaccine2Months;
+
+  /// No description provided for @remindersVaccine4Months.
+  ///
+  /// In en, this message translates to:
+  /// **'4-month vaccination'**
+  String get remindersVaccine4Months;
+
+  /// No description provided for @remindersVaccine6Months.
+  ///
+  /// In en, this message translates to:
+  /// **'6-month vaccination'**
+  String get remindersVaccine6Months;
+
+  /// No description provided for @remindersVaccine9Months.
+  ///
+  /// In en, this message translates to:
+  /// **'9-month vaccination'**
+  String get remindersVaccine9Months;
+
+  /// No description provided for @remindersVaccine12Months.
+  ///
+  /// In en, this message translates to:
+  /// **'12-month vaccination'**
+  String get remindersVaccine12Months;
+
+  /// No description provided for @remindersVaccine18Months.
+  ///
+  /// In en, this message translates to:
+  /// **'18-month vaccination'**
+  String get remindersVaccine18Months;
+
+  /// No description provided for @remindersVaccine24Months.
+  ///
+  /// In en, this message translates to:
+  /// **'24-month vaccination'**
+  String get remindersVaccine24Months;
+
+  /// No description provided for @remindersVaccineSchoolAge.
+  ///
+  /// In en, this message translates to:
+  /// **'School-age vaccination'**
+  String get remindersVaccineSchoolAge;
+
+  /// No description provided for @remindersMilestone2Months.
+  ///
+  /// In en, this message translates to:
+  /// **'2-month milestone check-up'**
+  String get remindersMilestone2Months;
+
+  /// No description provided for @remindersMilestone4Months.
+  ///
+  /// In en, this message translates to:
+  /// **'4-month milestone check-up'**
+  String get remindersMilestone4Months;
+
+  /// No description provided for @remindersMilestone6Months.
+  ///
+  /// In en, this message translates to:
+  /// **'6-month milestone check-up'**
+  String get remindersMilestone6Months;
+
+  /// No description provided for @remindersMilestone9Months.
+  ///
+  /// In en, this message translates to:
+  /// **'9-month milestone check-up'**
+  String get remindersMilestone9Months;
+
+  /// No description provided for @remindersMilestone12Months.
+  ///
+  /// In en, this message translates to:
+  /// **'1-year milestone check-up'**
+  String get remindersMilestone12Months;
+
+  /// No description provided for @remindersMilestone15Months.
+  ///
+  /// In en, this message translates to:
+  /// **'15-month milestone check-up'**
+  String get remindersMilestone15Months;
+
+  /// No description provided for @remindersMilestone18Months.
+  ///
+  /// In en, this message translates to:
+  /// **'18-month milestone check-up'**
+  String get remindersMilestone18Months;
+
+  /// No description provided for @remindersMilestone24Months.
+  ///
+  /// In en, this message translates to:
+  /// **'2-year milestone check-up'**
+  String get remindersMilestone24Months;
+
+  /// No description provided for @remindersMilestone30Months.
+  ///
+  /// In en, this message translates to:
+  /// **'30-month milestone check-up'**
+  String get remindersMilestone30Months;
+
+  /// No description provided for @remindersMilestone36Months.
+  ///
+  /// In en, this message translates to:
+  /// **'3-year milestone check-up'**
+  String get remindersMilestone36Months;
+
+  /// No description provided for @remindersMilestone48Months.
+  ///
+  /// In en, this message translates to:
+  /// **'4-year milestone check-up'**
+  String get remindersMilestone48Months;
+
+  /// No description provided for @remindersMilestone60Months.
+  ///
+  /// In en, this message translates to:
+  /// **'5-year milestone check-up'**
+  String get remindersMilestone60Months;
+
+  /// No description provided for @childDashboardNoImmediateVaccinations.
+  ///
+  /// In en, this message translates to:
+  /// **'No immediate vaccinations. All set! ✨'**
+  String get childDashboardNoImmediateVaccinations;
+
+  /// No description provided for @childDashboardVaccinationTimelineTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Vaccination Timeline'**
+  String get childDashboardVaccinationTimelineTitle;
+
+  /// No description provided for @childDashboardNextAppointment.
+  ///
+  /// In en, this message translates to:
+  /// **'Next Appointment: {date}'**
+  String childDashboardNextAppointment(Object date);
+
+  /// No description provided for @childDashboardNextAppointmentNone.
+  ///
+  /// In en, this message translates to:
+  /// **'Next Appointment: ---'**
+  String get childDashboardNextAppointmentNone;
+
+  /// No description provided for @childDashboardViewFullTimeline.
+  ///
+  /// In en, this message translates to:
+  /// **'View Full Timeline'**
+  String get childDashboardViewFullTimeline;
+
+  /// No description provided for @childDashboardCalculatingAge.
+  ///
+  /// In en, this message translates to:
+  /// **'Calculating...'**
+  String get childDashboardCalculatingAge;
+
+  /// No description provided for @childDashboardHealthJourney.
+  ///
+  /// In en, this message translates to:
+  /// **'Health Journey'**
+  String get childDashboardHealthJourney;
+
+  /// No description provided for @childDashboardMilestonesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Developmental Milestones'**
+  String get childDashboardMilestonesTitle;
+
+  /// No description provided for @childDashboardMilestonesSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Monitor growth and learning'**
+  String get childDashboardMilestonesSubtitle;
+
+  /// No description provided for @childDashboardAiSkinSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload photos for insights'**
+  String get childDashboardAiSkinSubtitle;
+
+  /// No description provided for @childDashboardMedicalConditionsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Medical Conditions'**
+  String get childDashboardMedicalConditionsTitle;
+
+  /// No description provided for @childDashboardMedicalConditionsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Overview of conditions'**
+  String get childDashboardMedicalConditionsSubtitle;
+
+  /// No description provided for @childDashboardActivityLibrarySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Curated learning content'**
+  String get childDashboardActivityLibrarySubtitle;
+
+  /// No description provided for @childDashboardGrowthChartTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Growth Chart'**
+  String get childDashboardGrowthChartTitle;
+
+  /// No description provided for @childDashboardGrowthChartHeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Height (cm)'**
+  String get childDashboardGrowthChartHeight;
+
+  /// No description provided for @childDashboardGrowthChartWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Weight (kg)'**
+  String get childDashboardGrowthChartWeight;
+
+  /// No description provided for @childDashboardGrowthChartNormal.
+  ///
+  /// In en, this message translates to:
+  /// **'Normal Growth'**
+  String get childDashboardGrowthChartNormal;
+
+  /// No description provided for @childDashboardGrowthChartChild.
+  ///
+  /// In en, this message translates to:
+  /// **'Child Growth'**
+  String get childDashboardGrowthChartChild;
+
+  /// No description provided for @ageMonths.
+  ///
+  /// In en, this message translates to:
+  /// **'{months} months'**
+  String ageMonths(Object months);
+
+  /// No description provided for @ageYears.
+  ///
+  /// In en, this message translates to:
+  /// **'{years} years'**
+  String ageYears(Object years);
+
+  /// No description provided for @ageYearsMonths.
+  ///
+  /// In en, this message translates to:
+  /// **'{years} years, {months} months'**
+  String ageYearsMonths(Object months, Object years);
+
+  /// No description provided for @vaccinationsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Vaccinations'**
+  String get vaccinationsTitle;
+
+  /// No description provided for @vaccinationsBirthDateMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'Birth date not found for this child.'**
+  String get vaccinationsBirthDateMissing;
+
+  /// No description provided for @vaccinationsLateVaccinations.
+  ///
+  /// In en, this message translates to:
+  /// **'Late Vaccinations'**
+  String get vaccinationsLateVaccinations;
+
+  /// No description provided for @vaccinationsUpcoming.
+  ///
+  /// In en, this message translates to:
+  /// **'Upcoming'**
+  String get vaccinationsUpcoming;
+
+  /// No description provided for @vaccinationsCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed'**
+  String get vaccinationsCompleted;
+
+  /// No description provided for @vaccinationsOverdue.
+  ///
+  /// In en, this message translates to:
+  /// **'Overdue'**
+  String get vaccinationsOverdue;
+
+  /// No description provided for @vaccinationsConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm Vaccinations'**
+  String get vaccinationsConfirmTitle;
+
+  /// No description provided for @vaccinationsNoConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'No vaccinations available for confirmation.'**
+  String get vaccinationsNoConfirm;
+
+  /// No description provided for @vaccinationsConfirmButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm'**
+  String get vaccinationsConfirmButton;
+
+  /// No description provided for @vaccinationsTakenOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Taken on {date}'**
+  String vaccinationsTakenOn(Object date);
+
+  /// No description provided for @vaccinationsAvailableUntil.
+  ///
+  /// In en, this message translates to:
+  /// **'Available until {months} months'**
+  String vaccinationsAvailableUntil(Object months);
+
+  /// No description provided for @vaccinationsMustBeTakenBefore.
+  ///
+  /// In en, this message translates to:
+  /// **'Must be taken before {months} months'**
+  String vaccinationsMustBeTakenBefore(Object months);
+
+  /// No description provided for @vaccinationsTakenLate.
+  ///
+  /// In en, this message translates to:
+  /// **'Taken late • {date}'**
+  String vaccinationsTakenLate(Object date);
+
+  /// No description provided for @vaccinationsOverdueFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'Overdue from {months}m'**
+  String vaccinationsOverdueFrom(Object months);
+
+  /// No description provided for @vaccinationsSectionAtBirth.
+  ///
+  /// In en, this message translates to:
+  /// **'At Birth'**
+  String get vaccinationsSectionAtBirth;
+
+  /// No description provided for @vaccinationsSection2Months.
+  ///
+  /// In en, this message translates to:
+  /// **'2 Months'**
+  String get vaccinationsSection2Months;
+
+  /// No description provided for @vaccinationsSection4Months.
+  ///
+  /// In en, this message translates to:
+  /// **'4 Months'**
+  String get vaccinationsSection4Months;
+
+  /// No description provided for @vaccinationsSection6Months.
+  ///
+  /// In en, this message translates to:
+  /// **'6 Months'**
+  String get vaccinationsSection6Months;
+
+  /// No description provided for @vaccinationsSection9Months.
+  ///
+  /// In en, this message translates to:
+  /// **'9 Months'**
+  String get vaccinationsSection9Months;
+
+  /// No description provided for @vaccinationsSection12Months.
+  ///
+  /// In en, this message translates to:
+  /// **'12 Months'**
+  String get vaccinationsSection12Months;
+
+  /// No description provided for @vaccinationsSection18Months.
+  ///
+  /// In en, this message translates to:
+  /// **'18 Months'**
+  String get vaccinationsSection18Months;
+
+  /// No description provided for @vaccinationsSection24Months.
+  ///
+  /// In en, this message translates to:
+  /// **'24 Months'**
+  String get vaccinationsSection24Months;
+
+  /// No description provided for @vaccinationsSectionSchoolAge.
+  ///
+  /// In en, this message translates to:
+  /// **'School Age'**
+  String get vaccinationsSectionSchoolAge;
+
+  /// No description provided for @vaxBCG0.
+  ///
+  /// In en, this message translates to:
+  /// **'BCG (Tuberculosis)'**
+  String get vaxBCG0;
+
+  /// No description provided for @vaxHEPBBIRTH.
+  ///
+  /// In en, this message translates to:
+  /// **'Hepatitis B (Birth Dose)'**
+  String get vaxHEPBBIRTH;
+
+  /// No description provided for @vaxHEPB1.
+  ///
+  /// In en, this message translates to:
+  /// **'Hepatitis B (Dose 1)'**
+  String get vaxHEPB1;
+
+  /// No description provided for @vaxHEPB2.
+  ///
+  /// In en, this message translates to:
+  /// **'Hepatitis B (Dose 2)'**
+  String get vaxHEPB2;
+
+  /// No description provided for @vaxHEPB3.
+  ///
+  /// In en, this message translates to:
+  /// **'Hepatitis B (Dose 3)'**
+  String get vaxHEPB3;
+
+  /// No description provided for @vaxDTAP1.
+  ///
+  /// In en, this message translates to:
+  /// **'DTaP (Dose 1)'**
+  String get vaxDTAP1;
+
+  /// No description provided for @vaxDTAP2.
+  ///
+  /// In en, this message translates to:
+  /// **'DTaP (Dose 2)'**
+  String get vaxDTAP2;
+
+  /// No description provided for @vaxDTAP3.
+  ///
+  /// In en, this message translates to:
+  /// **'DTaP (Dose 3)'**
+  String get vaxDTAP3;
+
+  /// No description provided for @vaxDTAP4.
+  ///
+  /// In en, this message translates to:
+  /// **'DTaP (Dose 4)'**
+  String get vaxDTAP4;
+
+  /// No description provided for @vaxDTAP5.
+  ///
+  /// In en, this message translates to:
+  /// **'DTaP/Td (School Age)'**
+  String get vaxDTAP5;
+
+  /// No description provided for @vaxHIB1.
+  ///
+  /// In en, this message translates to:
+  /// **'Hib (Dose 1)'**
+  String get vaxHIB1;
+
+  /// No description provided for @vaxHIB2.
+  ///
+  /// In en, this message translates to:
+  /// **'Hib (Dose 2)'**
+  String get vaxHIB2;
+
+  /// No description provided for @vaxHIB3.
+  ///
+  /// In en, this message translates to:
+  /// **'Hib (Dose 3)'**
+  String get vaxHIB3;
+
+  /// No description provided for @vaxHIBFINAL.
+  ///
+  /// In en, this message translates to:
+  /// **'Hib (Final Dose)'**
+  String get vaxHIBFINAL;
+
+  /// No description provided for @vaxPCV1.
+  ///
+  /// In en, this message translates to:
+  /// **'PCV (Dose 1)'**
+  String get vaxPCV1;
+
+  /// No description provided for @vaxPCV2.
+  ///
+  /// In en, this message translates to:
+  /// **'PCV (Dose 2)'**
+  String get vaxPCV2;
+
+  /// No description provided for @vaxPCV3.
+  ///
+  /// In en, this message translates to:
+  /// **'PCV (Dose 3)'**
+  String get vaxPCV3;
+
+  /// No description provided for @vaxPCVFINAL.
+  ///
+  /// In en, this message translates to:
+  /// **'PCV (Final)'**
+  String get vaxPCVFINAL;
+
+  /// No description provided for @vaxIPV1.
+  ///
+  /// In en, this message translates to:
+  /// **'IPV (Polio Dose 1)'**
+  String get vaxIPV1;
+
+  /// No description provided for @vaxIPV2.
+  ///
+  /// In en, this message translates to:
+  /// **'IPV (Polio Dose 2)'**
+  String get vaxIPV2;
+
+  /// No description provided for @vaxIPV3.
+  ///
+  /// In en, this message translates to:
+  /// **'IPV (Polio Dose 3)'**
+  String get vaxIPV3;
+
+  /// No description provided for @vaxIPVFINAL.
+  ///
+  /// In en, this message translates to:
+  /// **'IPV (Polio Final)'**
+  String get vaxIPVFINAL;
+
+  /// No description provided for @vaxOPV1.
+  ///
+  /// In en, this message translates to:
+  /// **'OPV (Dose 1)'**
+  String get vaxOPV1;
+
+  /// No description provided for @vaxOPV2.
+  ///
+  /// In en, this message translates to:
+  /// **'OPV (Dose 2)'**
+  String get vaxOPV2;
+
+  /// No description provided for @vaxOPV3.
+  ///
+  /// In en, this message translates to:
+  /// **'OPV (Dose 3)'**
+  String get vaxOPV3;
+
+  /// No description provided for @vaxOPV4.
+  ///
+  /// In en, this message translates to:
+  /// **'OPV (Dose 4)'**
+  String get vaxOPV4;
+
+  /// No description provided for @vaxROTA1.
+  ///
+  /// In en, this message translates to:
+  /// **'Rotavirus (Dose 1)'**
+  String get vaxROTA1;
+
+  /// No description provided for @vaxROTA2.
+  ///
+  /// In en, this message translates to:
+  /// **'Rotavirus (Dose 2)'**
+  String get vaxROTA2;
+
+  /// No description provided for @vaxMEASLES1.
+  ///
+  /// In en, this message translates to:
+  /// **'Measles (Dose 1)'**
+  String get vaxMEASLES1;
+
+  /// No description provided for @vaxMMR1.
+  ///
+  /// In en, this message translates to:
+  /// **'MMR (Dose 1)'**
+  String get vaxMMR1;
+
+  /// No description provided for @vaxMMR2.
+  ///
+  /// In en, this message translates to:
+  /// **'MMR (Dose 2)'**
+  String get vaxMMR2;
+
+  /// No description provided for @vaxMMRSCHOOL.
+  ///
+  /// In en, this message translates to:
+  /// **'MMR (School Age)'**
+  String get vaxMMRSCHOOL;
+
+  /// No description provided for @vaxVARICELLA1.
+  ///
+  /// In en, this message translates to:
+  /// **'Varicella (Dose 1)'**
+  String get vaxVARICELLA1;
+
+  /// No description provided for @vaxVARICELLA2.
+  ///
+  /// In en, this message translates to:
+  /// **'Varicella (Dose 2)'**
+  String get vaxVARICELLA2;
+
+  /// No description provided for @vaxVARICELLASCHOOL.
+  ///
+  /// In en, this message translates to:
+  /// **'Varicella (School Age)'**
+  String get vaxVARICELLASCHOOL;
+
+  /// No description provided for @vaxMCV41.
+  ///
+  /// In en, this message translates to:
+  /// **'MCV4 (Dose 1)'**
+  String get vaxMCV41;
+
+  /// No description provided for @vaxMCV42.
+  ///
+  /// In en, this message translates to:
+  /// **'MCV4 (Dose 2)'**
+  String get vaxMCV42;
+
+  /// No description provided for @vaxHEPA1.
+  ///
+  /// In en, this message translates to:
+  /// **'Hepatitis A (Dose 1)'**
+  String get vaxHEPA1;
+
+  /// No description provided for @vaxHEPA2.
+  ///
+  /// In en, this message translates to:
+  /// **'Hepatitis A (Dose 2)'**
+  String get vaxHEPA2;
+
+  /// No description provided for @doctorVisitEnterValidHeightWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter valid height & weight.'**
+  String get doctorVisitEnterValidHeightWeight;
+
+  /// No description provided for @doctorVisitBirthDateNotAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Birth date not available.'**
+  String get doctorVisitBirthDateNotAvailable;
+
+  /// No description provided for @doctorVisitSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved ✅'**
+  String get doctorVisitSaved;
+
+  /// No description provided for @doctorVisitSaveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to save measurement.'**
+  String get doctorVisitSaveFailed;
+
+  /// No description provided for @doctorVisitChildNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Child not found'**
+  String get doctorVisitChildNotFound;
+
+  /// No description provided for @doctorVisitChildId.
+  ///
+  /// In en, this message translates to:
+  /// **'Child ID: {id}'**
+  String doctorVisitChildId(Object id);
+
+  /// No description provided for @doctorVisitMilestonesNotAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Milestones data not available yet.'**
+  String get doctorVisitMilestonesNotAvailable;
+
+  /// No description provided for @doctorVisitLatestMeasurements.
+  ///
+  /// In en, this message translates to:
+  /// **'Latest Measurements'**
+  String get doctorVisitLatestMeasurements;
+
+  /// No description provided for @doctorVisitEnterHeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter height'**
+  String get doctorVisitEnterHeight;
+
+  /// No description provided for @doctorVisitEnterWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter weight'**
+  String get doctorVisitEnterWeight;
+
+  /// No description provided for @doctorVisitSaving.
+  ///
+  /// In en, this message translates to:
+  /// **'Saving...'**
+  String get doctorVisitSaving;
+
+  /// No description provided for @doctorVisitConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm'**
+  String get doctorVisitConfirm;
+
+  /// No description provided for @doctorVisitPatientDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Patient Details'**
+  String get doctorVisitPatientDetails;
+
+  /// No description provided for @doctorVisitMilestonesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Developmental Milestones'**
+  String get doctorVisitMilestonesTitle;
+
+  /// No description provided for @doctorVisitMilestonesSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Track development progress'**
+  String get doctorVisitMilestonesSubtitle;
+
+  /// No description provided for @doctorVisitAiSkinHistoryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'AI Skin Analysis History'**
+  String get doctorVisitAiSkinHistoryTitle;
+
+  /// No description provided for @doctorVisitAiSkinHistorySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'View previous AI results'**
+  String get doctorVisitAiSkinHistorySubtitle;
+
+  /// No description provided for @doctorVisitMedicalConditionsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Medical Conditions'**
+  String get doctorVisitMedicalConditionsTitle;
+
+  /// No description provided for @doctorVisitMedicalConditionsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan & extract conditions'**
+  String get doctorVisitMedicalConditionsSubtitle;
+
+  /// No description provided for @doctorVisitVaccinationsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Review & confirm'**
+  String get doctorVisitVaccinationsSubtitle;
+
+  /// No description provided for @doctorVisitFinishVisit.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish Visit'**
+  String get doctorVisitFinishVisit;
+
+  /// No description provided for @milestonesOverviewTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Developmental Milestones'**
+  String get milestonesOverviewTitle;
+
+  /// No description provided for @doctorMilestonesNoDelayed.
+  ///
+  /// In en, this message translates to:
+  /// **'No delayed milestones'**
+  String get doctorMilestonesNoDelayed;
+
+  /// No description provided for @doctorMilestonesExpected.
+  ///
+  /// In en, this message translates to:
+  /// **'Expected {expected}'**
+  String doctorMilestonesExpected(Object expected);
+
+  /// No description provided for @doctorMilestonesDelayed.
+  ///
+  /// In en, this message translates to:
+  /// **'Delayed'**
+  String get doctorMilestonesDelayed;
+
+  /// No description provided for @childSummaryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Child Summary'**
+  String get childSummaryTitle;
+
+  /// No description provided for @childSummaryNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Child not found'**
+  String get childSummaryNotFound;
+
+  /// No description provided for @childSummaryPlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'Child summary will appear here later.'**
+  String get childSummaryPlaceholder;
+
+  /// No description provided for @childSummaryDefaultName.
+  ///
+  /// In en, this message translates to:
+  /// **'Child'**
+  String get childSummaryDefaultName;
+
+  /// No description provided for @aiSkinHistoryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'AI Skin Analysis History'**
+  String get aiSkinHistoryTitle;
+
+  /// No description provided for @aiSkinHistoryParentNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Parent not found for this child.'**
+  String get aiSkinHistoryParentNotFound;
+
+  /// No description provided for @aiSkinHistoryNoHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'No AI skin analysis history yet.'**
+  String get aiSkinHistoryNoHistory;
+
+  /// No description provided for @aiSkinHistoryUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown'**
+  String get aiSkinHistoryUnknown;
+
+  /// No description provided for @aiSkinHistoryUnknownDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown date'**
+  String get aiSkinHistoryUnknownDate;
+
+  /// No description provided for @medicalReportsInvalidUrl.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid file URL.'**
+  String get medicalReportsInvalidUrl;
+
+  /// No description provided for @medicalReportsOpenFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t open the file.'**
+  String get medicalReportsOpenFailed;
+
+  /// No description provided for @medicalReportsNoConditions.
+  ///
+  /// In en, this message translates to:
+  /// **'No medical conditions recorded yet.'**
+  String get medicalReportsNoConditions;
+
+  /// No description provided for @medicalReportsPreviousReports.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous Reports'**
+  String get medicalReportsPreviousReports;
+
+  /// No description provided for @medicalReportsNoReports.
+  ///
+  /// In en, this message translates to:
+  /// **'No reports uploaded yet.'**
+  String get medicalReportsNoReports;
+
+  /// No description provided for @medicalReportsReport.
+  ///
+  /// In en, this message translates to:
+  /// **'Report'**
+  String get medicalReportsReport;
+
+  /// No description provided for @medicalReportsNoExtractedText.
+  ///
+  /// In en, this message translates to:
+  /// **'No extracted text available for this condition yet.'**
+  String get medicalReportsNoExtractedText;
+
+  /// No description provided for @doctorOcrDigitizeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Digitize Medical Reports'**
+  String get doctorOcrDigitizeTitle;
+
+  /// No description provided for @doctorOcrDigitizeSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload PDF or images and convert them using OCR.'**
+  String get doctorOcrDigitizeSubtitle;
+
+  /// No description provided for @doctorOcrUploading.
+  ///
+  /// In en, this message translates to:
+  /// **'Uploading...'**
+  String get doctorOcrUploading;
+
+  /// No description provided for @doctorOcrUploadReport.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload Report'**
+  String get doctorOcrUploadReport;
+
+  /// No description provided for @doctorOcrUnsupportedFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Unsupported file type.'**
+  String get doctorOcrUnsupportedFile;
+
+  /// No description provided for @doctorOcrFailedButSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'OCR failed (upload saved).'**
+  String get doctorOcrFailedButSaved;
+
+  /// No description provided for @doctorOcrUploadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload failed. Check permissions.'**
+  String get doctorOcrUploadFailed;
 }
 
 class _AppLocalizationsDelegate

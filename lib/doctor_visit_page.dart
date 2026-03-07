@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:rafiq_gp/l10n/app_localizations.dart';
 
 import 'doctor_ocr_reports_page.dart';
 import 'vaccinations_page.dart';
@@ -21,6 +22,7 @@ class DoctorVisitPage extends StatefulWidget {
 }
 
 class _DoctorVisitPageState extends State<DoctorVisitPage> {
+  AppLocalizations get l10n => AppLocalizations.of(context)!;
   Map<String, dynamic>? _child;
   bool _loading = true;
 
@@ -53,6 +55,17 @@ class _DoctorVisitPageState extends State<DoctorVisitPage> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _childName = _childName.isEmpty ? l10n.childSummaryDefaultName : _childName;
+    if (_birthDate != null) {
+      _childAge = _calculateAgePretty(_birthDate!);
+    } else if (_childAge.isEmpty || _childAge == "Unknown") {
+      _childAge = l10n.aiSkinHistoryUnknown;
+    }
+  }
+
+  @override
   void dispose() {
     _heightCtrl.dispose();
     _weightCtrl.dispose();
@@ -78,7 +91,10 @@ class _DoctorVisitPageState extends State<DoctorVisitPage> {
         if (childDoc.exists) {
           final data = childDoc.data() as Map<String, dynamic>;
 
-          final name = (data['name'] ?? data['childName'] ?? "Child").toString();
+          final name = (data['name'] ??
+                  data['childName'] ??
+                  l10n.childSummaryDefaultName)
+              .toString();
           final img = (data['imageUrl'] ?? data['photoUrl'] ?? "").toString();
           final imageUrl = img.isNotEmpty ? img : null;
 
@@ -90,8 +106,9 @@ class _DoctorVisitPageState extends State<DoctorVisitPage> {
             birthDate = DateTime.tryParse(bd);
           }
 
-          final ageText =
-          birthDate != null ? _calculateAgePretty(birthDate) : "Unknown";
+          final ageText = birthDate != null
+              ? _calculateAgePretty(birthDate)
+              : l10n.aiSkinHistoryUnknown;
 
           final g = (data['gender'] ??
               data['sex'] ??
@@ -138,14 +155,35 @@ class _DoctorVisitPageState extends State<DoctorVisitPage> {
       months += 12;
     }
 
-    if (years <= 0) return "$months months";
-    if (months == 0) return "$years years";
-    return "$years years, $months months";
+    if (years <= 0) return l10n.ageMonths(months);
+    if (months == 0) return l10n.ageYears(years);
+    return l10n.ageYearsMonths(years, months);
   }
 
   // ----------------------------
   // Save measurement (height+weight + ageMonths auto)
   // ----------------------------
+  void _showSnackBar(String message, {bool isError = false}) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          message,
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        backgroundColor: isError ? Colors.redAccent : const Color(0xFF9D5C7D),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
   Future<void> _saveMeasurement() async {
     final hTxt = _heightCtrl.text.trim();
     final wTxt = _weightCtrl.text.trim();
@@ -154,16 +192,12 @@ class _DoctorVisitPageState extends State<DoctorVisitPage> {
     final weight = double.tryParse(wTxt);
 
     if (height == null || weight == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Enter valid height & weight.")),
-      );
+      _showSnackBar(l10n.doctorVisitEnterValidHeightWeight, isError: true);
       return;
     }
 
     if (_birthDate == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Birth date not available.")),
-      );
+      _showSnackBar(l10n.doctorVisitBirthDateNotAvailable, isError: true);
       return;
     }
 
@@ -196,15 +230,11 @@ class _DoctorVisitPageState extends State<DoctorVisitPage> {
       _weightCtrl.clear();
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Saved ✅")),
-        );
+        _showSnackBar(l10n.doctorVisitSaved);
       }
     } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Failed to save measurement.")),
-        );
+        _showSnackBar(l10n.doctorVisitSaveFailed, isError: true);
       }
     } finally {
       if (mounted) setState(() => _savingMeasure = false);
@@ -345,25 +375,24 @@ class _DoctorVisitPageState extends State<DoctorVisitPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            children: const [
+            children: [
               Text(
-                "Growth Chart",
-                style: TextStyle(
+                l10n.childDashboardGrowthChartTitle,
+                style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
                   color: Colors.black,
                   fontFamily: 'Inter',
                 ),
               ),
-              Spacer(),
-
+              const Spacer(),
             ],
           ),
           const SizedBox(height: 14),
 
           // ✅ تشارت الطول
           _singleChartBlock(
-            title: "Height (cm)",
+            title: l10n.childDashboardGrowthChartHeight,
             isHeight: true,
           ),
 
@@ -371,7 +400,7 @@ class _DoctorVisitPageState extends State<DoctorVisitPage> {
 
           // ✅ تشارت الوزن
           _singleChartBlock(
-            title: "Weight (kg)",
+            title: l10n.childDashboardGrowthChartWeight,
             isHeight: false,
           ),
         ],
@@ -546,10 +575,14 @@ class _DoctorVisitPageState extends State<DoctorVisitPage> {
         const SizedBox(height: 10),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: const [
-            _LegendDot(color: Color(0xFF9D5C7D), label: "Normal Growth"),
-            SizedBox(width: 26),
-            _LegendDot(color: Color(0xFFC9A2B8), label: "Child Growth"),
+          children: [
+            _LegendDot(
+                color: const Color(0xFF9D5C7D),
+                label: l10n.childDashboardGrowthChartNormal),
+            const SizedBox(width: 26),
+            _LegendDot(
+                color: const Color(0xFFC9A2B8),
+                label: l10n.childDashboardGrowthChartChild),
           ],
         ),
       ],
@@ -559,7 +592,7 @@ class _DoctorVisitPageState extends State<DoctorVisitPage> {
   Widget _latestMeasurementsCard() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8),
@@ -575,9 +608,9 @@ class _DoctorVisitPageState extends State<DoctorVisitPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            "Latest Measurements",
-            style: TextStyle(
+          Text(
+            l10n.doctorVisitLatestMeasurements,
+            style: const TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w700,
               fontFamily: 'Inter',
@@ -590,9 +623,9 @@ class _DoctorVisitPageState extends State<DoctorVisitPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      "Height (cm)",
-                      style: TextStyle(
+                    Text(
+                      l10n.childDashboardGrowthChartHeight,
+                      style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
                         fontFamily: 'Inter',
@@ -603,7 +636,7 @@ class _DoctorVisitPageState extends State<DoctorVisitPage> {
                       controller: _heightCtrl,
                       keyboardType: TextInputType.number,
                       decoration: InputDecoration(
-                        hintText: "Enter height",
+                        hintText: l10n.doctorVisitEnterHeight,
                         hintStyle: const TextStyle(fontFamily: 'Inter'),
                         contentPadding: const EdgeInsets.symmetric(
                             horizontal: 14, vertical: 12),
@@ -629,9 +662,9 @@ class _DoctorVisitPageState extends State<DoctorVisitPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      "Weight (kg)",
-                      style: TextStyle(
+                    Text(
+                      l10n.childDashboardGrowthChartWeight,
+                      style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
                         fontFamily: 'Inter',
@@ -642,7 +675,7 @@ class _DoctorVisitPageState extends State<DoctorVisitPage> {
                       controller: _weightCtrl,
                       keyboardType: TextInputType.number,
                       decoration: InputDecoration(
-                        hintText: "Enter weight",
+                        hintText: l10n.doctorVisitEnterWeight,
                         hintStyle: const TextStyle(fontFamily: 'Inter'),
                         contentPadding: const EdgeInsets.symmetric(
                             horizontal: 14, vertical: 12),
@@ -671,7 +704,9 @@ class _DoctorVisitPageState extends State<DoctorVisitPage> {
             child: ElevatedButton.icon(
               onPressed: _savingMeasure ? null : _saveMeasurement,
               icon: const Icon(Icons.check_rounded),
-              label: Text(_savingMeasure ? "Saving..." : "Confirm"),
+              label: Text(_savingMeasure
+                  ? l10n.doctorVisitSaving
+                  : l10n.doctorVisitConfirm),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF9D5C7D),
                 foregroundColor: Colors.white,
@@ -706,11 +741,12 @@ class _DoctorVisitPageState extends State<DoctorVisitPage> {
         child: AppBar(
           backgroundColor: Colors.white,
           elevation: 0,
-          surfaceTintColor: Colors.white,
+          surfaceTintColor: Colors.transparent,
+          scrolledUnderElevation: 0,
           centerTitle: true,
-          title: const Text(
-            "Patient Details",
-            style: TextStyle(
+          title: Text(
+            l10n.doctorVisitPatientDetails,
+            style: const TextStyle(
               fontFamily: 'Inter',
               fontWeight: FontWeight.w600,
               fontSize: 20,
@@ -725,7 +761,6 @@ class _DoctorVisitPageState extends State<DoctorVisitPage> {
             ),
             onPressed: () => Navigator.pop(context),
           ),
-          actions: const [SizedBox(width: 18)],
           bottom: PreferredSize(
             preferredSize: const Size.fromHeight(1),
             child: Container(height: 1, color: Color(0xFFE0E0E0)),
@@ -741,11 +776,11 @@ class _DoctorVisitPageState extends State<DoctorVisitPage> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text("Child not found",
-                style: TextStyle(fontFamily: 'Inter')),
+            Text(l10n.doctorVisitChildNotFound,
+                style: const TextStyle(fontFamily: 'Inter')),
             const SizedBox(height: 10),
             Text(
-              "Child ID: ${widget.childId}",
+              l10n.doctorVisitChildId(widget.childId),
               style: const TextStyle(
                 fontFamily: 'Inter',
                 fontSize: 12,
@@ -761,17 +796,17 @@ class _DoctorVisitPageState extends State<DoctorVisitPage> {
         child: Column(
           children: [
             _patientSummaryCard(),
-            const SizedBox(height: 35),
+            const SizedBox(height: 24),
 
             // ✅ Growth Charts (height + weight) تحت بعض
             _growthChartsCard(),
 
-            const SizedBox(height: 14),
+            const SizedBox(height: 24),
 
             // ✅ Latest Measurements تحتهم
             _latestMeasurementsCard(),
 
-            const SizedBox(height: 40),
+            const SizedBox(height: 24),
 
             GridView.count(
               shrinkWrap: true,
@@ -783,20 +818,16 @@ class _DoctorVisitPageState extends State<DoctorVisitPage> {
               children: [
                 _DashboardCard(
                   iconPath: 'lib/icons/signpost.svg',
-                  title: "Milestones",
-                  subtitle: "Track development progress",
+                  title: l10n.doctorVisitMilestonesTitle,
+                  subtitle: l10n.doctorVisitMilestonesSubtitle,
                   iconSize: iconSize,
                   padding: cardPadding,
                   fontSizeTitle: fontSizeTitle,
                   fontSizeSubtitle: fontSizeSubtitle,
                   onTap: () {
                     if (_parentId == null || _birthDate == null) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                              "Milestones data not available yet."),
-                        ),
-                      );
+                      _showSnackBar(l10n.doctorVisitMilestonesNotAvailable,
+                          isError: true);
                       return;
                     }
                     Navigator.push(
@@ -814,8 +845,8 @@ class _DoctorVisitPageState extends State<DoctorVisitPage> {
                 ),
                 _DashboardCard(
                   iconPath: 'lib/icons/scan.svg',
-                  title: "AI Skin Analysis History",
-                  subtitle: "View previous AI results",
+                  title: l10n.doctorVisitAiSkinHistoryTitle,
+                  subtitle: l10n.doctorVisitAiSkinHistorySubtitle,
                   iconSize: iconSize,
                   padding: cardPadding,
                   fontSizeTitle: fontSizeTitle,
@@ -835,8 +866,8 @@ class _DoctorVisitPageState extends State<DoctorVisitPage> {
                 ),
                 _DashboardCard(
                   iconPath: 'lib/icons/stethoscope.svg',
-                  title: "Medical Conditions",
-                  subtitle: "Scan & extract conditions",
+                  title: l10n.doctorVisitMedicalConditionsTitle,
+                  subtitle: l10n.doctorVisitMedicalConditionsSubtitle,
                   iconSize: iconSize,
                   padding: cardPadding,
                   fontSizeTitle: fontSizeTitle,
@@ -853,8 +884,8 @@ class _DoctorVisitPageState extends State<DoctorVisitPage> {
                 ),
                 _DashboardCard(
                   iconPath: 'lib/icons/syringe.png',
-                  title: "Vaccinations",
-                  subtitle: "Review & confirm",
+                  title: l10n.vaccinationsTitle,
+                  subtitle: l10n.doctorVisitVaccinationsSubtitle,
                   iconSize: iconSize,
                   padding: cardPadding,
                   fontSizeTitle: fontSizeTitle,
@@ -878,7 +909,7 @@ class _DoctorVisitPageState extends State<DoctorVisitPage> {
               ],
             ),
 
-            const SizedBox(height: 22),
+            const SizedBox(height: 24),
 
             SizedBox(
               width: double.infinity,
@@ -891,9 +922,9 @@ class _DoctorVisitPageState extends State<DoctorVisitPage> {
                   ),
                   padding: const EdgeInsets.symmetric(vertical: 14),
                 ),
-                child: const Text(
-                  "Finish Visit",
-                  style: TextStyle(
+                child: Text(
+                  l10n.doctorVisitFinishVisit,
+                  style: const TextStyle(
                     fontFamily: 'Inter',
                     fontWeight: FontWeight.w600,
                   ),
