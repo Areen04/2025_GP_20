@@ -706,7 +706,7 @@ class _ChildDashboardState extends State<ChildDashboard> {
                     LineChartBarData(
                       spots: baseline,
                       isCurved: true,
-                      color: const Color(0xFF9D5C7D),
+                      color: const Color(0xFF3B82F6),
                       barWidth: 3,
                       dotData: FlDotData(show: false),
                     ),
@@ -731,7 +731,7 @@ class _ChildDashboardState extends State<ChildDashboard> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             _LegendDot(
-                color: const Color(0xFF9D5C7D),
+                color: const Color(0xFF3B82F6),
                 label: l10n.childDashboardGrowthChartNormal),
             const SizedBox(width: 26),
             _LegendDot(
