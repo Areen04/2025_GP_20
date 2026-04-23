@@ -92,11 +92,20 @@
   "addChildTitle": "إضافة طفل",
   "chooseFromGallery": "اختيار من المعرض",
   "takePhoto": "التقاط صورة",
-  "childFullNameLabel": "اسم الطفل الكامل",
+  "childFullNameLabel": "اسم الطفل",
   "dateOfBirthLabel": "تاريخ الميلاد",
+  "gregorianCalendarLabel": "ميلادي",
+  "hijriCalendarLabel": "هجري",
+  "selectDateOfBirthHint": "اختر تاريخ الميلاد",
   "dayLabel": "اليوم",
   "monthLabel": "الشهر",
   "yearLabel": "السنة",
+  "hijriApprox": "هجري (تقريبي): {date}",
+  "@hijriApprox": {
+    "placeholders": {
+      "date": {}
+    }
+  },
   "genderLabel": "الجنس",
   "selectGenderHint": "اختر الجنس",
   "maleLabel": "ذكر",
@@ -104,9 +113,10 @@
   "addChildButton": "إضافة طفل",
   "fillAllRequiredFields": "يرجى تعبئة جميع الحقول المطلوبة.",
   "dobFutureError": "لا يمكن أن يكون تاريخ الميلاد في المستقبل.",
+  "childMustBeUnderSixError": "يجب أن يكون عمر الطفل أقل من 6 سنوات.",
   "editChildTitle": "تعديل بيانات الطفل",
   "uploadPhoto": "رفع صورة",
-  "enterChildFullNameHint": "أدخل اسم الطفل الكامل",
+  "enterChildFullNameHint": "أدخل اسم الطفل",
   "helloDoctor": "مرحبًا، د. {name}",
   "doctorLabel": "طبيب",
   "doctorGreeting": "أدر وقت الزيارة بكفاءة من خلال مراجعة معلومات صحة مرضاك.",

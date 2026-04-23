@@ -376,7 +376,7 @@ class _DoctorVisitPageState extends State<DoctorVisitPage> {
         children: [
           Row(
             children: [
-              Text(
+             Text(
                 l10n.childDashboardGrowthChartTitle,
                 style: const TextStyle(
                   fontSize: 18,

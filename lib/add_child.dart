@@ -7,6 +7,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'parent_dashboard.dart';
 import 'package:rafiq_gp/l10n/app_localizations.dart';
 
+enum _DobCalendarMode { gregorian, hijriApprox }
+
 class AddChild extends StatefulWidget {
   const AddChild({super.key});
 
@@ -21,38 +23,23 @@ class _AddChildState extends State<AddChild> {
   final _nameController = TextEditingController();
 
   final _nameFocus = FocusNode();
-  final _dayFocus = FocusNode();
-  final _monthFocus = FocusNode();
-  final _yearFocus = FocusNode();
+  final _dobFocus = FocusNode();
   final _genderFocus = FocusNode(); // optional
 
-  bool _dayTouched = false;
-  bool _monthTouched = false;
-  bool _yearTouched = false;
+  bool _dobTouched = false;
   bool _genderTouched = false;
 
-  String? _selectedDay;
-  String? _selectedMonth;
-  String? _selectedYear;
   String? _selectedGender;
+  DateTime? _selectedDob;
 
-  final bool _isLoading = false;
   bool _hasInteracted = false;
-  bool _isNameValid = false;
   bool _isSaving = false;
 
   bool _isValidDate() {
-    if (_selectedYear == null ||
-        _selectedMonth == null ||
-        _selectedDay == null) {
+    if (_selectedDob == null) {
       return true;
     }
-
-    final selected = DateTime(
-      int.parse(_selectedYear!),
-      int.parse(_selectedMonth!),
-      int.parse(_selectedDay!),
-    );
+    final selected = _selectedDob!;
 
     final today = DateTime.now();
 
@@ -99,6 +86,703 @@ class _AddChildState extends State<AddChild> {
     // Selected: purple when focused, grey otherwise (same feel as text fields)
     if (focusNode.hasFocus) return const Color(0xFF9D5C7D);
     return Colors.grey;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Date Picker (Gregorian) with Hijri (approx.) display
+  // NOTE: This uses a tabular/civil Hijri conversion to assist parents.
+  // If you later add an Umm Al-Qura library, you can swap _gregorianToHijri().
+  // ---------------------------------------------------------------------------
+  String _two(int n) => n.toString().padLeft(2, '0');
+
+  ({int year, int month, int day}) _gregorianToHijri(DateTime date) {
+    // Tabular Islamic calendar conversion (approx.)
+    // Based on Julian Day conversion; may differ from Umm Al-Qura by 1–2 days.
+    final y = date.year;
+    final m = date.month;
+    final d = date.day;
+
+    int a = ((14 - m) / 12).floor();
+    int y2 = y + 4800 - a;
+    int m2 = m + 12 * a - 3;
+
+    int jd = d +
+        ((153 * m2 + 2) / 5).floor() +
+        365 * y2 +
+        (y2 / 4).floor() -
+        (y2 / 100).floor() +
+        (y2 / 400).floor() -
+        32045;
+
+    // Islamic (civil/tabular)
+    int l = jd - 1948440 + 10632;
+    int n = ((l - 1) / 10631).floor();
+    l = l - 10631 * n + 354;
+    int j = (((10985 - l) / 5316).floor()) *
+            (((50 * l) / 17719).floor()) +
+        ((l / 5670).floor()) * (((43 * l) / 15238).floor());
+    l = l -
+        (((30 - j) / 15).floor()) * (((17719 * j) / 50).floor()) -
+        ((j / 16).floor()) * (((15238 * j) / 43).floor()) +
+        29;
+    int mm = ((24 * l) / 709).floor();
+    int dd = l - ((709 * mm) / 24).floor();
+    int yy = 30 * n + j - 30;
+
+    return (year: yy, month: mm, day: dd);
+  }
+
+  bool _isHijriLeapYear(int year) => ((11 * year + 14) % 30) < 11;
+
+  int _hijriMonthLength(int year, int month) {
+    if (month == 12) return _isHijriLeapYear(year) ? 30 : 29;
+    return month.isOdd ? 30 : 29;
+  }
+
+  DateTime _hijriToGregorian(int year, int month, int day) {
+    // Civil/tabular Hijri -> Gregorian conversion (approx.)
+    // Uses Julian Day conversions and may differ from Umm Al-Qura by 1–2 days.
+    final m = month;
+    final y = year;
+    final d = day;
+
+    final jd = d +
+        (((29.5 * (m - 1)).ceil())) +
+        (y - 1) * 354 +
+        ((3 + 11 * y) / 30).floor() +
+        1948440 -
+        1;
+
+    int l = jd + 68569;
+    int n = (4 * l / 146097).floor();
+    l = l - ((146097 * n + 3) / 4).floor();
+    int i = (4000 * (l + 1) / 1461001).floor();
+    l = l - ((1461 * i) / 4).floor() + 31;
+    int j = (80 * l / 2447).floor();
+    final dayG = l - ((2447 * j) / 80).floor();
+    l = (j / 11).floor();
+    final monthG = j + 2 - 12 * l;
+    final yearG = 100 * (n - 49) + i + l;
+
+    return DateTime(yearG, monthG, dayG);
+  }
+
+  String _formatDob(DateTime d) => "${d.year}-${_two(d.month)}-${_two(d.day)}";
+
+  Future<void> _pickDob() async {
+    final l10n = AppLocalizations.of(context);
+    final ml10n = MaterialLocalizations.of(context);
+    final now = DateTime.now();
+    final minDob = DateTime(now.year - 6, now.month, now.day)
+        .add(const Duration(days: 1)); // strict: must be < 6 years
+    final maxDob = DateTime(now.year, now.month, now.day);
+
+    DateTime tempSelected = _selectedDob ?? maxDob;
+    if (tempSelected.isBefore(minDob)) tempSelected = minDob;
+    if (tempSelected.isAfter(maxDob)) tempSelected = maxDob;
+
+    final picked = await showDialog<DateTime>(
+      context: context,
+      barrierDismissible: true,
+      builder: (ctx) {
+        DateTime localSelected = tempSelected;
+        _DobCalendarMode mode = _DobCalendarMode.gregorian;
+        int gYear = localSelected.year;
+        int gMonth = localSelected.month;
+        var hijri = _gregorianToHijri(localSelected);
+        int hijriYear = hijri.year;
+        int hijriMonth = hijri.month;
+
+        bool gMonthIntersectsRange(int y, int m) {
+          final start = DateTime(y, m, 1);
+          final end = DateTime(y, m + 1, 0);
+          return !end.isBefore(minDob) && !start.isAfter(maxDob);
+        }
+
+        void prevGMonth() {
+          int y = gYear;
+          int m = gMonth - 1;
+          if (m < 1) {
+            y--;
+            m = 12;
+          }
+          if (gMonthIntersectsRange(y, m)) {
+            gYear = y;
+            gMonth = m;
+          }
+        }
+
+        void nextGMonth() {
+          int y = gYear;
+          int m = gMonth + 1;
+          if (m > 12) {
+            y++;
+            m = 1;
+          }
+          if (gMonthIntersectsRange(y, m)) {
+            gYear = y;
+            gMonth = m;
+          }
+        }
+
+        bool monthIntersectsRange(int y, int m) {
+          final start = _hijriToGregorian(y, m, 1);
+          final end = _hijriToGregorian(y, m, _hijriMonthLength(y, m));
+          return !end.isBefore(minDob) && !start.isAfter(maxDob);
+        }
+
+        void prevHijriMonth() {
+          int y = hijriYear;
+          int m = hijriMonth - 1;
+          if (m < 1) {
+            y--;
+            m = 12;
+          }
+          if (monthIntersectsRange(y, m)) {
+            hijriYear = y;
+            hijriMonth = m;
+          }
+        }
+
+        void nextHijriMonth() {
+          int y = hijriYear;
+          int m = hijriMonth + 1;
+          if (m > 12) {
+            y++;
+            m = 1;
+          }
+          if (monthIntersectsRange(y, m)) {
+            hijriYear = y;
+            hijriMonth = m;
+          }
+        }
+
+        return StatefulBuilder(
+          builder: (ctx, setLocal) {
+            final firstDayOfWeekIndex = ml10n.firstDayOfWeekIndex;
+            final weekdayLabels = ml10n.narrowWeekdays;
+
+            Future<int?> pickYearDialog({
+              required String title,
+              required int initialYear,
+              required int minYear,
+              required int maxYear,
+            }) async {
+              final picked = await showDialog<int>(
+                context: ctx,
+                builder: (dctx) {
+                  return AlertDialog(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    title: Text(
+                      title,
+                      style: const TextStyle(
+                        fontFamily: 'Inter',
+                        fontWeight: FontWeight.w700,
+                        fontSize: 16,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    content: SizedBox(
+                      width: double.maxFinite,
+                      height: 360,
+                      child: ListView.builder(
+                        itemCount: (maxYear - minYear + 1),
+                        itemBuilder: (context, index) {
+                          final year = minYear + index;
+                          final selected = year == initialYear;
+                          return ListTile(
+                            title: Text(
+                              year.toString(),
+                              style: TextStyle(
+                                fontWeight: selected
+                                    ? FontWeight.w700
+                                    : FontWeight.w500,
+                                color: selected
+                                    ? const Color(0xFF9D5C7D)
+                                    : Colors.black87,
+                              ),
+                            ),
+                            onTap: () => Navigator.pop(dctx, year),
+                          );
+                        },
+                      ),
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(dctx),
+                        child: Text(ml10n.cancelButtonLabel),
+                      ),
+                    ],
+                  );
+                },
+              );
+              return picked;
+            }
+
+            List<String> orderedWeekdays() {
+              final labels = <String>[];
+              for (int i = 0; i < 7; i++) {
+                labels.add(weekdayLabels[(firstDayOfWeekIndex + i) % 7]);
+              }
+              return labels;
+            }
+
+            Widget gregorianCalendar() {
+              final daysInMonth = DateTime(gYear, gMonth + 1, 0).day;
+              final gFirst = DateTime(gYear, gMonth, 1);
+              final weekdayIndex = gFirst.weekday % 7; // Sunday=0 ... Saturday=6
+              final leadingEmpty =
+                  (weekdayIndex - firstDayOfWeekIndex + 7) % 7;
+              final totalCells =
+                  (((leadingEmpty + daysInMonth) + 6) / 7).floor() * 7;
+
+              bool isSameDay(DateTime a, DateTime b) =>
+                  a.year == b.year && a.month == b.month && a.day == b.day;
+
+              final canPrev = () {
+                int y = gYear;
+                int m = gMonth - 1;
+                if (m < 1) {
+                  y--;
+                  m = 12;
+                }
+                return gMonthIntersectsRange(y, m);
+              }();
+
+              final canNext = () {
+                int y = gYear;
+                int m = gMonth + 1;
+                if (m > 12) {
+                  y++;
+                  m = 1;
+                }
+                return gMonthIntersectsRange(y, m);
+              }();
+
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    children: [
+                      IconButton(
+                        onPressed:
+                            canPrev ? () => setLocal(() => prevGMonth()) : null,
+                        icon: const Icon(Icons.chevron_left),
+                      ),
+                      Expanded(
+                        child: Center(
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(8),
+                            onTap: () async {
+                              final pickedYear = await pickYearDialog(
+                                title: l10n.gregorianCalendarLabel,
+                                initialYear: gYear,
+                                minYear: minDob.year,
+                                maxYear: maxDob.year,
+                              );
+                              if (pickedYear == null) return;
+                              setLocal(() {
+                                gYear = pickedYear;
+                                if (!gMonthIntersectsRange(gYear, gMonth)) {
+                                  // Snap month into an intersecting month.
+                                  for (int m = 1; m <= 12; m++) {
+                                    if (gMonthIntersectsRange(gYear, m)) {
+                                      gMonth = m;
+                                      break;
+                                    }
+                                  }
+                                }
+                              });
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  vertical: 6, horizontal: 10),
+                              child: Text(
+                                "$gYear-${_two(gMonth)}",
+                                style: const TextStyle(
+                                  fontFamily: 'Inter',
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 14,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        onPressed:
+                            canNext ? () => setLocal(() => nextGMonth()) : null,
+                        icon: const Icon(Icons.chevron_right),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Row(
+                    children: [
+                      for (final label in orderedWeekdays())
+                        Expanded(
+                          child: Center(
+                            child: Text(
+                              label,
+                              style: const TextStyle(
+                                fontSize: 11,
+                                color: Color(0xFF6F6F6F),
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 7,
+                      mainAxisSpacing: 2,
+                      crossAxisSpacing: 2,
+                      childAspectRatio: 1.1,
+                    ),
+                    itemCount: totalCells,
+                    itemBuilder: (context, index) {
+                      final dayNum = index - leadingEmpty + 1;
+                      if (dayNum < 1 || dayNum > daysInMonth) {
+                        return const SizedBox.shrink();
+                      }
+
+                      final gDate = DateTime(gYear, gMonth, dayNum);
+                      final enabled =
+                          !(gDate.isBefore(minDob) || gDate.isAfter(maxDob));
+                      final selected = isSameDay(gDate, localSelected);
+
+                      final fg = !enabled
+                          ? Colors.black26
+                          : selected
+                              ? Colors.white
+                              : Colors.black87;
+
+                      return InkWell(
+                        borderRadius: BorderRadius.circular(24),
+                        onTap: enabled
+                            ? () => setLocal(() => localSelected = gDate)
+                            : null,
+                        child: Center(
+                          child: Container(
+                            width: 34,
+                            height: 34,
+                            decoration: BoxDecoration(
+                              color: selected
+                                  ? const Color(0xFF9D5C7D)
+                                  : Colors.transparent,
+                              shape: BoxShape.circle,
+                            ),
+                            alignment: Alignment.center,
+                            child: Text(
+                              dayNum.toString(),
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight:
+                                    selected ? FontWeight.w700 : FontWeight.w500,
+                                color: fg,
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              );
+            }
+
+            Widget hijriCalendar() {
+              final daysInMonth = _hijriMonthLength(hijriYear, hijriMonth);
+              final gFirst = _hijriToGregorian(hijriYear, hijriMonth, 1);
+              final weekdayIndex = gFirst.weekday % 7; // Sunday=0 ... Saturday=6
+              final leadingEmpty =
+                  (weekdayIndex - firstDayOfWeekIndex + 7) % 7;
+              final totalCells =
+                  (((leadingEmpty + daysInMonth) + 6) / 7).floor() * 7;
+
+              bool isSameDay(DateTime a, DateTime b) =>
+                  a.year == b.year && a.month == b.month && a.day == b.day;
+
+              final canPrev = () {
+                int y = hijriYear;
+                int m = hijriMonth - 1;
+                if (m < 1) {
+                  y--;
+                  m = 12;
+                }
+                return monthIntersectsRange(y, m);
+              }();
+
+              final canNext = () {
+                int y = hijriYear;
+                int m = hijriMonth + 1;
+                if (m > 12) {
+                  y++;
+                  m = 1;
+                }
+                return monthIntersectsRange(y, m);
+              }();
+
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    children: [
+                      IconButton(
+                        onPressed: canPrev
+                            ? () => setLocal(() => prevHijriMonth())
+                            : null,
+                        icon: const Icon(Icons.chevron_left),
+                      ),
+                      Expanded(
+                        child: Center(
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(8),
+                            onTap: () async {
+                              final minH = _gregorianToHijri(minDob).year;
+                              final maxH = _gregorianToHijri(maxDob).year;
+                              final pickedYear = await pickYearDialog(
+                                title: l10n.hijriCalendarLabel,
+                                initialYear: hijriYear,
+                                minYear: minH,
+                                maxYear: maxH,
+                              );
+                              if (pickedYear == null) return;
+                              setLocal(() {
+                                hijriYear = pickedYear;
+                                if (!monthIntersectsRange(hijriYear, hijriMonth)) {
+                                  for (int m = 1; m <= 12; m++) {
+                                    if (monthIntersectsRange(hijriYear, m)) {
+                                      hijriMonth = m;
+                                      break;
+                                    }
+                                  }
+                                }
+                              });
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  vertical: 6, horizontal: 10),
+                              child: Text(
+                                "$hijriYear-${_two(hijriMonth)}",
+                                style: const TextStyle(
+                                  fontFamily: 'Inter',
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 14,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: canNext
+                            ? () => setLocal(() => nextHijriMonth())
+                            : null,
+                        icon: const Icon(Icons.chevron_right),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Row(
+                    children: [
+                      for (final label in orderedWeekdays())
+                        Expanded(
+                          child: Center(
+                            child: Text(
+                              label,
+                              style: const TextStyle(
+                                fontSize: 11,
+                                color: Color(0xFF6F6F6F),
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 7,
+                      mainAxisSpacing: 2,
+                      crossAxisSpacing: 2,
+                      childAspectRatio: 1.1,
+                    ),
+                    itemCount: totalCells,
+                    itemBuilder: (context, index) {
+                      final dayNum = index - leadingEmpty + 1;
+                      if (dayNum < 1 || dayNum > daysInMonth) {
+                        return const SizedBox.shrink();
+                      }
+
+                      final gDate =
+                          _hijriToGregorian(hijriYear, hijriMonth, dayNum);
+                      final enabled =
+                          !(gDate.isBefore(minDob) || gDate.isAfter(maxDob));
+                      final selected = isSameDay(gDate, localSelected);
+
+                      final fg = !enabled
+                          ? Colors.black26
+                          : selected
+                              ? Colors.white
+                              : Colors.black87;
+
+                      return InkWell(
+                        borderRadius: BorderRadius.circular(24),
+                        onTap: enabled
+                            ? () => setLocal(() => localSelected = gDate)
+                            : null,
+                        child: Center(
+                          child: Container(
+                            width: 34,
+                            height: 34,
+                            decoration: BoxDecoration(
+                              color: selected
+                                  ? const Color(0xFF9D5C7D)
+                                  : Colors.transparent,
+                              shape: BoxShape.circle,
+                            ),
+                            alignment: Alignment.center,
+                            child: Text(
+                              dayNum.toString(),
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight:
+                                    selected ? FontWeight.w700 : FontWeight.w500,
+                                color: fg,
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              );
+            }
+
+            return AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              scrollable: true,
+              title: Text(
+                l10n.dateOfBirthLabel,
+                style: const TextStyle(
+                  fontFamily: 'Inter',
+                  fontWeight: FontWeight.w700,
+                  fontSize: 16,
+                  color: Colors.black87,
+                ),
+              ),
+              content: SizedBox(
+                width: double.maxFinite,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () {
+                              setLocal(() {
+                                mode = _DobCalendarMode.gregorian;
+                                gYear = localSelected.year;
+                                gMonth = localSelected.month;
+                              });
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: mode == _DobCalendarMode.gregorian
+                                  ? const Color(0xFF9D5C7D)
+                                  : const Color(0xFFE8E6E7),
+                              foregroundColor: mode == _DobCalendarMode.gregorian
+                                  ? Colors.white
+                                  : Colors.black87,
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                            child: Text(l10n.gregorianCalendarLabel),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () {
+                              setLocal(() {
+                                mode = _DobCalendarMode.hijriApprox;
+                                final h = _gregorianToHijri(localSelected);
+                                hijriYear = h.year;
+                                hijriMonth = h.month;
+                              });
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: mode == _DobCalendarMode.hijriApprox
+                                  ? const Color(0xFF9D5C7D)
+                                  : const Color(0xFFE8E6E7),
+                              foregroundColor: mode == _DobCalendarMode.hijriApprox
+                                  ? Colors.white
+                                  : Colors.black87,
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                            child: Text(l10n.hijriCalendarLabel),
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(
+                      height: 360,
+                      child: mode == _DobCalendarMode.gregorian
+                          ? gregorianCalendar()
+                          : hijriCalendar(),
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  child: Text(ml10n.cancelButtonLabel),
+                ),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF9D5C7D),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  onPressed: () => Navigator.pop(ctx, localSelected),
+                  child: Text(ml10n.okButtonLabel),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+
+    if (picked == null) return;
+    setState(() {
+      _dobTouched = true;
+      _selectedDob = picked;
+    });
   }
 
   // ---------------  Bottom Sheet to choose image source ---------------
@@ -166,11 +850,7 @@ class _AddChildState extends State<AddChild> {
       return; // ← IMPORTANT to stop adding
     }
 
-    if (name.isEmpty ||
-        _selectedDay == null ||
-        _selectedMonth == null ||
-        _selectedYear == null ||
-        _selectedGender == null) {
+    if (name.isEmpty || _selectedDob == null || _selectedGender == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(l10n.fillAllRequiredFields,
@@ -211,11 +891,7 @@ class _AddChildState extends State<AddChild> {
       if (user == null) throw Exception("User not logged in.");
 
       // حساب العمر
-      final birthDate = DateTime(
-        int.parse(_selectedYear!),
-        int.parse(_selectedMonth!),
-        int.parse(_selectedDay!),
-      );
+      final birthDate = _selectedDob!;
 
       final now = DateTime.now();
       int age = now.year - birthDate.year;
@@ -223,6 +899,23 @@ class _AddChildState extends State<AddChild> {
       if (now.month < birthDate.month ||
           (now.month == birthDate.month && now.day < birthDate.day)) {
         age--;
+      }
+
+      if (age >= 6) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              l10n.childMustBeUnderSixError,
+              style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
+            ),
+            backgroundColor: const Color(0xFF9D5C7D),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            margin: const EdgeInsets.all(12),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+        return;
       }
 
       // رفع الصورة
@@ -242,12 +935,13 @@ class _AddChildState extends State<AddChild> {
           .add({
         'name': name,
         'gender': _selectedGender,
-        'birthDate':
-            "$_selectedYear-${_selectedMonth!.padLeft(2, '0')}-${_selectedDay!.padLeft(2, '0')}",
+        'birthDate': _formatDob(birthDate),
         'age': age,
         'imageUrl': imageUrl,
         'createdAt': FieldValue.serverTimestamp(),
       });
+
+      if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -268,11 +962,12 @@ class _AddChildState extends State<AddChild> {
         MaterialPageRoute(builder: (context) => const ParentDashboard()),
       );
     } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(l10n.errorSavingChild(e.toString()))),
       );
     } finally {
-      setState(() => _isSaving = false);
+      if (mounted) setState(() => _isSaving = false);
     }
   }
 
@@ -393,7 +1088,6 @@ class _AddChildState extends State<AddChild> {
                   onChanged: (_) {
                     setState(() {
                       _hasInteracted = true;
-                      _isNameValid = _nameController.text.trim().length >= 2;
                     });
                   },
                   decoration: InputDecoration(
@@ -410,199 +1104,65 @@ class _AddChildState extends State<AddChild> {
 
               // ------------------ DOB ------------------
               _buildRequiredLabel(l10n.dateOfBirthLabel),
-              Row(
-                children: [
-                  // Day
-                  Expanded(
-                    child: Focus(
-                      focusNode: _dayFocus,
-                      onFocusChange: (hasFocus) {
-                        if (hasFocus) {
-                          _dayTouched = true;
-                        }
-                        setState(() {});
-                      },
-                      child: DropdownMenu<String>(
-                        hintText: l10n.dayLabel,
-                        textStyle: const TextStyle(
-                            color: Colors.black87, fontSize: 16),
-                        menuStyle: const MenuStyle(
-                          backgroundColor:
-                              WidgetStatePropertyAll(Color(0xFFFFF7FB)),
-                          surfaceTintColor:
-                              WidgetStatePropertyAll(Colors.white),
-                          elevation: WidgetStatePropertyAll(3),
-                          maximumSize:
-                              WidgetStatePropertyAll(Size.fromHeight(180)),
-                          padding: WidgetStatePropertyAll(
-                              EdgeInsets.symmetric(vertical: 6)),
-                          shape: WidgetStatePropertyAll(
-                            RoundedRectangleBorder(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(8)),
-                              side: BorderSide(color: Colors.grey),
+              Focus(
+                focusNode: _dobFocus,
+                onFocusChange: (hasFocus) {
+                  if (hasFocus) _dobTouched = true;
+                  setState(() {});
+                },
+                child: InkWell(
+                  onTap: () async {
+                    _dobTouched = true;
+                    setState(() {});
+                    await _pickDob();
+                  },
+                  borderRadius: BorderRadius.circular(8),
+                  child: InputDecorator(
+                    decoration: InputDecoration(
+                      hintText: l10n.selectDateOfBirthHint,
+                      hintStyle: const TextStyle(color: Colors.black54),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 10,
+                      ),
+                      filled: true,
+                      fillColor: Colors.white,
+                      border: _border(_dropdownColor(
+                        value: _selectedDob == null ? null : _formatDob(_selectedDob!),
+                        touched: _dobTouched,
+                        focusNode: _dobFocus,
+                      )),
+                      enabledBorder: _border(_dropdownColor(
+                        value: _selectedDob == null ? null : _formatDob(_selectedDob!),
+                        touched: _dobTouched,
+                        focusNode: _dobFocus,
+                      )),
+                      focusedBorder: _border(const Color(0xFF9D5C7D)),
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            _selectedDob == null
+                                ? l10n.selectDateOfBirthHint
+                                : _formatDob(_selectedDob!),
+                            style: TextStyle(
+                              color: _selectedDob == null
+                                  ? Colors.black54
+                                  : Colors.black87,
+                              fontSize: 16,
                             ),
                           ),
                         ),
-                        inputDecorationTheme: InputDecorationTheme(
-                          hintStyle: const TextStyle(color: Colors.black54),
-                          contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 2, vertical: 10),
-                          filled: true,
-                          fillColor: Colors.white,
-                          border: _border(_dropdownColor(
-                            value: _selectedDay,
-                            touched: _dayTouched,
-                            focusNode: _dayFocus,
-                          )),
-                          enabledBorder: _border(_dropdownColor(
-                            value: _selectedDay,
-                            touched: _dayTouched,
-                            focusNode: _dayFocus,
-                          )),
-                          focusedBorder: _border(const Color(0xFF9D5C7D)),
+                        const Icon(
+                          Icons.calendar_month_outlined,
+                          color: Color(0xFF9D5C7D),
                         ),
-                        onSelected: (val) {
-                          FocusScope.of(context).unfocus();
-                          setState(() => _selectedDay = val);
-                        },
-                        dropdownMenuEntries: List.generate(
-                          31,
-                          (i) => DropdownMenuEntry(
-                              value: "${i + 1}", label: "${i + 1}"),
-                        ),
-                      ),
+                      ],
                     ),
                   ),
-                  const SizedBox(width: 8),
-
-                  // Month
-                  Expanded(
-                    child: Focus(
-                      focusNode: _monthFocus,
-                      onFocusChange: (hasFocus) {
-                        if (hasFocus) _monthTouched = true;
-                        setState(() {});
-                      },
-                      child: DropdownMenu<String>(
-                        hintText: l10n.monthLabel,
-                        textStyle: const TextStyle(
-                          color: Colors.black87,
-                          fontSize: 16,
-                          overflow: TextOverflow.visible,
-                        ),
-                        menuStyle: const MenuStyle(
-                          backgroundColor:
-                              WidgetStatePropertyAll(Color(0xFFFFF7FB)),
-                          surfaceTintColor:
-                              WidgetStatePropertyAll(Colors.white),
-                          elevation: WidgetStatePropertyAll(3),
-                          maximumSize:
-                              WidgetStatePropertyAll(Size.fromHeight(180)),
-                          padding: WidgetStatePropertyAll(
-                              EdgeInsets.symmetric(vertical: 6)),
-                          shape: WidgetStatePropertyAll(
-                            RoundedRectangleBorder(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(8)),
-                              side: BorderSide(color: Colors.grey),
-                            ),
-                          ),
-                        ),
-                        inputDecorationTheme: InputDecorationTheme(
-                          hintStyle: const TextStyle(color: Colors.black54),
-                          contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 2, vertical: 10),
-                          filled: true,
-                          fillColor: Colors.white,
-                          border: _border(_dropdownColor(
-                            value: _selectedMonth,
-                            touched: _monthTouched,
-                            focusNode: _monthFocus,
-                          )),
-                          enabledBorder: _border(_dropdownColor(
-                            value: _selectedMonth,
-                            touched: _monthTouched,
-                            focusNode: _monthFocus,
-                          )),
-                          focusedBorder: _border(const Color(0xFF9D5C7D)),
-                        ),
-                        onSelected: (val) =>
-                            setState(() => _selectedMonth = val),
-                        dropdownMenuEntries: List.generate(
-                          12,
-                          (i) => DropdownMenuEntry(
-                              value: "${i + 1}", label: "${i + 1}"),
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(width: 8),
-
-                  // Year
-                  Expanded(
-                    child: Focus(
-                      focusNode: _yearFocus,
-                      onFocusChange: (hasFocus) {
-                        if (hasFocus) _yearTouched = true;
-                        setState(() {});
-                      },
-                      child: DropdownMenu<String>(
-                        hintText: l10n.yearLabel,
-                        textStyle: const TextStyle(
-                            color: Colors.black87, fontSize: 16),
-                        menuStyle: const MenuStyle(
-                          backgroundColor:
-                              WidgetStatePropertyAll(Color(0xFFFFF7FB)),
-                          surfaceTintColor:
-                              WidgetStatePropertyAll(Colors.white),
-                          elevation: WidgetStatePropertyAll(3),
-                          maximumSize:
-                              WidgetStatePropertyAll(Size.fromHeight(180)),
-                          padding: WidgetStatePropertyAll(
-                              EdgeInsets.symmetric(vertical: 6)),
-                          shape: WidgetStatePropertyAll(
-                            RoundedRectangleBorder(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(8)),
-                              side: BorderSide(color: Colors.grey),
-                            ),
-                          ),
-                        ),
-                        inputDecorationTheme: InputDecorationTheme(
-                          hintStyle: const TextStyle(color: Colors.black54),
-                          contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 2, vertical: 10),
-                          filled: true,
-                          fillColor: Colors.white,
-                          border: _border(_dropdownColor(
-                            value: _selectedYear,
-                            touched: _yearTouched,
-                            focusNode: _yearFocus,
-                          )),
-                          enabledBorder: _border(_dropdownColor(
-                            value: _selectedYear,
-                            touched: _yearTouched,
-                            focusNode: _yearFocus,
-                          )),
-                          focusedBorder: _border(const Color(0xFF9D5C7D)),
-                        ),
-                        onSelected: (val) =>
-                            setState(() => _selectedYear = val),
-                        dropdownMenuEntries: List.generate(
-                          10,
-                          (i) => DropdownMenuEntry(
-                            value: "${DateTime.now().year - i}",
-                            label: "${DateTime.now().year - i}",
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+                ),
               ),
-
               const SizedBox(height: 20),
 
               // ------------------ Gender ------------------
@@ -695,23 +1255,6 @@ class _AddChildState extends State<AddChild> {
   }
 
   // ------------------------ Helpers ------------------------
-  Widget _buildLabel(String text) {
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: Padding(
-        padding: const EdgeInsets.only(bottom: 8),
-        child: Text(
-          text,
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w500,
-            color: Colors.black87,
-          ),
-        ),
-      ),
-    );
-  }
-
   Widget _buildRequiredLabel(String text) {
     return Align(
       alignment: AlignmentDirectional.centerStart,
@@ -739,25 +1282,6 @@ class _AddChildState extends State<AddChild> {
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildDropdown(
-    String hint,
-    String? value,
-    List<String> items,
-    Function(String?) onChanged,
-  ) {
-    return DropdownButtonFormField<String>(
-      hint: Text(hint),
-      initialValue: value,
-      items: items
-          .map((item) => DropdownMenuItem(value: item, child: Text(item)))
-          .toList(),
-      onChanged: onChanged,
-      decoration: InputDecoration(
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
       ),
     );
   }

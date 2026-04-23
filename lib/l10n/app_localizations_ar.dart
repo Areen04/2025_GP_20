@@ -312,10 +312,19 @@ class AppLocalizationsAr extends AppLocalizations {
   String get takePhoto => 'التقاط صورة';
 
   @override
-  String get childFullNameLabel => 'اسم الطفل الكامل';
+  String get childFullNameLabel => 'اسم الطفل';
 
   @override
   String get dateOfBirthLabel => 'تاريخ الميلاد';
+
+  @override
+  String get gregorianCalendarLabel => 'ميلادي';
+
+  @override
+  String get hijriCalendarLabel => 'هجري';
+
+  @override
+  String get selectDateOfBirthHint => 'اختر تاريخ الميلاد';
 
   @override
   String get dayLabel => 'اليوم';
@@ -325,6 +334,11 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get yearLabel => 'السنة';
+
+  @override
+  String hijriApprox(Object date) {
+    return 'هجري (تقريبي): $date';
+  }
 
   @override
   String get genderLabel => 'الجنس';
@@ -348,13 +362,17 @@ class AppLocalizationsAr extends AppLocalizations {
   String get dobFutureError => 'لا يمكن أن يكون تاريخ الميلاد في المستقبل.';
 
   @override
+  String get childMustBeUnderSixError =>
+      'يجب أن يكون عمر الطفل أقل من 6 سنوات.';
+
+  @override
   String get editChildTitle => 'تعديل بيانات الطفل';
 
   @override
   String get uploadPhoto => 'رفع صورة';
 
   @override
-  String get enterChildFullNameHint => 'أدخل اسم الطفل الكامل';
+  String get enterChildFullNameHint => 'أدخل اسم الطفل';
 
   @override
   String helloDoctor(Object name) {

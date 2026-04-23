@@ -313,10 +313,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get takePhoto => 'Take a Photo';
 
   @override
-  String get childFullNameLabel => 'Child\'s Full Name';
+  String get childFullNameLabel => 'Child\'s Name';
 
   @override
   String get dateOfBirthLabel => 'Date of Birth';
+
+  @override
+  String get gregorianCalendarLabel => 'Gregorian';
+
+  @override
+  String get hijriCalendarLabel => 'Hijri';
+
+  @override
+  String get selectDateOfBirthHint => 'Select date of birth';
 
   @override
   String get dayLabel => 'Day';
@@ -326,6 +335,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get yearLabel => 'Year';
+
+  @override
+  String hijriApprox(Object date) {
+    return 'Hijri (approx.): $date';
+  }
 
   @override
   String get genderLabel => 'Gender';
@@ -349,13 +363,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dobFutureError => 'Date of birth cannot be in the future.';
 
   @override
+  String get childMustBeUnderSixError => 'Child must be under 6 years old.';
+
+  @override
   String get editChildTitle => 'Edit Child';
 
   @override
   String get uploadPhoto => 'Upload Photo';
 
   @override
-  String get enterChildFullNameHint => 'Enter child\'s full name';
+  String get enterChildFullNameHint => 'Enter child\'s name';
 
   @override
   String helloDoctor(Object name) {

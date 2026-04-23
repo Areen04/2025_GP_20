@@ -92,11 +92,20 @@
   "addChildTitle": "Add Child",
   "chooseFromGallery": "Choose from Gallery",
   "takePhoto": "Take a Photo",
-  "childFullNameLabel": "Child's Full Name",
+  "childFullNameLabel": "Child's Name",
   "dateOfBirthLabel": "Date of Birth",
+  "gregorianCalendarLabel": "Gregorian",
+  "hijriCalendarLabel": "Hijri",
+  "selectDateOfBirthHint": "Select date of birth",
   "dayLabel": "Day",
   "monthLabel": "Month",
   "yearLabel": "Year",
+  "hijriApprox": "Hijri (approx.): {date}",
+  "@hijriApprox": {
+    "placeholders": {
+      "date": {}
+    }
+  },
   "genderLabel": "Gender",
   "selectGenderHint": "Select gender",
   "maleLabel": "Male",
@@ -104,9 +113,10 @@
   "addChildButton": "Add Child",
   "fillAllRequiredFields": "Please fill all required fields.",
   "dobFutureError": "Date of birth cannot be in the future.",
+  "childMustBeUnderSixError": "Child must be under 6 years old.",
   "editChildTitle": "Edit Child",
   "uploadPhoto": "Upload Photo",
-  "enterChildFullNameHint": "Enter child's full name",
+  "enterChildFullNameHint": "Enter child's name",
   "helloDoctor": "Hello, Dr. {name}",
   "doctorLabel": "Doctor",
   "doctorGreeting": "Manage visit time more efficiently by reviewing your patients’ health information.",

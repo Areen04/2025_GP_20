@@ -659,7 +659,7 @@ abstract class AppLocalizations {
   /// No description provided for @childFullNameLabel.
   ///
   /// In en, this message translates to:
-  /// **'Child\'s Full Name'**
+  /// **'Child\'s Name'**
   String get childFullNameLabel;
 
   /// No description provided for @dateOfBirthLabel.
@@ -667,6 +667,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Date of Birth'**
   String get dateOfBirthLabel;
+
+  /// No description provided for @gregorianCalendarLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Gregorian'**
+  String get gregorianCalendarLabel;
+
+  /// No description provided for @hijriCalendarLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Hijri'**
+  String get hijriCalendarLabel;
+
+  /// No description provided for @selectDateOfBirthHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Select date of birth'**
+  String get selectDateOfBirthHint;
 
   /// No description provided for @dayLabel.
   ///
@@ -685,6 +703,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Year'**
   String get yearLabel;
+
+  /// No description provided for @hijriApprox.
+  ///
+  /// In en, this message translates to:
+  /// **'Hijri (approx.): {date}'**
+  String hijriApprox(Object date);
 
   /// No description provided for @genderLabel.
   ///
@@ -728,6 +752,12 @@ abstract class AppLocalizations {
   /// **'Date of birth cannot be in the future.'**
   String get dobFutureError;
 
+  /// No description provided for @childMustBeUnderSixError.
+  ///
+  /// In en, this message translates to:
+  /// **'Child must be under 6 years old.'**
+  String get childMustBeUnderSixError;
+
   /// No description provided for @editChildTitle.
   ///
   /// In en, this message translates to:
@@ -743,7 +773,7 @@ abstract class AppLocalizations {
   /// No description provided for @enterChildFullNameHint.
   ///
   /// In en, this message translates to:
-  /// **'Enter child\'s full name'**
+  /// **'Enter child\'s name'**
   String get enterChildFullNameHint;
 
   /// No description provided for @helloDoctor.
