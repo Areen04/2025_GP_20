@@ -250,3 +250,12 @@
 @media (max-width: 560px){
   .cardsGrid{ grid-template-columns: 1fr; }
 }
+.statusApproved {
+  color: green;
+  font-weight: 700;
+}
+
+.statusRejected {
+  color: red;
+  font-weight: 700;
+}

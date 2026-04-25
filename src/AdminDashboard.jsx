@@ -35,8 +35,7 @@ export default function AdminDashboard() {
   const [activeDoctorsCount, setActiveDoctorsCount] = useState(0);
   const [childrenCount, setChildrenCount] = useState(0);
 
-  const [pendingDoctors, setPendingDoctors] = useState([]);
-  const pendingCount = pendingDoctors.length;
+  const [doctors, setDoctors] = useState([]);
 
   const [errOpen, setErrOpen] = useState(false);
   const [errMsg, setErrMsg] = useState("");
@@ -48,28 +47,26 @@ export default function AdminDashboard() {
 
   // ===== Live counts =====
   useEffect(() => {
-    // Parents (from parents collection)
     const unsubParents = onSnapshot(
       collection(db, "parents"),
       (snap) => setParentsCount(snap.size),
       (e) => showError(e.message)
     );
 
-    // Active Doctors (approved)
     const qActiveDocs = query(
       collection(db, "users"),
       where("role", "==", "doctor"),
       where("status", "==", "approved")
     );
+
     const unsubDocs = onSnapshot(
       qActiveDocs,
       (snap) => setActiveDoctorsCount(snap.size),
       (e) => showError(e.message)
     );
 
-    // ✅ Children Profiles (REAL count from subcollections)
-    // This reads all subcollections named "children" anywhere: parents/{id}/children/{childId}
     const qChildren = query(collectionGroup(db, "children"));
+
     const unsubChildren = onSnapshot(
       qChildren,
       (snap) => setChildrenCount(snap.size),
@@ -83,25 +80,26 @@ export default function AdminDashboard() {
     };
   }, []);
 
-  // ===== Pending doctors table =====
+  // ===== All doctors table =====
   useEffect(() => {
-    const qPending = query(
+    const qDoctors = query(
       collection(db, "users"),
-      where("role", "==", "doctor"),
-      where("status", "==", "pending")
+      where("role", "==", "doctor")
     );
 
     const unsub = onSnapshot(
-      qPending,
+      qDoctors,
       (snap) => {
         const rows = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-        setPendingDoctors(rows);
+        setDoctors(rows);
       },
       (e) => showError(e.message)
     );
 
     return () => unsub();
   }, []);
+
+  const pendingCount = doctors.filter((d) => d.status === "pending").length;
 
   const overviewCards = useMemo(() => {
     return [
@@ -131,7 +129,7 @@ export default function AdminDashboard() {
   const handleLogout = async () => {
     try {
       await signOut(auth);
-      navigate("/", { replace: true }); // يرجع للـ Admin Login
+      navigate("/", { replace: true });
     } catch (e) {
       showError(e.message);
     }
@@ -178,7 +176,7 @@ export default function AdminDashboard() {
           ))}
         </div>
 
-        <div className="sectionTitle">Pending Doctor Registration Requests</div>
+        <div className="sectionTitle">Doctor Registration Requests</div>
 
         <div className="tableCard">
           <div className="tableHead">
@@ -186,13 +184,13 @@ export default function AdminDashboard() {
             <div>Email</div>
             <div>Document Type</div>
             <div>Document Number</div>
-            <div className="actionsCol">Actions</div>
+            <div className="actionsCol">Status / Actions</div>
           </div>
 
-          {pendingDoctors.length === 0 ? (
-            <div className="emptyState">No pending requests.</div>
+          {doctors.length === 0 ? (
+            <div className="emptyState">No doctor requests.</div>
           ) : (
-            pendingDoctors.map((d) => (
+            doctors.map((d) => (
               <div className="tableRow" key={d.id}>
                 <div>{d.fullName || "-"}</div>
                 <div className="muted">{d.email || "-"}</div>
@@ -200,12 +198,32 @@ export default function AdminDashboard() {
                 <div className="muted">{d.docNumber || "-"}</div>
 
                 <div className="actionsCol">
-                  <button className="btnAccept" onClick={() => handleAccept(d.id)}>
-                    Accept
-                  </button>
-                  <button className="btnReject" onClick={() => handleReject(d.id)}>
-                    Reject
-                  </button>
+                  {d.status === "pending" ? (
+                    <>
+                      <button
+                        className="btnAccept"
+                        onClick={() => handleAccept(d.id)}
+                      >
+                        Accept
+                      </button>
+                      <button
+                        className="btnReject"
+                        onClick={() => handleReject(d.id)}
+                      >
+                        Reject
+                      </button>
+                    </>
+                  ) : (
+                    <span
+                      className={
+                        d.status === "approved"
+                          ? "statusApproved"
+                          : "statusRejected"
+                      }
+                    >
+                      {d.status === "approved" ? "Accepted" : "Rejected"}
+                    </span>
+                  )}
                 </div>
               </div>
             ))
