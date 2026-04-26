@@ -34,18 +34,19 @@ export default function AdminDashboard() {
   const [parentsCount, setParentsCount] = useState(0);
   const [activeDoctorsCount, setActiveDoctorsCount] = useState(0);
   const [childrenCount, setChildrenCount] = useState(0);
-
   const [doctors, setDoctors] = useState([]);
 
   const [errOpen, setErrOpen] = useState(false);
   const [errMsg, setErrMsg] = useState("");
+
+  const [rejectingId, setRejectingId] = useState(null);
+  const [rejectReasons, setRejectReasons] = useState({});
 
   const showError = (msg) => {
     setErrMsg(msg || "Something went wrong.");
     setErrOpen(true);
   };
 
-  // ===== Live counts =====
   useEffect(() => {
     const unsubParents = onSnapshot(
       collection(db, "parents"),
@@ -80,7 +81,6 @@ export default function AdminDashboard() {
     };
   }, []);
 
-  // ===== All doctors table =====
   useEffect(() => {
     const qDoctors = query(
       collection(db, "users"),
@@ -112,18 +112,57 @@ export default function AdminDashboard() {
 
   const handleAccept = async (userId) => {
     try {
-      await updateDoc(doc(db, "users", userId), { status: "approved" });
+      await updateDoc(doc(db, "users", userId), {
+        status: "approved",
+        rejectionReason: "",
+      });
     } catch (e) {
       showError(e.message);
     }
   };
 
-  const handleReject = async (userId) => {
+  const openRejectBox = (userId) => {
+    setRejectingId(userId);
+  };
+
+  const handleRejectReasonChange = (userId, value) => {
+    setRejectReasons((prev) => ({
+      ...prev,
+      [userId]: value,
+    }));
+  };
+
+  const submitReject = async (userId) => {
+    const reason = rejectReasons[userId]?.trim();
+
+    if (!reason) {
+      showError("Rejection reason is required.");
+      return;
+    }
+
     try {
-      await updateDoc(doc(db, "users", userId), { status: "rejected" });
+      await updateDoc(doc(db, "users", userId), {
+        status: "rejected",
+        rejectionReason: reason,
+        rejectedAt: new Date(),
+      });
+
+      setRejectingId(null);
+      setRejectReasons((prev) => ({
+        ...prev,
+        [userId]: "",
+      }));
     } catch (e) {
       showError(e.message);
     }
+  };
+
+  const cancelReject = (userId) => {
+    setRejectingId(null);
+    setRejectReasons((prev) => ({
+      ...prev,
+      [userId]: "",
+    }));
   };
 
   const handleLogout = async () => {
@@ -199,20 +238,52 @@ export default function AdminDashboard() {
 
                 <div className="actionsCol">
                   {d.status === "pending" ? (
-                    <>
-                      <button
-                        className="btnAccept"
-                        onClick={() => handleAccept(d.id)}
-                      >
-                        Accept
-                      </button>
-                      <button
-                        className="btnReject"
-                        onClick={() => handleReject(d.id)}
-                      >
-                        Reject
-                      </button>
-                    </>
+                    rejectingId === d.id ? (
+                      <div className="rejectReasonBox">
+                        <label className="rejectReasonLabel">Reason:</label>
+
+                        <textarea
+                          className="rejectReasonInput"
+                          value={rejectReasons[d.id] || ""}
+                          onChange={(e) =>
+                            handleRejectReasonChange(d.id, e.target.value)
+                          }
+                          placeholder="Enter your reason"
+                          rows={2}
+                        />
+
+                        <div className="rejectReasonActions">
+                          <button
+                            className="btnReject"
+                            onClick={() => submitReject(d.id)}
+                          >
+                            Send
+                          </button>
+
+                          <button
+                            className="btnReject"
+                            onClick={() => cancelReject(d.id)}
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <button
+                          className="btnAccept"
+                          onClick={() => handleAccept(d.id)}
+                        >
+                          Accept
+                        </button>
+                        <button
+                          className="btnReject"
+                          onClick={() => openRejectBox(d.id)}
+                        >
+                          Reject
+                        </button>
+                      </>
+                    )
                   ) : (
                     <span
                       className={
