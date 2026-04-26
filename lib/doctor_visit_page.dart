@@ -797,14 +797,14 @@ class _DoctorVisitPageState extends State<DoctorVisitPage> {
           children: [
             _patientSummaryCard(),
             const SizedBox(height: 24),
-
+            _latestMeasurementsCard(),
             // ✅ Growth Charts (height + weight) تحت بعض
-            _growthChartsCard(),
+
 
             const SizedBox(height: 24),
 
             // ✅ Latest Measurements تحتهم
-            _latestMeasurementsCard(),
+            _growthChartsCard(),
 
             const SizedBox(height: 24),
 

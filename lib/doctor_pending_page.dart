@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+
 import 'qr_scan_page.dart';
 import 'login.dart';
+import 'doctor_update_info_page.dart';
 import 'package:rafiq_gp/l10n/app_localizations.dart';
 
 class DoctorPendingPage extends StatelessWidget {
@@ -33,8 +35,9 @@ class DoctorPendingPage extends StatelessWidget {
 
           final data = snapshot.data!.data() as Map<String, dynamic>?;
           final status = data?['status'] ?? 'pending';
+          final rejectionReason = data?['rejectionReason'] ?? '';
 
-          // ✅ إذا وافق الأدمن → يدخل مباشرة
+          // Approved → go to QR page
           if (status == 'approved') {
             WidgetsBinding.instance.addPostFrameCallback((_) {
               Navigator.pushReplacement(
@@ -44,6 +47,106 @@ class DoctorPendingPage extends StatelessWidget {
             });
           }
 
+          // Rejected → show reason + update button
+          if (status == 'rejected') {
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.cancel_outlined,
+                      size: 64,
+                      color: Colors.red,
+                    ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      "Request Rejected",
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      rejectionReason.toString().isNotEmpty
+                          ? rejectionReason.toString()
+                          : "Your request was rejected. Please update your information.",
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(color: Colors.black54),
+                    ),
+                    const SizedBox(height: 24),
+
+                    SizedBox(
+                      width: double.infinity,
+                      height: 52,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF9D5C7D),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const DoctorUpdateInfoPage(),
+                            ),
+                          );
+                        },
+                        child: const Text(
+                          "Update Your Information",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    SizedBox(
+                      width: double.infinity,
+                      height: 52,
+                      child: OutlinedButton(
+                        style: OutlinedButton.styleFrom(
+                          side: const BorderSide(color: Color(0xFF9D5C7D)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        onPressed: () async {
+                          await FirebaseAuth.instance.signOut();
+                          if (!context.mounted) return;
+                          Navigator.pushAndRemoveUntil(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const LoginScreen(),
+                            ),
+                                (_) => false,
+                          );
+                        },
+                        child: Text(
+                          l10n.logout,
+                          style: const TextStyle(
+                            color: Color(0xFF9D5C7D),
+                            fontWeight: FontWeight.w600,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
+
+          // Pending page
           return Center(
             child: Padding(
               padding: const EdgeInsets.all(24),
@@ -71,7 +174,6 @@ class DoctorPendingPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 24),
 
-                  // Logout
                   SizedBox(
                     width: double.infinity,
                     height: 52,
