@@ -36,6 +36,8 @@ export default function AdminDashboard() {
   const [childrenCount, setChildrenCount] = useState(0);
   const [doctors, setDoctors] = useState([]);
 
+  const [statusFilter, setStatusFilter] = useState("all");
+
   const [errOpen, setErrOpen] = useState(false);
   const [errMsg, setErrMsg] = useState("");
 
@@ -104,17 +106,31 @@ export default function AdminDashboard() {
   const overviewCards = useMemo(() => {
     return [
       { label: "Total Registered Parents", value: parentsCount, icon: "👥" },
-      { label: "Active Doctors", value: activeDoctorsCount, icon: "🩺" },
+      { label: "Verified Doctors", value: activeDoctorsCount, icon: "🩺" },
       { label: "Children Profiles", value: childrenCount, icon: "👶" },
-      { label: "Pending Doctor Requests", value: pendingCount, icon: "⏳" },
+      { label: "Pending Verification Requests", value: pendingCount, icon: "⏳" },
     ];
   }, [parentsCount, activeDoctorsCount, childrenCount, pendingCount]);
 
-  const handleAccept = async (userId) => {
+  const filteredDoctors = useMemo(() => {
+    return [...doctors]
+      .sort((a, b) => {
+        const aTime = a.createdAt?.seconds || 0;
+        const bTime = b.createdAt?.seconds || 0;
+        return bTime - aTime;
+      })
+      .filter((d) => {
+        if (statusFilter === "all") return true;
+        return d.status === statusFilter;
+      });
+  }, [doctors, statusFilter]);
+
+  const handleVerify = async (userId) => {
     try {
       await updateDoc(doc(db, "users", userId), {
         status: "approved",
         rejectionReason: "",
+        verifiedAt: new Date(),
       });
     } catch (e) {
       showError(e.message);
@@ -132,11 +148,11 @@ export default function AdminDashboard() {
     }));
   };
 
-  const submitReject = async (userId) => {
-    const reason = rejectReasons[userId]?.trim();
+  const submitNotVerified = async (userId) => {
+    const reason = rejectReasons[userId];
 
     if (!reason) {
-      showError("Rejection reason is required.");
+      showError("Please select a reason.");
       return;
     }
 
@@ -163,6 +179,18 @@ export default function AdminDashboard() {
       ...prev,
       [userId]: "",
     }));
+  };
+
+  const getStatusLabel = (status) => {
+    if (status === "approved") return "Information Verified";
+    if (status === "rejected") return "Information Not Verified";
+    return "Pending Verification";
+  };
+
+  const getStatusClass = (status) => {
+    if (status === "approved") return "statusApproved";
+    if (status === "rejected") return "statusRejected";
+    return "statusPending";
   };
 
   const handleLogout = async () => {
@@ -215,7 +243,23 @@ export default function AdminDashboard() {
           ))}
         </div>
 
-        <div className="sectionTitle">Doctor Registration Requests</div>
+        <div className="sectionTitle">
+          Healthcare Practitioner Information Verification
+        </div>
+
+        <div className="filterRow">
+          <label className="filterLabel">Status:</label>
+          <select
+            className="statusFilter"
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+          >
+            <option value="all">All Requests</option>
+            <option value="pending">Pending Verification</option>
+            <option value="approved">Information Verified</option>
+            <option value="rejected">Information Not Verified</option>
+          </select>
+        </div>
 
         <div className="tableCard">
           <div className="tableHead">
@@ -226,10 +270,10 @@ export default function AdminDashboard() {
             <div className="actionsCol">Status / Actions</div>
           </div>
 
-          {doctors.length === 0 ? (
-            <div className="emptyState">No doctor requests.</div>
+          {filteredDoctors.length === 0 ? (
+            <div className="emptyState">No requests found.</div>
           ) : (
-            doctors.map((d) => (
+            filteredDoctors.map((d) => (
               <div className="tableRow" key={d.id}>
                 <div>{d.fullName || "-"}</div>
                 <div className="muted">{d.email || "-"}</div>
@@ -242,20 +286,23 @@ export default function AdminDashboard() {
                       <div className="rejectReasonBox">
                         <label className="rejectReasonLabel">Reason:</label>
 
-                        <textarea
+                        <select
                           className="rejectReasonInput"
                           value={rejectReasons[d.id] || ""}
                           onChange={(e) =>
                             handleRejectReasonChange(d.id, e.target.value)
                           }
-                          placeholder="Enter your reason"
-                          rows={2}
-                        />
+                        >
+                          <option value="">Select a reason</option>
+                          <option value="The provided information does not match the official records.">
+                            Information does not match official records
+                          </option>
+                        </select>
 
                         <div className="rejectReasonActions">
                           <button
                             className="btnReject"
-                            onClick={() => submitReject(d.id)}
+                            onClick={() => submitNotVerified(d.id)}
                           >
                             Send
                           </button>
@@ -272,27 +319,22 @@ export default function AdminDashboard() {
                       <>
                         <button
                           className="btnAccept"
-                          onClick={() => handleAccept(d.id)}
+                          onClick={() => handleVerify(d.id)}
                         >
-                          Accept
+                          Information Verified
                         </button>
+
                         <button
                           className="btnReject"
                           onClick={() => openRejectBox(d.id)}
                         >
-                          Reject
+                          Information Not Verified
                         </button>
                       </>
                     )
                   ) : (
-                    <span
-                      className={
-                        d.status === "approved"
-                          ? "statusApproved"
-                          : "statusRejected"
-                      }
-                    >
-                      {d.status === "approved" ? "Accepted" : "Rejected"}
+                    <span className={getStatusClass(d.status)}>
+                      {getStatusLabel(d.status)}
                     </span>
                   )}
                 </div>

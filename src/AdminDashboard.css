@@ -16,7 +16,7 @@
 /* ================= TOP BAR ================= */
 
 .dashTopBar{
-  height: 88px;                 /* ⬅️ كبرنا الهيدر */
+  height: 88px;
   display:flex;
   align-items:center;
   justify-content:space-between;
@@ -24,17 +24,15 @@
   border-bottom: 1px solid #eee;
 }
 
-/* براند */
 .brand{
   display:flex;
   align-items:center;
   gap: 14px;
-  padding-top: 3px;             /* ⬅️ نزّلنا المحتوى شوي */
+  padding-top: 3px;
 }
 
-/* الشعار */
 .logoCircle{
-  width: 84px;                  /* ⬅️ حجم الشعار */
+  width: 84px;
   height: 84px;
   border-radius: 50%;
   overflow: hidden;
@@ -51,7 +49,6 @@
   object-position: center;
 }
 
-/* زر الخروج */
 .logoutBtn{
   border: 1px solid transparent;
   background: #8c5b6d;
@@ -61,7 +58,10 @@
   cursor: pointer;
   font-size: 13px;
 }
-.logoutBtn:hover{ opacity: .92; }
+
+.logoutBtn:hover{
+  opacity: .92;
+}
 
 /* ================= CONTENT ================= */
 
@@ -122,6 +122,37 @@
   background: #fff;
 }
 
+/* ================= FILTER ================= */
+
+.filterRow{
+  display:flex;
+  align-items:center;
+  gap: 10px;
+  padding: 0 18px 14px;
+}
+
+.filterLabel{
+  font-size: 13px;
+  font-weight: 600;
+  color:#444;
+}
+
+.statusFilter{
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background:#fff;
+  font-size: 13px;
+  color:#333;
+  outline:none;
+}
+
+.statusFilter:focus{
+  border-color:#8c5b6d;
+}
+
+/* ================= TABLE ================= */
+
 .tableCard{
   margin: 0 18px;
   border: 1px solid #eee;
@@ -132,7 +163,7 @@
 
 .tableHead{
   display:grid;
-  grid-template-columns: 2fr 2.2fr 1.6fr 1.6fr 1.2fr;
+  grid-template-columns: 2fr 2.2fr 1.6fr 1.6fr 1.5fr;
   gap: 10px;
   padding: 12px 14px;
   background:#fafafa;
@@ -144,7 +175,7 @@
 
 .tableRow{
   display:grid;
-  grid-template-columns: 2fr 2.2fr 1.6fr 1.6fr 1.2fr;
+  grid-template-columns: 2fr 2.2fr 1.6fr 1.6fr 1.5fr;
   gap: 10px;
   padding: 12px 14px;
   border-bottom: 1px solid #f1f1f1;
@@ -152,28 +183,39 @@
   color:#222;
   align-items:center;
 }
-.tableRow:last-child{ border-bottom:none; }
 
-.muted{ color:#666; }
+.tableRow:last-child{
+  border-bottom:none;
+}
+
+.muted{
+  color:#666;
+}
 
 .actionsCol{
   display:flex;
   gap: 8px;
   justify-content:flex-end;
+  flex-wrap: wrap;
 }
 
-.btnAccept, .btnReject{
-  padding: 6px 10px;
+/* ================= BUTTONS ================= */
+
+.btnAccept,
+.btnReject{
+  padding: 7px 11px;
   border-radius: 8px;
   cursor:pointer;
   font-size: 11px;
   background:#fff;
+  transition:.2s;
 }
 
 .btnAccept{
   border: 1px solid #8c5b6d;
   color:#8c5b6d;
 }
+
 .btnAccept:hover{
   background:#8c5b6d;
   color:#fff;
@@ -183,9 +225,63 @@
   border: 1px solid #e2c9d2;
   color:#8c5b6d;
 }
+
 .btnReject:hover{
   background:#f5e8ee;
 }
+
+/* ================= REJECTION BOX ================= */
+
+.rejectReasonBox{
+  display:flex;
+  flex-direction:column;
+  gap: 8px;
+  width: 100%;
+}
+
+.rejectReasonLabel{
+  font-size: 11px;
+  font-weight: 600;
+  color:#555;
+}
+
+.rejectReasonInput{
+  width: 100%;
+  padding: 9px 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 12px;
+  outline:none;
+  background:#fff;
+}
+
+.rejectReasonInput:focus{
+  border-color:#8c5b6d;
+}
+
+.rejectReasonActions{
+  display:flex;
+  gap: 8px;
+}
+
+/* ================= STATUS ================= */
+
+.statusApproved{
+  color: #2e7d32;
+  font-weight: 700;
+}
+
+.statusRejected{
+  color: #c62828;
+  font-weight: 700;
+}
+
+.statusPending{
+  color: #b7791f;
+  font-weight: 700;
+}
+
+/* ================= EMPTY ================= */
 
 .emptyState{
   padding: 18px 14px;
@@ -236,26 +332,37 @@
   border-radius: 10px;
   cursor:pointer;
 }
-.modalBtn:hover{ opacity: .92; }
+
+.modalBtn:hover{
+  opacity: .92;
+}
 
 /* ================= RESPONSIVE ================= */
 
 @media (max-width: 900px){
-  .cardsGrid{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .tableHead, .tableRow{
-    grid-template-columns: 1.8fr 2fr 1.3fr 1.3fr 1.4fr;
+
+  .cardsGrid{
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .tableHead,
+  .tableRow{
+    grid-template-columns: 1.8fr 2fr 1.3fr 1.3fr 1.6fr;
   }
 }
 
 @media (max-width: 560px){
-  .cardsGrid{ grid-template-columns: 1fr; }
-}
-.statusApproved {
-  color: green;
-  font-weight: 700;
-}
 
-.statusRejected {
-  color: red;
-  font-weight: 700;
+  .cardsGrid{
+    grid-template-columns: 1fr;
+  }
+
+  .filterRow{
+    flex-direction: column;
+    align-items:flex-start;
+  }
+
+  .actionsCol{
+    justify-content:flex-start;
+  }
 }
