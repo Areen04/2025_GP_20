@@ -101,6 +101,12 @@ class _DoctorSignupState extends State<DoctorSignup> {
       } else if (_selectedDocType == "Passport") {
         _isDocValid = RegExp(r'^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{5,}$')
             .hasMatch(_docNumberController.text.trim());
+
+      } else if (_selectedDocType == "Medical License") {
+        _isDocValid =
+            RegExp(r'^[A-Za-z0-9]{4,20}$')
+                .hasMatch(_docNumberController.text.trim());
+
       } else {
         _isDocValid = false;
       }
