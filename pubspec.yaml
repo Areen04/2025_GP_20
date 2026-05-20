@@ -1,0 +1,61 @@
+name: rafiq_gp
+description: "Rafiq - AI-powered child health companion app"
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  # Core
+  intl: ^0.20.2
+  # QR
+  qr_flutter: ^4.1.0
+  # Image & media
+  flutter_image_compress: ^2.1.0
+  image_picker: ^1.1.2
+  mobile_scanner: ^6.0.11
+  video_player: ^2.9.1
+  image: ^4.5.4
+  file_picker: ^8.0.0
+  # OCR
+  google_mlkit_text_recognition: ^0.13.0
+  # PDF
+  pdf_render_maintained: ^1.6.1
+  syncfusion_flutter_pdf: ^32.2.4
+  # UI
+  cupertino_icons: ^1.0.8
+  flutter_svg: ^2.0.10+1
+  auto_size_text: ^3.0.0
+  # Firebase
+  firebase_core: ^3.5.0
+  firebase_auth: ^5.4.1
+  cloud_firestore: ^5.6.12
+  firebase_storage: ^12.3.4
+  # Open file in browser / PDF app
+  url_launcher: ^6.3.0
+  # ONNX
+  onnxruntime: ^1.4.1
+  # Local storage
+  shared_preferences: ^2.3.2
+  flutter_cache_manager: ^3.4.1
+  fl_chart: ^0.68.0
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  generate: true
+  uses-material-design: true
+
+  assets:
+    - lib/assets/logo.png
+    - lib/icons/
+    - lib/models_RafiqSkinModel_idx.onnx
+    - lib/labels.txt
